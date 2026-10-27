@@ -32,7 +32,7 @@
 </head>
 <body>
 
-<h1>SETUP</h1>
+<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.3</span></h1>
 <div class="row">
   <button id="btnTrainer" class="primary">Connect trainer</button>
   <button id="btnHR">Connect HR</button>
@@ -44,14 +44,20 @@
   <summary>Workout &amp; FTP</summary>
   <div class="row">
     <label>FTP (W)</label>
-    <input id="ftp" type="number" value="250" inputmode="numeric">
+    <input id="ftp" type="number" value="270" inputmode="numeric">
   </div>
-  <textarea id="wo" spellcheck="false">10:00 @ 40-60%
-3x: 5:00 @ 90%, 3:00 @ 50%
-5:00 @ 55-40%</textarea>
+  <textarea id="wo" spellcheck="false">Warmup
+- 10m ramp 40%-60%
+
+Main Set 3x
+- 5m 90%
+- 3m 50%
+
+Cooldown
+- 5m ramp 55%-40%</textarea>
   <div class="hint">
-    One step per line: <code>mm:ss @ 75%</code>, <code>mm:ss @ 250w</code>, or ramp <code>10:00 @ 50-75%</code>.<br>
-    Repeat: <code>4x: 1:00 @ 120%, 1:00 @ 50%</code>. You can also paste Zwift .zwo XML.
+    intervals.icu syntax. Steps start with <code>-</code>: <code>- 15m 90%</code>, <code>- 4m 250w</code>, <code>- 2m ramp 50%-70%</code>, <code>- 1m30s Z4</code>, <code>- 20m freeride</code>.<br>
+    Repeats: a line like <code>Main Set 4x</code> (or just <code>4x</code>) followed by its steps, with a blank line before and after the block. Zwift .zwo XML also works.
   </div>
   <div class="row"><button id="btnLoad">Load workout</button><span id="stWo" class="status"></span></div>
 </details>
@@ -180,22 +186,54 @@ async function connectHR() {
 // Step: { dur (s), a, b (fraction of FTP at start/end) }
 function parseTime(s) { const p = s.trim().split(":").map(Number); return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p.length === 2 ? p[0] * 60 + p[1] : p[0]; }
 
-function parseStepText(txt, ftp) {
-  const m = txt.trim().match(/^([\d:]+)\s*@\s*([\d.]+)(?:\s*-\s*([\d.]+))?\s*(%|w)?$/i);
-  if (!m) throw new Error("Can't parse: " + txt);
-  const dur = parseTime(m[1]); let a = parseFloat(m[2]), b = m[3] != null ? parseFloat(m[3]) : a;
-  if ((m[4] || "%").toLowerCase() === "w") { a /= ftp; b /= ftp; } else { a /= 100; b /= 100; }
-  return { dur, a, b };
+const ZONE_MID = { 1: 0.45, 2: 0.65, 3: 0.83, 4: 0.98, 5: 1.13, 6: 1.35, 7: 1.6 };   // default Coggan zone midpoints (fraction of FTP)
+
+function parseDur(tok) {
+  let m = tok.match(/^(?:(\d+(?:\.\d+)?)h)?(?:(\d+(?:\.\d+)?)m)?(?:(\d+(?:\.\d+)?)s)?$/i);
+  if (m && (m[1] || m[2] || m[3])) return (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0);
+  m = tok.match(/^(?:(\d+)')?(?:(\d+)")?$/);
+  if (m && (m[1] || m[2])) return (+m[1] || 0) * 60 + (+m[2] || 0);
+  return null;
+}
+
+function parseTarget(str, ftp, line) {
+  str = str.replace(/\b\d+(?:-\d+)?\s*rpm\b/ig, "").trim();           // cadence targets are ignored
+  if (/^freeride\b/i.test(str)) return { free: true, a: 0.5, b: 0.5 };
+  if (/\b(hr|lthr|mmp)\b/i.test(str)) throw new Error("HR/MMP targets aren't supported: " + line);
+  const ramp = /^ramp\b/i.test(str); str = str.replace(/^ramp\s*/i, "");
+  let a, b, m = str.match(/^Z(\d)(?:\s*-\s*Z(\d))?$/i);
+  if (m) { a = ZONE_MID[+m[1]]; b = m[2] ? ZONE_MID[+m[2]] : a; if (!a || !b) throw new Error("Unknown zone: " + line); }
+  else {
+    m = str.match(/^([\d.]+)\s*(%|w)?\s*(?:-\s*([\d.]+)\s*(%|w)?)?$/i);
+    if (!m) throw new Error("Can't parse target: " + line);
+    const unit = (m[4] || m[2] || "%").toLowerCase(); a = parseFloat(m[1]); b = m[3] != null ? parseFloat(m[3]) : a;
+    if (unit === "w") { a /= ftp; b /= ftp; } else { a /= 100; b /= 100; }
+  }
+  if (!ramp && a !== b) { a = b = (a + b) / 2; }                      // plain range in ERG mode: use the midpoint
+  return { a, b };
+}
+
+function parseStepLine(line, ftp) {
+  let txt = line.replace(/^-\s*/, ""); if (txt.includes("<!>")) txt = txt.split("<!>").pop();
+  const toks = txt.trim().split(/\s+/); let i = -1, dur = null;
+  for (let k = 0; k < toks.length; k++) { const d = parseDur(toks[k]); if (d != null) { i = k; dur = d; break; } }
+  if (dur == null || dur <= 0) throw new Error("No duration (like 5m or 30s) in: " + line);
+  const t = parseTarget(toks.slice(i + 1).join(" "), ftp, line);
+  return { dur, a: t.a, b: t.b, free: !!t.free };
 }
 
 function parseText(src, ftp) {
-  const steps = [];
+  const steps = []; let rep = null;
+  const flush = () => { if (rep) { for (let i = 0; i < rep.n; i++) rep.steps.forEach(s => steps.push({ ...s })); rep = null; } };
   for (const raw of src.split("\n")) {
-    const line = raw.trim(); if (!line || line.startsWith("#")) continue;
-    const rep = line.match(/^(\d+)\s*x\s*:?\s*(.*)$/i);
-    if (rep) { const block = rep[2].split(",").map(s => parseStepText(s, ftp)); for (let i = 0; i < +rep[1]; i++) block.forEach(s => steps.push({ ...s })); }
-    else steps.push(parseStepText(line, ftp));
+    const line = raw.trim();
+    if (!line) { flush(); continue; }                                  // blank line ends a repeat block
+    if (line.startsWith("-")) { const st = parseStepLine(line, ftp); (rep ? rep.steps : steps).push(st); continue; }
+    const r = line.match(/(?:^|\s)(\d+)\s*x\s*$/i);                    // "3x" or "Main Set 3x"
+    if (r) { flush(); rep = { n: +r[1], steps: [] }; }
+    // other non-step lines (section titles, notes) are ignored
   }
+  flush();
   return steps;
 }
 
@@ -218,11 +256,11 @@ function parseZwo(src) {
 
 /* ---------------- workout engine ---------------- */
 const W = { tgtHist: [], steps: [], loaded: false, running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1,
-  ftp: 250, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null };
+  ftp: 270, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null };
 
 function loadWorkout() {
   try {
-    W.ftp = +$("ftp").value || 250;
+    W.ftp = +$("ftp").value || 270;
     const src = $("wo").value;
     W.steps = src.includes("<workout") ? parseZwo(src) : parseText(src, W.ftp);
     if (!W.steps.length) throw new Error("No steps found");
@@ -235,7 +273,7 @@ function resetWorkout() {
   clearInterval(W.timer); Object.assign(W, { tgtHist: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
 }
 const stepTarget = () => {
-  const s = W.steps[W.idx]; if (!s) return null;
+  const s = W.steps[W.idx]; if (!s || s.free) return null;
   const frac = s.a + (s.b - s.a) * Math.min(1, W.stepT / s.dur);
   return Math.round(frac * W.ftp * W.adj);
 };
@@ -250,12 +288,17 @@ async function startWorkout() {
   $("setup").open = false; refreshButtons();
 }
 function pushTarget(force) {
+  const st = W.steps[W.idx]; if (!st) return;
+  if (st.free) {                                      // freeride: leave ERG, flat-road simulation (grade 0)
+    if (force || W.lastTarget !== "free") { W.lastTarget = "free"; return cpWrite([0x11, 0, 0, 0, 0, 40, 51]); }
+    return;
+  }
   const t = stepTarget(); if (t == null) return;
   if (force || t !== W.lastTarget) { W.lastTarget = t; return setTargetPower(t); }
 }
 function tick() {
   if (!W.running || W.paused) return;
-  W.tgtHist.push(stepTarget());
+  W.tgtHist.push(stepTarget() ?? Math.round(live.power ?? 0));
   W.t++; W.stepT++;
   const p = live.power ?? 0;
   W.kj += p / 1000; W.iSum += p; W.iN++;
@@ -300,7 +343,7 @@ function render() {
   const total = W.steps.reduce((a, s) => a + s.dur, 0);
   $("remain").textContent = fmt(total - W.t) + " remaining";
   const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
-  $("target").textContent = tgt ?? "--";
+  $("target").textContent = !W.running ? "--" : (tgt ?? "FREE");
   $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
   $("stepName").textContent = W.running ? "Step " + (W.idx + 1) + " / " + W.steps.length + (W.adj !== 1 ? "  (" + Math.round(W.adj * 100) + "%)" : "") : "--";
   $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
