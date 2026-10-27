@@ -90,7 +90,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.10</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.11</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -158,7 +158,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v0.9.10</span>
+  <span class="ver">v0.9.11</span>
 </div>
 
 <div class="ctrl">
@@ -634,9 +634,9 @@ function showSummary() {
 }
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function prepareSummaryImage(d) {                       // square (1080x1080) so Strava and other feeds don't crop it
-  const S = 1080, cv = document.createElement("canvas"); cv.width = S; cv.height = S;
+  const S = 1080, H = 814, cv = document.createElement("canvas"); cv.width = S; cv.height = H;
   const c = cv.getContext("2d"), F = "-apple-system,system-ui,sans-serif";
-  c.fillStyle = "#0b0d10"; c.fillRect(0, 0, S, S);
+  c.fillStyle = "#0b0d10"; c.fillRect(0, 0, S, H);
   c.fillStyle = "#f2f4f7"; c.font = "700 54px " + F; c.fillText("Workout summary", 48, 82);
   c.fillStyle = "#8b94a3"; c.font = "400 26px " + F; c.fillText($("sumDate").textContent, 48, 122);
   const cols = 5, gap = 12, tw = (S - 96 - gap * (cols - 1)) / cols, th = 124;
@@ -649,11 +649,10 @@ function prepareSummaryImage(d) {                       // square (1080x1080) so
     c.font = "700 " + vs + "px " + F; c.fillStyle = "#f2f4f7"; c.fillText(m.v, x + 14, y + 94);
     if (hasU) { const vw = c.measureText(m.v).width; c.fillStyle = "#8b94a3"; c.font = "600 22px " + F; c.fillText(m.u, x + 14 + vw + 6, y + 94); }
   });
-  const g1 = document.createElement("canvas"), g2 = document.createElement("canvas");
-  drawProfile(g1, { w: 484, h: 159, dpr: 2, noCursor: true, actual: true }); drawHR(g2, { w: 484, h: 107, dpr: 2, noCursor: true });
-  c.fillStyle = "#161a20"; rrect(c, 48, 432, 984, 334, 20); c.fill(); rrect(c, 48, 778, 984, 230, 20); c.fill();
-  if (g1.width) c.drawImage(g1, 56, 440); if (g2.width) c.drawImage(g2, 56, 786);
-  c.fillStyle = "#5c6573"; c.font = "400 24px " + F; c.fillText("Kickr ERG v0.9.10", 48, 1052);
+  const g1 = document.createElement("canvas");
+  drawProfile(g1, { w: 484, h: 159, dpr: 2, noCursor: true, actual: true });
+  c.fillStyle = "#161a20"; rrect(c, 48, 432, 984, 334, 20); c.fill();
+  if (g1.width) c.drawImage(g1, 56, 440);
   cv.toBlob(b => { sumBlob = b; $("btnSaveImg").disabled = !b; }, "image/png");
 }
 function saveSummaryImage() {
