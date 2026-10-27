@@ -90,7 +90,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v1.0</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v1.0.1</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -172,7 +172,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0</span>
+  <span class="ver">v1.0.1</span>
 </div>
 
 <div class="ctrl">
@@ -846,19 +846,7 @@ const LIBRARY = [
   {"name": "VO2 6x3 @ 120%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-6m 55%\n-4m 60%\n-4m 55%\n-3m ramp 55%-40%\n"},
   {"name": "VO2 7x3", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-9m 55%\n-2m ramp 55%-40%\n"},
   {"name": "XCO VO2 HIDIT", "folder": "VO2 HIDIT", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-8m 55%\n-5m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"},
-  {"name": "XCO VO2 HIDIT+", "folder": "VO2 HIDIT", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-4m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"},
-  {"name": "Iris - 90", "folder": "Xert", "text": "-10m ramp 50%-75%\n-2m 67%\n-2m 71%\nMain Set 6x\n-4m 80%\n-2m 59%\n\n-6m 71%\n-2m 44%\nMain Set 6x\n-3m 80%\n-2m 59%\n\n-2m ramp 63%-42%\n"},
-  {"name": "It Takes Two 90%", "folder": "Xert", "text": "-10m ramp 50%-83%\n-10m 67%\nMain Set 2x\n-20m 90%\n-15m 67%\n"},
-  {"name": "Kryptonite - 120", "folder": "Xert", "text": "-8m ramp 50%-75%\nMain Set 2x\n-30s 84%\n-30s 67%\n\n-4m 69%\nMain Set 3x\n-2m 82%\n-2m 71%\n\n-2m 69%\nMain Set 3x\n-2m 81%\n-2m 71%\n\n-2m 69%\n-4m 81%\nMain Set 2x\n-2m 70%\n-2m 81%\n\n-2m 70%\n-2m 69%\n-4m 80%\nMain Set 3x\n-2m 70%\n-2m 80%\n\n-2m 70%\n-2m 70%\n-4m 80%\nMain Set 3x\n-2m 71%\n-3m 80%\n\n-2m 71%\n-4m 79%\nMain Set 2x\n-2m 69%\n-3m 79%\n\n-2m 69%\n-5m ramp 63%-42%\n"},
-  {"name": "Lucy in the Sky with Diamonds - 120", "folder": "Xert", "text": "-9m ramp 50%-84%\nMain Set 14x\n-3m 75%\n-1m 88%\n\nMain Set 13x\n-3m 71%\n-1m 88%\n\n-3m ramp 55%-42%\n"},
-  {"name": "Lucy in the Sky with Diamonds - 75", "folder": "Xert", "text": "-10m ramp 50%-83%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-5m ramp 54%-42%\n"},
-  {"name": "Lucy in the Sky with Diamonds - 90", "folder": "Xert", "text": "-10m ramp 50%-83%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-3m 74%\n-1m 85%\n-4m ramp 54%-42%\n"},
-  {"name": "Save Yourself - 120", "folder": "Xert", "text": "-10m ramp 50%-84%\nMain Set 8x\n-2m 75%\n-30s 92%\n\n-3m 47%\nMain Set 8x\n-105s 75%\n-45s 92%\n\n-3m 47%\nMain Set 8x\n-90s 75%\n-1m 92%\n\n-3m 47%\nMain Set 7x\n-105s 75%\n-45s 92%\n\n-3m 47%\nMain Set 6x\n-2m 71%\n-30s 88%\n\n-5m ramp 63%-42%\n"},
-  {"name": "Save Yourself 90", "folder": "Xert", "text": "-10m ramp 50%-84%\nMain Set 8x\n-2m 75%\n-30s 92%\n\n-3m 47%\nMain Set 8x\n-105s 75%\n-45s 92%\n\n-3m 47%\nMain Set 7x\n-105s 75%\n-45s 92%\n\n-3m 47%\nMain Set 4x\n-2m 71%\n-30s 88%\n\n-4m ramp 63%-42%\n"},
-  {"name": "Sweet Spot 3x20", "folder": "Xert", "text": "-10m ramp 50%-84%\n-2m 59%\nMain Set 2x\n-20m 82%\n-5m 50%\n\n-20m 82%\n-10m ramp 59%-34%\n"},
-  {"name": "Sweet-Spot @90% - Classic 3x20", "folder": "Xert", "text": "-10m ramp 50%-83%\n-2m 58%\nMain Set 2x\n-20m 90%\n-5m 50%\n\n-20m 90%\n-10m ramp 58%-34%\n"},
-  {"name": "The Rising - 150", "folder": "Xert", "text": "-5m ramp 50%-67%\n-3m 58%\nMain Set 3x\n-5m 65%\n-7m 75%\n\n-5m 65%\n-3m 54%\n-4m 65%\nMain Set 4x\n-7m 75%\n-5m 65%\n\n-3m 54%\n-4m 65%\nMain Set 3x\n-7m 75%\n-5m 65%\n\n-3m ramp 65%-50%\n"},
-  {"name": "The Strength To Go On - 120", "folder": "Xert", "text": "-10m ramp 50%-79%\n-3m 59%\nMain Set 7x\n-3m 80%\n-2m 71%\n\n-1m 50%\nMain Set 7x\n-3m 78%\n-2m 71%\n\n-1m 50%\nMain Set 6x\n-3m 77%\n-2m 69%\n\n-5m ramp 63%-42%\n"}
+  {"name": "XCO VO2 HIDIT+", "folder": "VO2 HIDIT", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-4m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"}
 ];
 let userLib = [];
 try { userLib = JSON.parse(localStorage.getItem("kickrLib") || "[]").filter(x => x && x.name && x.text); } catch (e) { userLib = []; }
