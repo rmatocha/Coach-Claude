@@ -7,42 +7,47 @@
 <style>
   :root { --bg:#0b0d10; --card:#161a20; --fg:#f2f4f7; --dim:#8b94a3; --acc:#ffb020; --ok:#3ddc84; --bad:#ff5a5f; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,system-ui,sans-serif; padding:env(safe-area-inset-top) 12px 24px; }
-  h1 { font-size:16px; color:var(--dim); font-weight:600; margin:12px 0 8px; }
-  button { background:#242a33; color:var(--fg); border:0; border-radius:10px; padding:12px 14px; font-size:15px; font-weight:600; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,system-ui,sans-serif; padding:env(safe-area-inset-top) 10px 16px; }
+  button { background:#242a33; color:var(--fg); border:0; border-radius:10px; padding:10px 12px; font-size:14px; font-weight:600; }
   button.primary { background:var(--acc); color:#000; }
   button:disabled { opacity:.4; }
-  .row { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; align-items:center; }
-  .status { font-size:13px; color:var(--dim); }
+  .top { display:flex; flex-wrap:wrap; gap:2px 12px; align-items:center; margin:8px 0 2px; }
+  .top .ver { margin-left:auto; font-size:12px; color:var(--dim); }
+  .row { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; align-items:center; }
+  .status { font-size:12px; color:var(--dim); }
   .status.ok { color:var(--ok); } .status.bad { color:var(--bad); }
   textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:13px; }
-  input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:10px; font-size:16px; }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
-  .tile { background:var(--card); border-radius:14px; padding:10px 12px; }
-  .tile .l { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; }
-  .tile .v { font-size:44px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
-  .tile .s { font-size:14px; color:var(--dim); font-variant-numeric:tabular-nums; }
-  .wide { grid-column:span 2; }
-  .big .v { font-size:76px; color:var(--acc); }
-  .bar { height:8px; background:#242a33; border-radius:4px; overflow:hidden; margin-top:6px; }
+  input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:8px; font-size:16px; }
+  .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:6px; }
+  .tile { grid-column:span 2; background:var(--card); border-radius:12px; padding:6px 10px; min-width:0; }
+  .tile .l { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; }
+  .tile .v { font-size:28px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; white-space:nowrap; }
+  .tile .s { font-size:12px; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wide { grid-column:span 6; }
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .split .v { font-size:58px; }
+  .split .v small { font-size:20px; font-weight:600; color:var(--dim); margin-left:3px; }
+  #target { color:var(--acc); }
+  .bar { height:6px; background:#242a33; border-radius:3px; overflow:hidden; margin-top:3px; }
   .bar > div { height:100%; width:0; background:var(--acc); }
-  details summary { color:var(--dim); font-size:14px; padding:6px 0; }
+  details summary { color:var(--dim); font-size:14px; padding:4px 0; }
   .hint { font-size:12px; color:var(--dim); line-height:1.4; }
 </style>
 </head>
 <body>
 
-<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.7</span></h1>
-<div class="row">
-  <button id="btnTrainer" class="primary">Connect trainer</button>
-  <button id="btnTrainerAll">Trainer: show all devices</button>
-  <button id="btnHR">Connect HR</button>
+<div class="top">
+  <span id="stTrainer" class="status">Trainer: not connected</span>
+  <span id="stHR" class="status">HR: not connected</span>
+  <span class="ver">v1.9</span>
 </div>
-<div id="stTrainer" class="status">Trainer: not connected</div>
-<div id="stHR" class="status">HR: not connected</div>
 
 <details id="setup" open>
-  <summary>Workout &amp; FTP</summary>
+  <summary>Setup: connect, FTP, workout</summary>
+  <div class="row">
+    <button id="btnTrainer" class="primary">Connect trainer</button>
+    <button id="btnHR">Connect HR</button>
+  </div>
   <div class="row">
     <label>FTP (W)</label>
     <input id="ftp" type="number" value="270" inputmode="numeric">
@@ -62,29 +67,46 @@ Cooldown
 <div class="row">
   <button id="btnStart" class="primary" disabled>Start</button>
   <button id="btnPause" disabled>Pause</button>
-  <button id="btnSkip" disabled>Skip step</button>
+  <button id="btnEnd" style="display:none;background:#7a2a30">End workout</button>
+  <button id="btnSkip" disabled>Skip</button>
   <button id="btnDn" disabled>-1%</button>
   <button id="btnUp" disabled>+1%</button>
 </div>
 
 <div class="grid">
-  <div class="tile big wide">
-    <div class="l">Target power</div>
-    <div class="v"><span id="target">--</span><span style="font-size:24px"> W</span></div>
-    <div class="s">Interval avg <b id="iavg">--</b> W &nbsp;·&nbsp; <span id="iavgPct">--</span>% of target</div>
+  <div class="tile wide split">
+    <div>
+      <div class="l">Target power</div>
+      <div class="v"><span id="target">--</span><small>W</small></div>
+      <div class="s" id="tgtPct">-- % FTP</div>
+    </div>
+    <div>
+      <div class="l">Interval avg</div>
+      <div class="v"><span id="iavg">--</span><small>W</small></div>
+      <div class="s"><span id="iavgPct">--</span>% of target</div>
+    </div>
   </div>
-  <div class="tile wide" style="padding:8px">
-    <canvas id="profile" style="width:100%;height:110px;display:block"></canvas>
-  </div>
+  <div class="tile wide" style="padding:5px"><canvas id="profile" style="width:100%;height:84px;display:block"></canvas></div>
+  <div class="tile wide" style="padding:5px"><canvas id="hrgraph" style="width:100%;height:64px;display:block"></canvas></div>
   <div class="tile"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
   <div class="tile"><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div>
-  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
-  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed">0:00</div><div class="s" id="remain">--</div></div>
-  <div class="tile"><div class="l">Norm. power</div><div class="v" id="np">--</div><div class="s" id="ifTss">IF -- · TSS --</div></div>
+  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:26px">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
+  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed" style="font-size:26px">0:00</div><div class="s" id="remain">--</div></div>
+  <div class="tile"><div class="l">Norm. power</div><div class="v" id="np">--</div><div class="s" id="ifTss">IF -- TSS --</div></div>
   <div class="tile"><div class="l">Energy</div><div class="v" id="kj">0</div><div class="s">kJ</div></div>
 </div>
 
-<div id="log" class="hint" style="margin-top:14px;white-space:pre-wrap"></div>
+<div id="log" class="hint" style="margin-top:10px;white-space:pre-wrap"></div>
+
+<div id="endModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:18px;font-weight:600;margin-bottom:16px">Are you sure you would like to end the workout?</div>
+    <div class="row" style="justify-content:center">
+      <button id="btnEndNo">Cancel</button>
+      <button id="btnEndYes" style="background:#7a2a30">Yes, end workout</button>
+    </div>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -142,25 +164,15 @@ const setTargetPower = w => cpWrite([0x05, w & 0xff, (w >> 8) & 0xff]);   // sin
 
 const errText = e => (e && (e.message || e.name)) || (typeof e === "string" ? e : (() => { try { return JSON.stringify(e); } catch (x) { return String(e); } })()) || "unknown error";
 
-async function connectTrainer(all) {
+async function connectTrainer() {
   let step = "choosing device";
   try {
+    // full-length UUIDs are required here: Bluefy rejects the short numeric form in the device request
     const FT = "00001826-0000-1000-8000-00805f9b34fb", CPW = "00001818-0000-1000-8000-00805f9b34fb";
-    const variants = all ? [
-      { name: "all+uuid", o: { acceptAllDevices: true, optionalServices: [FT, CPW] } },
-      { name: "all+alias", o: { acceptAllDevices: true, optionalServices: ["fitness_machine", "cycling_power"] } },
-      { name: "all, no optional", o: { acceptAllDevices: true } }
-    ] : [
-      { name: "filter+uuid", o: { filters: [{ services: [FT] }, { services: [CPW] }, { namePrefix: "KICKR" }], optionalServices: [FT, CPW] } },
-      { name: "filter+alias", o: { filters: [{ services: ["fitness_machine"] }], optionalServices: ["fitness_machine"] } }
-    ];
-    let dev = null;
-    for (const v of variants) {
-      try { dev = await navigator.bluetooth.requestDevice(v.o); log("Picker variant OK: " + v.name); break; }
-      catch (e) { log("Picker variant '" + v.name + "' failed: " + errText(e) + " (" + typeof e + ")"); if (e && e.name === "NotFoundError") throw e; }
-    }
-    if (!dev) throw new Error("every picker variant failed (see log)");
-    log("Picked: " + (dev.name || dev.id));
+    const dev = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [FT] }, { services: [CPW] }, { namePrefix: "KICKR" }],
+      optionalServices: [FT, CPW]
+    });
     setStatus("stTrainer", "Trainer: connecting…");
     dev.addEventListener("gattserverdisconnected", () => { setStatus("stTrainer", "Trainer: disconnected", "bad"); cp = null; refreshButtons(); });
     step = "opening GATT connection";   const server = await dev.gatt.connect();
@@ -177,10 +189,10 @@ async function connectTrainer(all) {
     step = "subscribing to control point"; await cp.startNotifications();   // responses arrive as indications
     trainer = dev;
     step = "requesting control";        await cpWrite([0x00]);
-    setStatus("stTrainer", "Trainer: connected (" + (dev.name || "FTMS") + ")", "ok");
+    setStatus("stTrainer", "Trainer: connected", "ok");
     refreshButtons();
   } catch (e) {
-    const msg = "failed while " + step + ": " + errText(e) + " (" + typeof e + (e && e.name ? ", " + e.name : "") + ")";
+    const msg = "failed while " + step + ": " + errText(e);
     setStatus("stTrainer", "Trainer " + msg, "bad"); log("Trainer " + msg);
   }
 }
@@ -196,7 +208,7 @@ async function connectHR() {
       const dv = e.target.value; live.hr = (dv.getUint8(0) & 1) ? dv.getUint16(1, true) : dv.getUint8(1);
     });
     await ch.startNotifications();
-    setStatus("stHR", "HR: connected (" + (dev.name || "strap") + ")", "ok");
+    setStatus("stHR", "HR: connected", "ok");
   } catch (e) { setStatus("stHR", "HR: " + e.message, "bad"); }
 }
 
@@ -273,7 +285,7 @@ function parseZwo(src) {
 }
 
 /* ---------------- workout engine ---------------- */
-const W = { tgtHist: [], steps: [], loaded: false, running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1,
+const W = { tgtHist: [], hrHist: [], steps: [], loaded: false, running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1,
   ftp: 270, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null };
 
 function loadWorkout() {
@@ -288,7 +300,7 @@ function loadWorkout() {
   } catch (e) { setStatus("stWo", e.message, "bad"); W.loaded = false; refreshButtons(); }
 }
 function resetWorkout() {
-  clearInterval(W.timer); Object.assign(W, { tgtHist: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
+  clearInterval(W.timer); Object.assign(W, { tgtHist: [], hrHist: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
 }
 const stepTarget = () => {
   const s = W.steps[W.idx]; if (!s || s.free) return null;
@@ -318,6 +330,7 @@ function tick() {
   if (!W.running || W.paused) return;
   W.tgtHist.push(stepTarget() ?? Math.round(live.power ?? 0));
   W.t++; W.stepT++;
+  W.hrHist.push(live.hr ?? null);
   const p = live.power ?? 0;
   W.kj += p / 1000; W.iSum += p; W.iN++;
   W.pw.push(p);
@@ -332,7 +345,7 @@ function tick() {
   pushTarget(false); render();
 }
 function finishWorkout() {
-  W.running = false; clearInterval(W.timer);
+  W.running = false; W.paused = false; clearInterval(W.timer); $("btnPause").textContent = "Pause";
   cpWrite([0x05, 0, 0]); cpWrite([0x08, 0x01]);     // 0 W target, then stop
   try { window._wl && window._wl.release(); } catch (e) {}
   log("Workout complete."); refreshButtons(); render();
@@ -347,6 +360,7 @@ function togglePause() {
   if (!W.running) return;
   W.paused = !W.paused; $("btnPause").textContent = W.paused ? "Resume" : "Pause";
   if (W.paused) { W.lastTarget = null; setTargetPower(50); } else pushTarget(true);
+  refreshButtons();
 }
 function adjust(d) { W.adj = Math.max(0.5, W.adj + d); if (W.running && !W.paused) pushTarget(true); render(); }
 
@@ -355,15 +369,16 @@ function render() {
   const p3 = power3s(); $("p3").textContent = p3 == null ? "--" : Math.round(p3);
   $("pctFtp").textContent = p3 == null ? "-- % FTP" : Math.round(p3 / W.ftp * 100) + " % FTP";
   $("hr").textContent = live.hr ?? "--";
-  drawProfile();
+  drawProfile(); drawHR();
   if (!W.loaded) return;
   $("elapsed").textContent = fmt(W.t);
   const total = W.steps.reduce((a, s) => a + s.dur, 0);
   $("remain").textContent = fmt(total - W.t) + " remaining";
   const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
   $("target").textContent = !W.running ? "--" : (tgt ?? "FREE");
+  $("tgtPct").textContent = !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP" + (W.adj !== 1 ? " · adj " + Math.round(W.adj * 100) + "%" : "");
   $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
-  $("stepName").textContent = W.running ? "Step " + (W.idx + 1) + " / " + W.steps.length + (W.adj !== 1 ? "  (" + Math.round(W.adj * 100) + "%)" : "") : "--";
+  $("stepName").textContent = W.running ? "Step " + (W.idx + 1) + " / " + W.steps.length : "--";
   $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
   const ia = W.iN ? W.iSum / W.iN : null;
   $("iavg").textContent = ia == null ? "--" : Math.round(ia);
@@ -371,7 +386,7 @@ function render() {
   $("kj").textContent = Math.round(W.kj);
   if (W.n4) {
     const np = (W.sum4 / W.n4) ** 0.25, IF = np / W.ftp, tss = (W.t * np * IF) / (W.ftp * 3600) * 100;
-    $("np").textContent = Math.round(np); $("ifTss").textContent = "IF " + IF.toFixed(2) + " · TSS " + Math.round(tss);
+    $("np").textContent = Math.round(np); $("ifTss").textContent = "IF " + IF.toFixed(2) + " TSS " + Math.round(tss);
   }
 }
 function zoneColor(f) {
@@ -417,19 +432,53 @@ function drawProfile() {
   // progress cursor
   if (W.running || W.t > 0) { c.strokeStyle = "#fff"; c.lineWidth = 2; c.beginPath(); c.moveTo(cursor, 0); c.lineTo(cursor, h); c.stroke(); }
 }
-window.addEventListener("resize", drawProfile);
+function drawHR() {
+  const cv = $("hrgraph"), dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  if (!W.loaded || !W.steps.length) return;
+  const total = W.steps.reduce((a, s) => a + s.dur, 0), X = t => t / total * w;
+  const vals = W.hrHist.filter(v => v != null);
+  c.font = "10px -apple-system,system-ui,sans-serif"; c.textBaseline = "top"; c.fillStyle = "#8b94a3";
+  if (!vals.length) { c.fillText("HEART RATE", 4, 3); }
+  else {
+    const mx = Math.max(...vals), avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    let lo = Math.floor((Math.min(...vals) - 5) / 10) * 10, hi = Math.ceil((mx + 5) / 10) * 10; if (hi - lo < 40) hi = lo + 40;
+    const Y = v => h - 3 - (v - lo) / (hi - lo) * (h - 17);
+    let i = 0;
+    while (i < W.hrHist.length) {                                   // draw each uninterrupted run of readings
+      if (W.hrHist[i] == null) { i++; continue; }
+      let j = i; while (j + 1 < W.hrHist.length && W.hrHist[j + 1] != null) j++;
+      if (j > i) {
+        c.beginPath(); c.moveTo(X(i + 1), h);
+        for (let k = i; k <= j; k++) c.lineTo(X(k + 1), Y(W.hrHist[k]));
+        c.lineTo(X(j + 1), h); c.closePath(); c.fillStyle = "rgba(255,90,95,.28)"; c.fill();
+        c.beginPath(); for (let k = i; k <= j; k++) k === i ? c.moveTo(X(k + 1), Y(W.hrHist[k])) : c.lineTo(X(k + 1), Y(W.hrHist[k]));
+        c.strokeStyle = "#ff5a5f"; c.lineWidth = 2; c.lineJoin = "round"; c.stroke();
+      }
+      i = j + 1;
+    }
+    c.fillStyle = "#8b94a3"; c.fillText("HR   avg " + Math.round(avg) + "  ·  max " + mx, 4, 3);
+  }
+  if (W.running || W.t > 0) { c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(X(W.t), 0); c.lineTo(X(W.t), h); c.stroke(); }
+}
+window.addEventListener("resize", () => { drawProfile(); drawHR(); });
 function refreshButtons() {
   const ready = !!cp && W.loaded;
   $("btnStart").disabled = !ready || W.running;
   ["btnPause", "btnSkip", "btnUp", "btnDn"].forEach(id => $(id).disabled = !W.running);
   $("btnStart").textContent = W.running ? "Running" : "Start";
+  $("btnEnd").style.display = (W.running && W.paused) ? "" : "none";     // End only appears while paused
 }
 
 /* ---------------- wire up ---------------- */
-if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available. Open this page in the Bluefy browser (over https).", "bad"); $("btnTrainer").disabled = $("btnTrainerAll").disabled = $("btnHR").disabled = true; }
-$("btnTrainer").onclick = () => connectTrainer(false); $("btnTrainerAll").onclick = () => connectTrainer(true); $("btnHR").onclick = connectHR;
+if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available. Open this page in the Bluefy browser (over https).", "bad"); $("btnTrainer").disabled = $("btnHR").disabled = true; }
+$("btnTrainer").onclick = connectTrainer; $("btnHR").onclick = connectHR;
 $("btnLoad").onclick = loadWorkout; $("btnStart").onclick = startWorkout;
-$("btnPause").onclick = togglePause; $("btnSkip").onclick = skipStep;
+$("btnPause").onclick = togglePause; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
+$("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
+$("btnEndYes").onclick = () => { $("endModal").style.display = "none"; log("Workout ended by user."); finishWorkout(); }; $("btnSkip").onclick = skipStep;
 $("btnUp").onclick = () => adjust(0.01); $("btnDn").onclick = () => adjust(-0.01);
 setInterval(render, 250);
 loadWorkout();
