@@ -32,7 +32,7 @@
 </head>
 <body>
 
-<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.3</span></h1>
+<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.4</span></h1>
 <div class="row">
   <button id="btnTrainer" class="primary">Connect trainer</button>
   <button id="btnHR">Connect HR</button>
@@ -143,28 +143,38 @@ function onCpIndication(ev) {
 }
 const setTargetPower = w => cpWrite([0x05, w & 0xff, (w >> 8) & 0xff]);   // sint16 LE watts
 
+const errText = e => (e && (e.message || e.name)) || (typeof e === "string" ? e : (() => { try { return JSON.stringify(e); } catch (x) { return String(e); } })()) || "unknown error";
+
 async function connectTrainer() {
+  let step = "choosing device";
   try {
-    const dev = await navigator.bluetooth.requestDevice({ filters: [{ services: [FTMS] }], optionalServices: [FTMS] });
+    const dev = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [FTMS] }, { services: [0x1818] }, { namePrefix: "KICKR" }, { namePrefix: "Wahoo" }],
+      optionalServices: [FTMS, 0x1818]
+    });
+    log("Picked: " + (dev.name || dev.id));
     setStatus("stTrainer", "Trainer: connecting…");
     dev.addEventListener("gattserverdisconnected", () => { setStatus("stTrainer", "Trainer: disconnected", "bad"); cp = null; refreshButtons(); });
-    const server = await dev.gatt.connect();
-    const svc = await server.getPrimaryService(FTMS);
-    const bike = await svc.getCharacteristic(BIKE_DATA);
+    step = "opening GATT connection";   const server = await dev.gatt.connect();
+    step = "finding FTMS service";      const svc = await server.getPrimaryService(FTMS);
+    step = "finding bike data";         const bike = await svc.getCharacteristic(BIKE_DATA);
     bike.addEventListener("characteristicvaluechanged", e => {
       const r = parseBike(e.target.value);
       if (r.power != null) { live.power = r.power; powerBuf.push({ t: Date.now(), w: r.power }); }
       if (r.cad != null) live.cad = r.cad;
     });
-    await bike.startNotifications();
-    cp = await svc.getCharacteristic(CTRL_POINT);
+    step = "subscribing to bike data";  await bike.startNotifications();
+    step = "finding control point";     cp = await svc.getCharacteristic(CTRL_POINT);
     cp.addEventListener("characteristicvaluechanged", onCpIndication);
-    await cp.startNotifications();                 // control point responses arrive as indications
+    step = "subscribing to control point"; await cp.startNotifications();   // responses arrive as indications
     trainer = dev;
-    await cpWrite([0x00]);                         // request control
+    step = "requesting control";        await cpWrite([0x00]);
     setStatus("stTrainer", "Trainer: connected (" + (dev.name || "FTMS") + ")", "ok");
     refreshButtons();
-  } catch (e) { setStatus("stTrainer", "Trainer: " + e.message, "bad"); log("Trainer error: " + e.message); }
+  } catch (e) {
+    const msg = "failed while " + step + ": " + errText(e) + (e && e.name && e.message ? " [" + e.name + "]" : "");
+    setStatus("stTrainer", "Trainer " + msg, "bad"); log("Trainer " + msg);
+  }
 }
 
 /* ---------------- heart rate ---------------- */
