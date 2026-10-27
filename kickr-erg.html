@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kickr ERG</title>
 <style>
-  :root { --bg:#0b0d10; --card:#161a20; --fg:#f2f4f7; --dim:#8b94a3; --acc:#ffb020; --ok:#3ddc84; --bad:#ff5a5f; }
+  :root { --u:7px; --bg:#0b0d10; --card:#161a20; --fg:#f2f4f7; --dim:#8b94a3; --acc:#ffb020; --ok:#3ddc84; --bad:#ff5a5f; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,system-ui,sans-serif; padding:env(safe-area-inset-top) 10px 16px; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,system-ui,sans-serif; padding:env(safe-area-inset-top) 10px 4px; }
   button { background:#242a33; color:var(--fg); border:0; border-radius:10px; padding:10px 12px; font-size:14px; font-weight:600; }
   button.primary { background:var(--acc); color:#000; }
   button:disabled { opacity:.4; }
-  .ctrl { display:flex; gap:6px; margin:6px 0; }
-  .ctrl button { flex:1 1 0; min-width:0; height:54px; font-size:20px; padding:0 6px; border-radius:12px; }
+  .ctrl { display:flex; gap:6px; margin:4px 0; }
+  .ctrl button { flex:1 1 0; min-width:0; height:calc(var(--u)*6.05); font-size:min(20px,calc(var(--u)*2.86)); padding:0 6px; border-radius:12px; }
   .top { display:flex; flex-wrap:wrap; gap:2px 12px; align-items:center; margin:8px 0 2px; }
   .top .ver { margin-left:auto; font-size:12px; color:var(--dim); }
   .row { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; align-items:center; }
@@ -20,16 +20,24 @@
   .status.ok { color:var(--ok); } .status.bad { color:var(--bad); }
   textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:13px; }
   input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:8px; font-size:16px; }
-  .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:6px; }
-  .tile { grid-column:span 3; background:var(--card); border-radius:12px; padding:8px 10px; min-width:0; }
-  .tile .l { font-size:13px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; }
-  .tile .v { font-size:52px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; white-space:nowrap; }
-  .tile .s { font-size:15px; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; margin-top:4px; }
+  .tile { grid-column:span 3; background:var(--card); border-radius:12px; padding:4px 10px; min-width:0; }
+  .tile .l { font-size:12px; line-height:1.2; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; }
+  .tile .v { font-size:calc(var(--u)*5.28); font-weight:700; font-variant-numeric:tabular-nums; line-height:1.05; white-space:nowrap; }
+  .tile .s { font-size:14px; line-height:1.25; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .wide { grid-column:span 6; }
-  .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .split .v { font-size:58px; }
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; position:relative; }
+  .split .v { font-size:calc(var(--u)*6.49); }
   .split .v small { font-size:20px; font-weight:600; color:var(--dim); margin-left:3px; }
   #target { color:var(--acc); }
+  #adjLbl { position:absolute; right:12px; bottom:6px; font-size:14px; font-weight:600; color:var(--ok); display:none; font-variant-numeric:tabular-nums; }
+  #btnErg.on { background:var(--ok); color:#000; }
+  .slim { display:flex; align-items:baseline; gap:10px; }
+  .slim .v { font-size:calc(var(--u)*4.51); }
+  label { display:flex; align-items:center; gap:8px; font-size:15px; }
+  input[type=checkbox] { width:22px; height:22px; }
+  #btnDn, #btnUp { font-size:32px; }
+  #tile3s { transition:background .35s; }
   .bar { height:6px; background:#242a33; border-radius:3px; overflow:hidden; margin-top:3px; }
   .bar > div { height:100%; width:0; background:var(--acc); }
   details summary { color:var(--dim); font-size:14px; padding:4px 0; }
@@ -41,7 +49,7 @@
 <div class="top">
   <span id="stTrainer" class="status">Trainer: not connected</span>
   <span id="stHR" class="status">HR: not connected</span>
-  <span class="ver">v0.3</span>
+  <span class="ver">v0.6</span>
 </div>
 
 <details id="setup" open>
@@ -54,6 +62,13 @@
     <label>FTP (W)</label>
     <input id="ftp" type="number" value="270" inputmode="numeric">
   </div>
+  <div class="row">
+    <label><input type="checkbox" id="govOn"> Cadence governor</label>
+    <span class="status">full power above</span>
+    <input id="govCad" type="number" value="75" inputmode="numeric" style="width:64px">
+    <span class="status">rpm</span>
+  </div>
+  <div class="hint">Below that cadence, target power is reduced in proportion (never under 50%) so resistance can't snowball.</div>
   <textarea id="wo" spellcheck="false">Warmup
 -5m ramp 50%-65%
 -5m 65%
@@ -77,13 +92,15 @@ Cooldown
   <button id="btnNew" style="display:none;background:#2d5fa8">New workout</button>
 </div>
 <div class="ctrl">
-  <button id="btnDn" disabled>-1%</button>
-  <button id="btnUp" disabled>+1%</button>
+  <button id="btnErg" disabled>ERG</button>
+  <button id="btnDn" disabled>−</button>
+  <button id="btnUp" disabled>+</button>
   <button id="btnSkip" disabled>Skip</button>
 </div>
 
 <div class="grid">
   <div class="tile wide split">
+    <span id="adjLbl"></span>
     <div>
       <div class="l">Target power</div>
       <div class="v"><span id="target">--</span><small>W</small></div>
@@ -95,14 +112,15 @@ Cooldown
       <div class="s"><span id="iavgPct">--</span>% of target</div>
     </div>
   </div>
-  <div class="tile wide" style="padding:5px"><canvas id="profile" style="width:100%;height:65px;display:block"></canvas></div>
-  <div class="tile wide" style="padding:5px"><canvas id="hrgraph" style="width:100%;height:49px;display:block"></canvas></div>
-  <div class="tile"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
+  <div class="tile wide" style="padding:4px"><canvas id="profile" style="width:100%;height:calc(var(--u)*8.14);display:block"></canvas></div>
+  <div class="tile wide" style="padding:4px"><canvas id="hrgraph" style="width:100%;height:calc(var(--u)*6.05);display:block"></canvas></div>
+  <div class="tile" id="tile3s"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
+  <div class="tile"><div class="l">Cadence</div><div class="v" id="cad">--</div><div class="s" id="govState">rpm</div></div>
   <div class="tile"><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div>
-  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:46px">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
-  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed" style="font-size:46px">0:00</div><div class="s" id="remain">--</div></div>
-  <div class="tile"><div class="l">Norm. power</div><div class="v" id="np">--</div><div class="s" id="ifTss">IF -- TSS --</div></div>
+  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:calc(var(--u)*4.84)">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
   <div class="tile"><div class="l">Energy</div><div class="v" id="kj">0</div><div class="s">kJ</div></div>
+  <div class="tile"><div class="l">Norm. power</div><div class="v" id="np">--</div><div class="s" id="ifTss">IF -- TSS --</div></div>
+  <div class="tile wide slim"><div class="l">Timer</div><div class="v" id="elapsed">0:00</div><div class="s" id="remain">--</div></div>
 </div>
 
 <div id="log" class="hint" style="margin-top:10px;white-space:pre-wrap"></div>
@@ -120,6 +138,8 @@ Cooldown
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
+const fitH = () => document.documentElement.style.setProperty("--u", (window.innerHeight / 100) + "px");
+fitH(); window.addEventListener("resize", fitH); window.addEventListener("orientationchange", fitH);
 const FTMS = 0x1826, BIKE_DATA = 0x2ad2, CTRL_POINT = 0x2ad9, HR_SVC = 0x180d, HR_CHAR = 0x2a37;
 
 function log(m) { const el = $("log"); el.textContent = (new Date().toLocaleTimeString() + " " + m + "\n" + el.textContent).slice(0, 2500); }
@@ -136,8 +156,15 @@ function power3s() {
   return powerBuf.reduce((a, b) => a + b.w, 0) / powerBuf.length;
 }
 
+const cadBuf = [];              // {t, c} raw notifications for 3s smoothing
+function cad3s() {
+  const now = Date.now(); while (cadBuf.length && now - cadBuf[0].t > 3000) cadBuf.shift();
+  if (!cadBuf.length) return null;                   // no recent cadence data -> governor stays out of the way
+  return cadBuf.reduce((a, b) => a + b.c, 0) / cadBuf.length;
+}
+
 /* ---------------- trainer (FTMS) ---------------- */
-let trainer = null, cp = null, writeChain = Promise.resolve(), cpWaiters = [];
+let trainer = null, cp = null, writeChain = Promise.resolve(), cpWaiters = [], cpPending = 0;
 
 function parseBike(dv) {
   const f = dv.getUint16(0, true); let o = 2; const r = {};
@@ -153,12 +180,13 @@ function parseBike(dv) {
 
 function cpWrite(bytes) {
   // serialise writes; wait for the indication response of each request
+  cpPending++;
   writeChain = writeChain.then(async () => {
     const op = bytes[0];
     const resp = new Promise(res => { const w = { op, res }; cpWaiters.push(w); setTimeout(() => res(null), 2000); });
     await cp.writeValueWithResponse(new Uint8Array(bytes));
     return resp;
-  }).catch(e => log("CP write error: " + e.message));
+  }).catch(e => log("CP write error: " + errText(e))).then(() => { cpPending--; });
   return writeChain;
 }
 function onCpIndication(ev) {
@@ -190,7 +218,7 @@ async function connectTrainer() {
     bike.addEventListener("characteristicvaluechanged", e => {
       const r = parseBike(e.target.value);
       if (r.power != null) { live.power = r.power; powerBuf.push({ t: Date.now(), w: r.power }); }
-      if (r.cad != null) live.cad = r.cad;
+      if (r.cad != null) { live.cad = r.cad; cadBuf.push({ t: Date.now(), c: r.cad }); }
     });
     step = "subscribing to bike data";  await bike.startNotifications();
     step = "finding control point";     cp = await svc.getCharacteristic(CTRL_POINT);
@@ -294,7 +322,7 @@ function parseZwo(src) {
 }
 
 /* ---------------- workout engine ---------------- */
-const W = { tgtHist: [], hrHist: [], steps: [], loaded: false, running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1,
+const W = { tgtHist: [], hrHist: [], steps: [], loaded: false, running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, adjPct: 100, erg: true, ramp: null, fast: null, gov: 1,
   ftp: 270, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null };
 
 function loadWorkout() {
@@ -309,7 +337,7 @@ function loadWorkout() {
   } catch (e) { setStatus("stWo", e.message, "bad"); W.loaded = false; refreshButtons(); }
 }
 function resetWorkout() {
-  clearInterval(W.timer); Object.assign(W, { tgtHist: [], hrHist: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
+  clearInterval(W.timer); clearInterval(W.fast); Object.assign(W, { tgtHist: [], hrHist: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, adjPct: 100, erg: true, ramp: null, fast: null, gov: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
 }
 const stepTarget = () => {
   const s = W.steps[W.idx]; if (!s || s.free) return null;
@@ -317,27 +345,60 @@ const stepTarget = () => {
   return Math.round(frac * W.ftp * W.adj);
 };
 
+// Power at time t (seconds) inside step i, scaled by the +/- adjustment.
+const baseW = (i, t) => { const s = W.steps[i]; const f = s.a + (s.b - s.a) * Math.min(1, t / s.dur); return f * W.ftp * W.adj; };
+// Smooth transitions need both steps to be at least 4 s long and not freeride.
+const rampOK = (i, j) => { const a = W.steps[i], b = W.steps[j]; return !!a && !!b && !a.free && !b.free && a.dur >= 4 && b.dur >= 4; };
+// What the trainer should be held at right now: the prescribed power, except during the 4 s transition
+// (1 s before the next interval through its first 3 s), which moves evenly from the old target to the new one.
+function commandedTarget() {
+  const s = W.steps[W.idx]; if (!s || s.free) return null;
+  const r = W.ramp;
+  if (r && (W.idx === r.to || W.idx === r.to - 1)) {
+    const p = (Date.now() - r.t0) / 4000;
+    if (p < 1) return Math.round(r.A + (baseW(r.to, 3) - r.A) * Math.max(0, p));
+  }
+  W.ramp = null;
+  return stepTarget();
+}
+
+// Cadence governor: below the threshold cadence, power is scaled by cadence/threshold (i.e. torque is capped at what the
+// target needs at the threshold cadence), never below 50%. Resistance is cut quickly and restored slowly.
+const GOV_FLOOR = 0.5;
+function govStep(dt) {
+  const on = $("govOn").checked, thr = Math.max(30, +$("govCad").value || 75), c = cad3s();
+  if (!on || !W.erg || c == null) { W.gov = 1; return; }
+  const goal = Math.min(1, Math.max(GOV_FLOOR, c / thr));
+  W.gov = goal < W.gov ? Math.max(goal, W.gov - 0.6 * dt) : Math.min(goal, W.gov + 0.2 * dt);
+}
+// The watts actually sent to the trainer: planned/ramped target x governor factor.
+function sentTarget() { const t = commandedTarget(); return t == null ? null : Math.round(t * W.gov); }
+
 async function startWorkout() {
   if (!cp) return;
   resetWorkout(); W.running = true;
   await cpWrite([0x07]);                           // start / resume
   await pushTarget(true);
   W.timer = setInterval(tick, 1000);
+  W.fast = setInterval(() => { if (W.running && !W.paused) { govStep(0.25); pushTarget(false); } }, 250);   // finer updates while ramping
   try { if ("wakeLock" in navigator) { window._wl = await navigator.wakeLock.request("screen"); } } catch (e) { log("Wake lock: " + e.message); }
   $("setup").open = false; refreshButtons();
 }
 function pushTarget(force) {
-  const st = W.steps[W.idx]; if (!st) return;
+  const st = W.steps[W.idx]; if (!st || !W.erg) return;           // ERG off: the trainer is left alone
   if (st.free) {                                      // freeride: leave ERG, flat-road simulation (grade 0)
     if (force || W.lastTarget !== "free") { W.lastTarget = "free"; return cpWrite([0x11, 0, 0, 0, 0, 40, 51]); }
     return;
   }
-  const t = stepTarget(); if (t == null) return;
-  if (force || t !== W.lastTarget) { W.lastTarget = t; return setTargetPower(t); }
+  const t = sentTarget(); if (t == null) return;
+  if (force || t !== W.lastTarget) {
+    if (!force && cpPending > 0) return;              // don't queue commands faster than the trainer answers; retried next cycle
+    W.lastTarget = t; return setTargetPower(t);
+  }
 }
 function tick() {
   if (!W.running || W.paused) return;
-  W.tgtHist.push(stepTarget() ?? Math.round(live.power ?? 0));
+  W.tgtHist.push(sentTarget() ?? Math.round(live.power ?? 0));
   W.t++; W.stepT++;
   W.hrHist.push(live.hr ?? null);
   const p = live.power ?? 0;
@@ -347,6 +408,9 @@ function tick() {
     const avg30 = W.pw.slice(-30).reduce((a, b) => a + b, 0) / 30;
     W.sum4 += avg30 ** 4; W.n4++;
   }
+  if (W.stepT === W.steps[W.idx].dur - 1 && rampOK(W.idx, W.idx + 1)) {      // 1 s before the next interval: start the 4 s ramp
+    const A = commandedTarget(); if (A != null) W.ramp = { A, t0: Date.now(), to: W.idx + 1 };
+  }
   if (W.stepT >= W.steps[W.idx].dur) {
     W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0;
     if (W.idx >= W.steps.length) { finishWorkout(); return; }
@@ -354,21 +418,23 @@ function tick() {
   pushTarget(false); render();
 }
 function finishWorkout(reason) {
-  W.running = false; W.paused = false; clearInterval(W.timer); $("btnPause").textContent = "Pause";
+  W.running = false; W.paused = false; clearInterval(W.timer); clearInterval(W.fast); W.ramp = null; $("btnPause").textContent = "Pause";
   cpWrite([0x05, 0, 0]); cpWrite([0x08, 0x01]);     // 0 W target, then stop
   try { window._wl && window._wl.release(); } catch (e) {}
   log(reason || "Workout complete."); refreshButtons(); render();
 }
 function skipStep() {
   if (!W.running) return;
-  W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0;
+  const A = commandedTarget();                         // what the trainer is being held at right now
+  W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0; W.ramp = null;
   if (W.idx >= W.steps.length) return finishWorkout();
+  if (A != null && rampOK(W.idx - 1, W.idx)) W.ramp = { A, t0: Date.now() - 1000, to: W.idx };
   pushTarget(true); render();
 }
 function togglePause() {
   if (!W.running) return;
   W.paused = !W.paused; $("btnPause").textContent = W.paused ? "Resume" : "Pause";
-  if (W.paused) { W.lastTarget = null; setTargetPower(50); } else pushTarget(true);
+  if (W.paused) { W.ramp = null; W.gov = 1; W.lastTarget = null; if (W.erg) setTargetPower(50); } else pushTarget(true);
   refreshButtons();
 }
 function newWorkout() {
@@ -377,24 +443,42 @@ function newWorkout() {
   loadWorkout();                       // re-reads the builder + FTP, clears all workout data, redraws the plan
   window.scrollTo(0, 0);
 }
-function adjust(d) { W.adj = Math.max(0.5, W.adj + d); if (W.running && !W.paused) pushTarget(true); render(); }
+function adjust(d) {                                   // d in percentage points
+  W.adjPct = Math.min(200, Math.max(50, W.adjPct + d)); W.adj = W.adjPct / 100;
+  if (W.running && !W.paused) pushTarget(true); render();
+}
+function toggleErg() {
+  if (!W.running) return;
+  W.erg = !W.erg;
+  if (W.erg) { W.lastTarget = null; if (W.paused) setTargetPower(50); else pushTarget(true); }   // back to ERG at the current target
+  else { W.lastTarget = "sim"; cpWrite([0x11, 0, 0, 0, 0, 40, 51]); }                           // flat-road simulation; timer and targets keep running
+  refreshButtons(); render();
+}
 
 /* ---------------- rendering ---------------- */
 function render() {
   const p3 = power3s(); $("p3").textContent = p3 == null ? "--" : Math.round(p3);
-  $("pctFtp").textContent = p3 == null ? "-- % FTP" : Math.round(p3 / W.ftp * 100) + " % FTP";
+  const pct = p3 == null ? null : Math.round(p3 / W.ftp * 100);
+  $("pctFtp").textContent = pct == null ? "-- % FTP" : pct + " % FTP";
+  $("tile3s").style.background = pct == null || pct <= 55 ? "" : pct <= 75 ? "#1F77B4" : pct <= 90 ? "#2CA02C" : pct <= 105 ? "#FFCB0E" : pct <= 120 ? "#FF2A0E" : "#9467BD";
   $("hr").textContent = live.hr ?? "--";
+  const c3 = cad3s(), thr = Math.max(30, +$("govCad").value || 75);
+  $("cad").textContent = c3 == null ? "--" : Math.round(c3);
+  $("cad").style.color = c3 == null || c3 >= thr ? "" : c3 >= thr - 10 ? "var(--acc)" : "var(--bad)";
+  const gAct = $("govOn").checked && W.running && W.erg && W.gov < 0.98;
+  $("govState").textContent = gAct ? "GOV: " + Math.round(W.gov * 100) + "% of target" : "rpm";
+  $("govState").style.color = gAct ? "var(--acc)" : "";
+  $("adjLbl").style.display = W.adjPct === 100 ? "none" : "block"; $("adjLbl").textContent = W.adjPct + "%";
   drawProfile(); drawHR();
   if (!W.loaded) return;
   $("elapsed").textContent = fmt(W.t);
-  $("elapsed").style.fontSize = W.t >= 3600 ? "38px" : "46px";
   const total = W.steps.reduce((a, s) => a + s.dur, 0);
   $("remain").textContent = fmt(total - W.t) + " remaining";
   const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
   $("target").textContent = !W.running ? "--" : (tgt ?? "FREE");
-  $("tgtPct").textContent = !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP" + (W.adj !== 1 ? " · adj " + Math.round(W.adj * 100) + "%" : "");
+  $("tgtPct").textContent = !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP";
   $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
-  $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "38px" : "46px";
+  $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "calc(var(--u)*3.96)" : "calc(var(--u)*4.84)";
   $("stepName").textContent = W.running ? "Step " + (W.idx + 1) + " / " + W.steps.length : "--";
   $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
   const ia = W.iN ? W.iSum / W.iN : null;
@@ -485,7 +569,8 @@ window.addEventListener("resize", () => { drawProfile(); drawHR(); });
 function refreshButtons() {
   const ready = !!cp && W.loaded;
   $("btnStart").disabled = !ready || W.running;
-  ["btnPause", "btnSkip", "btnUp", "btnDn"].forEach(id => $(id).disabled = !W.running);
+  ["btnPause", "btnSkip", "btnUp", "btnDn", "btnErg"].forEach(id => $(id).disabled = !W.running);
+  $("btnErg").classList.toggle("on", W.running && W.erg);
   $("btnStart").textContent = W.running ? "Running" : "Start";
   $("btnEnd").style.display = (W.running && W.paused) ? "" : "none";     // End only appears while paused
   $("btnNew").style.display = (!W.running && W.t > 0) ? "" : "none";     // New workout only after one has ended
@@ -498,7 +583,10 @@ $("btnLoad").onclick = loadWorkout; $("btnStart").onclick = startWorkout;
 $("btnPause").onclick = togglePause; $("btnNew").onclick = newWorkout; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
 $("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
 $("btnEndYes").onclick = () => { $("endModal").style.display = "none"; finishWorkout("Workout ended by user."); }; $("btnSkip").onclick = skipStep;
-$("btnUp").onclick = () => adjust(0.01); $("btnDn").onclick = () => adjust(-0.01);
+$("btnUp").onclick = () => adjust(1); $("btnDn").onclick = () => adjust(-1); $("btnErg").onclick = toggleErg;
+try { const g = JSON.parse(localStorage.getItem("kickrGov") || "null"); if (g) { $("govOn").checked = !!g.on; if (g.rpm) $("govCad").value = g.rpm; } } catch (e) {}
+const saveGov = () => { try { localStorage.setItem("kickrGov", JSON.stringify({ on: $("govOn").checked, rpm: +$("govCad").value || 75 })); } catch (e) {} };
+$("govOn").onchange = saveGov; $("govCad").onchange = saveGov;
 setInterval(render, 250);
 loadWorkout();
 </script>
