@@ -32,9 +32,10 @@
 </head>
 <body>
 
-<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.4</span></h1>
+<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.5</span></h1>
 <div class="row">
   <button id="btnTrainer" class="primary">Connect trainer</button>
+  <button id="btnTrainerAll">Trainer: show all devices</button>
   <button id="btnHR">Connect HR</button>
 </div>
 <div id="stTrainer" class="status">Trainer: not connected</div>
@@ -145,13 +146,13 @@ const setTargetPower = w => cpWrite([0x05, w & 0xff, (w >> 8) & 0xff]);   // sin
 
 const errText = e => (e && (e.message || e.name)) || (typeof e === "string" ? e : (() => { try { return JSON.stringify(e); } catch (x) { return String(e); } })()) || "unknown error";
 
-async function connectTrainer() {
+async function connectTrainer(all) {
   let step = "choosing device";
   try {
-    const dev = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [FTMS] }, { services: [0x1818] }, { namePrefix: "KICKR" }, { namePrefix: "Wahoo" }],
-      optionalServices: [FTMS, 0x1818]
-    });
+    const opts = all
+      ? { acceptAllDevices: true, optionalServices: [FTMS, 0x1818] }
+      : { filters: [{ services: [FTMS] }, { services: [0x1818] }, { namePrefix: "KICKR" }, { namePrefix: "Wahoo" }], optionalServices: [FTMS, 0x1818] };
+    const dev = await navigator.bluetooth.requestDevice(opts);
     log("Picked: " + (dev.name || dev.id));
     setStatus("stTrainer", "Trainer: connecting…");
     dev.addEventListener("gattserverdisconnected", () => { setStatus("stTrainer", "Trainer: disconnected", "bad"); cp = null; refreshButtons(); });
@@ -172,7 +173,7 @@ async function connectTrainer() {
     setStatus("stTrainer", "Trainer: connected (" + (dev.name || "FTMS") + ")", "ok");
     refreshButtons();
   } catch (e) {
-    const msg = "failed while " + step + ": " + errText(e) + (e && e.name && e.message ? " [" + e.name + "]" : "");
+    const msg = "failed while " + step + ": " + errText(e) + " (" + typeof e + (e && e.name ? ", " + e.name : "") + ")";
     setStatus("stTrainer", "Trainer " + msg, "bad"); log("Trainer " + msg);
   }
 }
@@ -418,8 +419,8 @@ function refreshButtons() {
 }
 
 /* ---------------- wire up ---------------- */
-if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available. Open this page in the Bluefy browser (over https).", "bad"); $("btnTrainer").disabled = $("btnHR").disabled = true; }
-$("btnTrainer").onclick = connectTrainer; $("btnHR").onclick = connectHR;
+if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available. Open this page in the Bluefy browser (over https).", "bad"); $("btnTrainer").disabled = $("btnTrainerAll").disabled = $("btnHR").disabled = true; }
+$("btnTrainer").onclick = () => connectTrainer(false); $("btnTrainerAll").onclick = () => connectTrainer(true); $("btnHR").onclick = connectHR;
 $("btnLoad").onclick = loadWorkout; $("btnStart").onclick = startWorkout;
 $("btnPause").onclick = togglePause; $("btnSkip").onclick = skipStep;
 $("btnUp").onclick = () => adjust(0.01); $("btnDn").onclick = () => adjust(-0.01);
