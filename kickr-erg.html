@@ -90,7 +90,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.17</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.18</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -108,6 +108,12 @@
     <div class="row" style="margin:0;flex-wrap:nowrap"><button id="btnIcuSave" style="flex:1">Save key</button><button id="btnIcuTest" class="primary" style="flex:1">Test today</button></div>
     <div id="icuOut" class="hint" style="margin-top:8px;white-space:pre-wrap;font-size:13px;word-break:break-word"></div>
   </details>
+
+  <div class="card" id="todayCard">
+    <h2>Today</h2>
+    <div id="todayList" class="hint" style="font-size:14px">Connect intervals.icu above to see today's planned workout.</div>
+    <div class="row" style="margin:8px 0 0"><button id="btnToday" style="flex:1">Refresh</button></div>
+  </div>
 
   <div class="card">
     <h2>Workout library</h2>
@@ -166,7 +172,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v0.9.17</span>
+  <span class="ver">v0.9.18</span>
 </div>
 
 <div class="ctrl">
@@ -1117,6 +1123,47 @@ $("btnIcuSave").onclick = () => {
   catch (e) { icuOut("Couldn't save (browser storage unavailable).", true); }
 };
 const localDay = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+// Fetch the planned workouts for one day from intervals.icu. Throws with a readable message on failure.
+async function icuEvents(day) {
+  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
+  if (!key) throw new Error("no API key saved");
+  const url = "https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/events?category=WORKOUT&oldest=" + day + "&newest=" + day;
+  const r = await fetch(url, { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
+  if (!r.ok) throw new Error("intervals.icu replied " + r.status);
+  const ev = await r.json();
+  return Array.isArray(ev) ? ev : [];
+}
+async function loadToday() {
+  const box = $("todayList"); box.className = "hint"; box.style.fontSize = "14px"; box.textContent = "Checking intervals.icu\u2026";
+  const day = localDay();
+  let ev;
+  try { ev = await icuEvents(day); }
+  catch (e) {
+    box.textContent = e.message === "no API key saved" ? "Connect intervals.icu above to see today's planned workout." : "Couldn't load today's workout (" + e.message + ").";
+    return;
+  }
+  box.textContent = ""; box.style.fontSize = "";
+  if (!ev.length) { box.className = "hint"; box.textContent = "Nothing planned for today (" + day + ")."; return; }
+  ev.forEach(x => {
+    const text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
+    const row = document.createElement("div"); row.style.cssText = "display:flex;gap:6px;align-items:stretch;margin:4px 0";
+    const b = document.createElement("button"); b.className = "libitem"; b.style.flex = "1"; b.style.minWidth = "0";
+    const n = document.createElement("span"); n.textContent = x.name || "Planned workout"; n.style.cssText = "overflow-wrap:anywhere;font-weight:600";
+    const d = document.createElement("span"); d.className = "r"; d.style.fontSize = "15px";
+    const t = document.createElement("span"); t.className = "r";
+    let steps = null;
+    if (text) { try { steps = parseText(text, +$("ftp").value || 270); d.textContent = fmt(steps.reduce((a, st) => a + st.dur, 0)); t.textContent = "TSS " + Math.round(planStats(steps).tss); } catch (e) { t.textContent = "can't read"; } }
+    else { t.textContent = "no workout text"; }
+    b.append(n, d, t);
+    const go = document.createElement("button"); go.textContent = "\u25b6"; go.title = "Load and launch"; go.style.cssText = "width:48px;margin:0;font-size:16px;flex:none;background:var(--acc);color:#000";
+    go.disabled = !steps; b.disabled = !steps;
+    const item = { name: x.name || "Planned workout", text };
+    b.onclick = () => { $("wo").value = text; $("woName").value = item.name; refreshFolderSelect(""); updateWoInfo(); $("woName").scrollIntoView({ behavior: "smooth", block: "start" }); };
+    go.onclick = () => askLaunch(item, d.textContent, t.textContent);
+    row.append(b, go); box.appendChild(row);
+  });
+}
+$("btnToday").onclick = loadToday;
 $("btnIcuTest").onclick = async () => {
   const key = $("icuKey").value.trim(), id = ($("icuId").value.trim() || "0"), day = localDay();
   if (!key) { icuOut("Paste your API key first.", true); return; }
@@ -1157,6 +1204,7 @@ $("distMph").onchange = () => { try { localStorage.setItem("kickrDist", String(d
 setInterval(render, 250);
 renderLibrary();
 loadWorkout();
+loadToday();
 </script>
 </body>
 </html>
