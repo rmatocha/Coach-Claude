@@ -22,6 +22,7 @@
   .status { font-size:12px; color:var(--dim); }
   .status.ok { color:var(--ok); } .status.bad { color:var(--bad); }
   textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:13px; }
+  select { background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:10px; font-size:16px; min-width:0; }
   input[type=text] { background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:10px; font-size:16px; box-sizing:border-box; }
   input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:8px; font-size:16px; }
   .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; margin-top:4px; }
@@ -72,8 +73,11 @@
   .card summary { padding:2px 0; }
   .big { width:100%; height:54px; font-size:18px; border-radius:12px; margin-top:8px; }
   .mini { padding:3px 9px; font-size:12px; border-radius:8px; }
+  #btnEdit { padding:calc(var(--u)*0.8) calc(var(--u)*2); font-size:calc(var(--u)*2.2); font-weight:700; border-radius:10px; background:#2f3742; }
   #run .top .status:not(.ok) { text-decoration:underline dotted; }
-  .libitem { display:flex; justify-content:space-between; width:100%; text-align:left; margin:4px 0; padding:12px; font-size:15px; }
+  .libitem { display:grid; grid-template-columns:1fr auto; column-gap:10px; row-gap:3px; align-items:center; width:100%; text-align:left; margin:4px 0; padding:10px 12px; font-size:15px; }
+  .libitem canvas { width:100%; height:26px; display:block; border-radius:4px; }
+  .libitem .r { text-align:right; color:var(--dim); font-size:13px; line-height:1.15; white-space:nowrap; }
   #summary { display:none; position:fixed; inset:0; z-index:60; background:var(--bg); overflow-y:auto; padding:env(safe-area-inset-top) 10px 10px; }
   #summary.show { display:flex; flex-direction:column; }
   .sumtitle { font-size:22px; font-weight:700; margin:14px 0 2px; }
@@ -86,7 +90,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.3</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.9</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -107,6 +111,7 @@
     <h2>Workout builder</h2>
     <div class="row" style="margin-top:0"><label for="ftp">FTP (W)</label><input id="ftp" type="number" value="270" inputmode="numeric"></div>
     <input id="woName" type="text" placeholder="Workout name (to save)" maxlength="60" style="width:100%;margin-top:6px">
+    <div class="row" style="margin:6px 0 0;flex-wrap:nowrap"><select id="woFolder" style="flex:1"></select><input id="woFolderNew" type="text" placeholder="New folder name" maxlength="40" style="flex:1;min-width:0;display:none"></div>
     <textarea id="wo" spellcheck="false">Warmup
 -5m ramp 50%-65%
 -5m 65%
@@ -121,6 +126,7 @@ Cooldown
 -10m 65%
 -5m ramp 65%-50%</textarea>
     <div id="woInfo" class="status" style="margin-top:6px;font-size:14px"></div>
+    <canvas id="woGraph" style="width:100%;height:64px;display:block;margin-top:8px;border-radius:8px;background:#11151a"></canvas>
     <div class="row" style="margin:8px 0 0"><button id="btnSaveLib" style="flex:1;height:44px;font-size:16px">Save to library</button></div>
     <button id="btnLaunch" class="primary big">Launch workout</button>
   </div>
@@ -149,10 +155,10 @@ Cooldown
 
 <div id="run">
 <div class="top">
-  <button id="btnEdit" class="mini">‹ Edit</button>
+  <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v0.9.3</span>
+  <span class="ver">v0.9.9</span>
 </div>
 
 <div class="ctrl">
@@ -206,6 +212,15 @@ Cooldown
 </div>
 
 <div id="log" class="hint" style="margin-top:10px;white-space:pre-wrap"></div>
+
+<div id="launchModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:18px;font-weight:600;margin-bottom:6px">Load this workout?</div>
+    <div id="launchName" style="font-size:20px;font-weight:700;margin-bottom:4px;overflow-wrap:anywhere"></div>
+    <div id="launchInfo" class="hint" style="font-size:14px;margin-bottom:16px"></div>
+    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px">Cancel</button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px">Load workout</button></div>
+  </div>
+</div>
 
 <div id="endModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
   <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
@@ -448,10 +463,11 @@ function readPlan() {                                   // parses the builder bo
 }
 function updateWoInfo() {                                // live duration under the builder
   try {
-    const p = readPlan(), total = p.steps.reduce((a, st) => a + st.dur, 0);
-    $("woInfo").textContent = "Total " + fmt(total) + "  \u00b7  " + p.steps.length + " steps"; $("woInfo").className = "status ok"; $("btnLaunch").disabled = false;
+    const p = readPlan(), total = p.steps.reduce((a, st) => a + st.dur, 0), ps = planStats(p.steps);
+    $("woInfo").textContent = "Total " + fmt(total) + "  \u00b7  " + p.steps.length + " steps  \u00b7  TSS " + Math.round(ps.tss);
+    drawMini($("woGraph"), p.steps, { h: 128, ftpLine: true }); $("woInfo").className = "status ok"; $("btnLaunch").disabled = false;
     return p;
-  } catch (e) { $("woInfo").textContent = e.message; $("woInfo").className = "status bad"; $("btnLaunch").disabled = true; return null; }
+  } catch (e) { $("woGraph").getContext("2d").clearRect(0, 0, $("woGraph").width, $("woGraph").height); $("woInfo").textContent = e.message; $("woInfo").className = "status bad"; $("btnLaunch").disabled = true; return null; }
 }
 function loadWorkout() {
   const p = updateWoInfo();
@@ -607,27 +623,30 @@ function showSummary() {
   $("sumDate").textContent = new Date().toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "  \u00b7  FTP " + W.ftp + " w";
   $("sumGrid").innerHTML = d.map(m => '<div class="tile"><div class="l">' + m.l + '</div><div class="v">' + m.v + (m.u && m.v !== "--" ? "<small>" + m.u + "</small>" : "") + "</div></div>").join("");
   $("summary").classList.add("show"); sumBlob = null; fitBlob = null; $("btnSaveImg").disabled = true; $("btnSaveFit").disabled = true;
-  setTimeout(() => { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); } drawProfile($("sumProfile"), { noCursor: true }); drawHR($("sumHR"), { noCursor: true }); prepareSummaryImage(d); }, 40);
+  setTimeout(() => { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); } drawProfile($("sumProfile"), { noCursor: true, actual: true }); drawHR($("sumHR"), { noCursor: true }); prepareSummaryImage(d); }, 40);
 }
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
-function prepareSummaryImage(d) {                       // built ahead of time so the Save tap can open the share sheet immediately
-  const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1914;
+function prepareSummaryImage(d) {                       // square (1080x1080) so Strava and other feeds don't crop it
+  const S = 1080, cv = document.createElement("canvas"); cv.width = S; cv.height = S;
   const c = cv.getContext("2d"), F = "-apple-system,system-ui,sans-serif";
-  c.fillStyle = "#0b0d10"; c.fillRect(0, 0, 1080, 1914);
-  c.fillStyle = "#f2f4f7"; c.font = "700 60px " + F; c.fillText("Workout summary", 48, 100);
-  c.fillStyle = "#8b94a3"; c.font = "400 30px " + F; c.fillText($("sumDate").textContent, 48, 150);
+  c.fillStyle = "#0b0d10"; c.fillRect(0, 0, S, S);
+  c.fillStyle = "#f2f4f7"; c.font = "700 54px " + F; c.fillText("Workout summary", 48, 82);
+  c.fillStyle = "#8b94a3"; c.font = "400 26px " + F; c.fillText($("sumDate").textContent, 48, 122);
+  const cols = 5, gap = 12, tw = (S - 96 - gap * (cols - 1)) / cols, th = 124;
   d.forEach((m, i) => {
-    const x = 48 + (i % 2) * 504, y = 190 + Math.floor(i / 2) * 214;
-    c.fillStyle = "#161a20"; rrect(c, x, y, 480, 190, 24); c.fill();
-    c.fillStyle = "#8b94a3"; c.font = "600 28px " + F; c.fillText(m.l.toUpperCase(), x + 28, y + 54);
-    c.fillStyle = "#f2f4f7"; c.font = "700 96px " + F; c.fillText(m.v, x + 28, y + 152);
-    if (m.u && m.v !== "--") { const vw = c.measureText(m.v).width; c.fillStyle = "#8b94a3"; c.font = "600 36px " + F; c.fillText(m.u, x + 28 + vw + 10, y + 152); }
+    const x = 48 + (i % cols) * (tw + gap), y = 148 + Math.floor(i / cols) * (th + gap);
+    c.fillStyle = "#161a20"; rrect(c, x, y, tw, th, 16); c.fill();
+    c.fillStyle = "#8b94a3"; c.font = "600 18px " + F; c.fillText(m.l.toUpperCase(), x + 14, y + 32);
+    let vs = 50; const hasU = m.u && m.v !== "--";
+    for (; vs > 28; vs -= 2) { c.font = "700 " + vs + "px " + F; const uw = hasU ? (c.measureText(" ").width + 40) : 0; if (c.measureText(m.v).width + uw < tw - 24) break; }
+    c.font = "700 " + vs + "px " + F; c.fillStyle = "#f2f4f7"; c.fillText(m.v, x + 14, y + 94);
+    if (hasU) { const vw = c.measureText(m.v).width; c.fillStyle = "#8b94a3"; c.font = "600 22px " + F; c.fillText(m.u, x + 14 + vw + 6, y + 94); }
   });
   const g1 = document.createElement("canvas"), g2 = document.createElement("canvas");
-  drawProfile(g1, { w: 484, h: 146, dpr: 2, noCursor: true }); drawHR(g2, { w: 484, h: 110, dpr: 2, noCursor: true });
-  c.fillStyle = "#161a20"; rrect(c, 48, 1264, 984, 308, 24); c.fill(); rrect(c, 48, 1588, 984, 236, 24); c.fill();
-  if (g1.width) c.drawImage(g1, 56, 1272); if (g2.width) c.drawImage(g2, 56, 1596);
-  c.fillStyle = "#5c6573"; c.font = "400 26px " + F; c.fillText("Kickr ERG v0.9.3", 48, 1878);
+  drawProfile(g1, { w: 484, h: 159, dpr: 2, noCursor: true, actual: true }); drawHR(g2, { w: 484, h: 107, dpr: 2, noCursor: true });
+  c.fillStyle = "#161a20"; rrect(c, 48, 432, 984, 334, 20); c.fill(); rrect(c, 48, 778, 984, 230, 20); c.fill();
+  if (g1.width) c.drawImage(g1, 56, 440); if (g2.width) c.drawImage(g2, 56, 786);
+  c.fillStyle = "#5c6573"; c.font = "400 24px " + F; c.fillText("Kickr ERG v0.9.9", 48, 1052);
   cv.toBlob(b => { sumBlob = b; $("btnSaveImg").disabled = !b; }, "image/png");
 }
 function saveSummaryImage() {
@@ -689,6 +708,29 @@ function closeSummary() {                               // back to the start scr
   loadWorkout(); showScreen("landing");
 }
 
+/* ---------------- plan stats + mini profile ---------------- */
+function planStats(steps) {                              // estimated NP / IF / TSS of a plan, using the same 30 s rolling method as the ride
+  const f = [];
+  steps.forEach(st => { for (let i = 0; i < st.dur; i++) f.push(st.a + (st.b - st.a) * ((i + 0.5) / st.dur)); });
+  const n = f.length; if (!n) return { dur: 0, np: 0, IF: 0, tss: 0 };
+  let sum4 = 0, k = 0, run = 0;
+  for (let i = 0; i < n; i++) { run += f[i]; if (i >= 30) run -= f[i - 30]; if (i >= 29) { sum4 += (run / 30) ** 4; k++; } }
+  const np = k ? (sum4 / k) ** 0.25 : f.reduce((a, b) => a + b, 0) / n;
+  return { dur: n, np, IF: np, tss: n / 3600 * np * np * 100 };
+}
+function drawMini(cv, steps, o) {
+  o = o || {}; const w = 600, h = o.h || 52; cv.width = w; cv.height = h;
+  const c = cv.getContext("2d"), total = steps.reduce((a, s) => a + s.dur, 0); if (!total) return;
+  const maxF = Math.max(1.15, steps.reduce((m, s) => Math.max(m, s.a, s.b), 0) * 1.05), Y = f => h - (f / maxF) * (h - 2);
+  let t = 0;
+  for (const st of steps) {
+    const x0 = t / total * w, x1 = (t + st.dur) / total * w; t += st.dur;
+    c.fillStyle = zoneColor((st.a + st.b) / 2);
+    c.beginPath(); c.moveTo(x0, h); c.lineTo(x0, Y(st.a)); c.lineTo(x1 + 0.5, Y(st.b)); c.lineTo(x1 + 0.5, h); c.closePath(); c.fill();
+  }
+  if (o.ftpLine) { c.globalAlpha = 0.5; c.strokeStyle = "#fff"; c.setLineDash([6, 8]); c.lineWidth = 1.5; c.beginPath(); c.moveTo(0, Y(1)); c.lineTo(w, Y(1)); c.stroke(); c.setLineDash([]); c.globalAlpha = 1; }
+}
+
 /* ---------------- workout library ---------------- */
 // Add workouts here as { name: "Sweet spot 2x20", text: "Warmup\n-10m ramp 50%-65%\n\nMain Set 2x\n-20m 90%\n-5m 55%" }
 const LIBRARY = [];
@@ -696,43 +738,89 @@ let userLib = [];
 try { userLib = JSON.parse(localStorage.getItem("kickrLib") || "[]").filter(x => x && x.name && x.text); } catch (e) { userLib = []; }
 const persistLib = () => { try { localStorage.setItem("kickrLib", JSON.stringify(userLib)); } catch (e) { libMsg("Couldn't save (browser storage unavailable)", true); } };
 function libMsg(t, bad) { const e = $("libMsg"); e.textContent = t; e.style.color = bad ? "var(--bad, #ff6b6b)" : ""; }
+const cmpName = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });   // "1.2 x" < "1.10 x"
+let foldOpen = {};
+try { foldOpen = JSON.parse(localStorage.getItem("kickrFolders") || "{}") || {}; } catch (e) { foldOpen = {}; }
+const saveFoldState = () => { try { localStorage.setItem("kickrFolders", JSON.stringify(foldOpen)); } catch (e) {} };
+const allFolders = () => [...new Set(LIBRARY.concat(userLib).map(x => x.folder || "").filter(Boolean))].sort(cmpName);
+function refreshFolderSelect(sel) {
+  const cur = sel != null ? sel : ($("woFolder").value === "__new__" ? "" : $("woFolder").value), el = $("woFolder");
+  el.innerHTML = "";
+  const add = (v, t) => { const o = document.createElement("option"); o.value = v; o.textContent = t; el.appendChild(o); };
+  add("", "Folder: none (Unsorted)"); allFolders().forEach(f => add(f, "Folder: " + f)); add("__new__", "+ New folder…");
+  el.value = [...el.options].some(o => o.value === cur) ? cur : "";
+  $("woFolderNew").style.display = el.value === "__new__" ? "" : "none";
+}
+const curFolder = () => $("woFolder").value === "__new__" ? $("woFolderNew").value.trim() : $("woFolder").value;
+let pendingLaunch = null;
+function askLaunch(item, dur, tss) {
+  pendingLaunch = item; $("launchName").textContent = item.name; $("launchInfo").textContent = [dur, tss, item.folder].filter(Boolean).join("  \u00b7  ");
+  $("launchModal").style.display = "flex";
+}
+function libRow(item) {
+  const row = document.createElement("div"); row.style.cssText = "display:flex;gap:6px;align-items:stretch";
+  const b = document.createElement("button"); b.className = "libitem"; b.style.flex = "1"; b.style.minWidth = "0";
+  let dur = "", tss = "", steps = null;
+  try { steps = parseText(item.text, +$("ftp").value || 270); dur = fmt(steps.reduce((a, st) => a + st.dur, 0)); tss = "TSS " + Math.round(planStats(steps).tss); } catch (e) {}
+  const n = document.createElement("span"); n.textContent = item.name; n.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600";
+  const d = document.createElement("span"); d.textContent = dur; d.className = "r"; d.style.fontSize = "15px";
+  const g = document.createElement("canvas"); if (steps && steps.length) drawMini(g, steps);
+  const t = document.createElement("span"); t.textContent = tss; t.className = "r";
+  b.append(n, d, g, t);
+  b.onclick = () => { $("wo").value = item.text; $("woName").value = item.name; refreshFolderSelect(item.folder || ""); updateWoInfo(); libMsg(""); };
+  row.appendChild(b);
+  const go = document.createElement("button"); go.textContent = "\u25b6"; go.title = "Load and launch"; go.style.cssText = "width:48px;margin:4px 0;font-size:16px;flex:none;background:var(--acc);color:#000";
+  go.onclick = () => askLaunch(item, dur, tss);
+  row.appendChild(go);
+  if (!item.built) {
+    const x = document.createElement("button"); x.textContent = "✕"; x.style.cssText = "width:48px;margin:4px 0;font-size:16px;flex:none";
+    let armed = false;
+    x.onclick = () => {
+      if (!armed) { armed = true; x.textContent = "Delete?"; x.style.width = "74px"; x.style.background = "#7a2b2b"; setTimeout(() => { armed = false; x.textContent = "✕"; x.style.width = "48px"; x.style.background = ""; }, 2500); return; }
+      userLib.splice(item.idx, 1); persistLib(); renderLibrary(); libMsg("Deleted “" + item.name + "”");
+    };
+    row.appendChild(x);
+  }
+  return row;
+}
 function renderLibrary() {
   const box = $("library"); box.innerHTML = "";
   const all = LIBRARY.map(x => ({ ...x, built: true })).concat(userLib.map((x, i) => ({ ...x, idx: i })));
+  refreshFolderSelect();
   if (!all.length) { box.innerHTML = '<div class="hint" style="font-size:14px">No workouts yet. Build one below and tap Save to library.</div>'; return; }
-  all.forEach(item => {
-    const row = document.createElement("div"); row.style.cssText = "display:flex;gap:6px;align-items:stretch";
-    const b = document.createElement("button"); b.className = "libitem"; b.style.flex = "1"; b.style.minWidth = "0";
-    let dur = "";
-    try { dur = fmt(parseText(item.text, +$("ftp").value || 270).reduce((a, st) => a + st.dur, 0)); } catch (e) {}
-    const n = document.createElement("span"); n.textContent = item.name; n.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
-    const d = document.createElement("span"); d.textContent = dur; d.style.color = "var(--dim)";
-    b.append(n, d);
-    b.onclick = () => { $("wo").value = item.text; $("woName").value = item.name; updateWoInfo(); libMsg(""); };
-    row.appendChild(b);
-    if (!item.built) {
-      const x = document.createElement("button"); x.textContent = "✕"; x.style.cssText = "width:48px;margin:4px 0;font-size:16px;flex:none";
-      let armed = false;
-      x.onclick = () => {
-        if (!armed) { armed = true; x.textContent = "Delete?"; x.style.width = "74px"; x.style.background = "#7a2b2b"; setTimeout(() => { armed = false; x.textContent = "✕"; x.style.width = "48px"; x.style.background = ""; }, 2500); return; }
-        userLib.splice(item.idx, 1); persistLib(); renderLibrary(); libMsg("Deleted “" + item.name + "”");
-      };
-      row.appendChild(x);
+  const groups = new Map();
+  all.forEach(it => { const f = it.folder || ""; if (!groups.has(f)) groups.set(f, []); groups.get(f).push(it); });
+  const names = [...groups.keys()].sort((a, b) => a === "" ? 1 : b === "" ? -1 : cmpName(a, b));
+  const flat = names.length === 1 && names[0] === "";                       // no folders in use: plain list
+  names.forEach(f => {
+    const items = groups.get(f).sort((a, b) => cmpName(a.name, b.name));
+    const open = flat || (f in foldOpen ? foldOpen[f] : f === "");
+    if (!flat) {
+      const h = document.createElement("button");
+      h.style.cssText = "display:flex;justify-content:space-between;width:100%;text-align:left;margin:6px 0 2px;padding:10px 12px;font-size:15px;background:#1c222b";
+      const l = document.createElement("span"), c = document.createElement("span");
+      l.textContent = (open ? "▾ " : "▸ ") + (f || "Unsorted"); c.textContent = items.length; c.style.color = "var(--dim)";
+      h.append(l, c);
+      h.onclick = () => { foldOpen[f] = !open; saveFoldState(); renderLibrary(); };
+      box.appendChild(h);
     }
-    box.appendChild(row);
+    if (open) items.forEach(it => box.appendChild(libRow(it)));
   });
 }
 function saveToLibrary() {
-  const name = $("woName").value.trim(), text = $("wo").value.trim();
+  const name = $("woName").value.trim(), text = $("wo").value.trim(), folder = curFolder();
   if (!name) { libMsg("Enter a workout name first.", true); $("woName").focus(); return; }
+  if ($("woFolder").value === "__new__" && !folder) { libMsg("Enter the new folder's name.", true); $("woFolderNew").focus(); return; }
   if (!updateWoInfo()) { libMsg("Fix the workout first, then save.", true); return; }
-  const i = userLib.findIndex(x => x.name.toLowerCase() === name.toLowerCase());
-  if (i >= 0) userLib[i] = { name, text }; else userLib.push({ name, text });
-  persistLib(); renderLibrary(); libMsg((i >= 0 ? "Updated “" : "Saved “") + name + "”");
+  const i = userLib.findIndex(x => x.name.toLowerCase() === name.toLowerCase()), moved = i >= 0 && (userLib[i].folder || "") !== folder;
+  if (i >= 0) userLib[i] = { name, text, folder }; else userLib.push({ name, text, folder });
+  if (folder) { foldOpen[folder] = true; saveFoldState(); }
+  persistLib(); renderLibrary(); refreshFolderSelect(folder);
+  libMsg((i >= 0 ? (moved ? "Moved & updated “" : "Updated “") : "Saved “") + name + "”" + (folder ? " in " + folder : ""));
 }
 function exportLibrary() {
   if (!userLib.length) { libMsg("Nothing to export yet.", true); return; }
-  const blob = new Blob([JSON.stringify({ kickrLibrary: 1, workouts: userLib }, null, 1)], { type: "application/json" }), name = "kickr-library.json";
+  const blob = new Blob([JSON.stringify({ kickrLibrary: 2, workouts: userLib }, null, 1)], { type: "application/json" }), name = "kickr-library.json";
   const file = new File([blob], name, { type: "application/json" });
   const dl = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 1000); };
   if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], title: name }).catch(e => { if (!e || e.name !== "AbortError") dl(); });
@@ -749,7 +837,8 @@ function importLibrary(file) {
       list.forEach(x => {
         if (!x || typeof x.name !== "string" || typeof x.text !== "string" || !x.name.trim() || !x.text.trim()) return;
         const i = userLib.findIndex(y => y.name.toLowerCase() === x.name.trim().toLowerCase());
-        if (i >= 0) { userLib[i] = { name: x.name.trim(), text: x.text }; updated++; } else { userLib.push({ name: x.name.trim(), text: x.text }); added++; }
+        const fo = typeof x.folder === "string" ? x.folder.trim() : "";
+        if (i >= 0) { userLib[i] = { name: x.name.trim(), text: x.text, folder: fo }; updated++; } else { userLib.push({ name: x.name.trim(), text: x.text, folder: fo }); added++; }
       });
       persistLib(); renderLibrary(); libMsg("Imported: " + added + " new, " + updated + " updated");
     } catch (e) { libMsg("Import failed: " + e.message, true); }
@@ -811,12 +900,26 @@ function render() {
 function zoneColor(f) {
   return f < 0.56 ? "#7a8594" : f < 0.76 ? "#3b9cff" : f < 0.91 ? "#3ddc84" : f < 1.06 ? "#ffd23f" : f < 1.21 ? "#ff8a3d" : "#ff4d5e";
 }
+function drawActual(c, w, h) {                           // summary view: colour fill follows the smoothed power trace itself
+  const n = W.pw.length, ftp = W.ftp; if (n < 2) return;
+  const R = 5, sm = W.pw.map((_, i) => { let a = 0, k = 0; for (let j = Math.max(0, i - R); j <= Math.min(n - 1, i + R); j++) { a += W.pw[j]; k++; } return a / k; });
+  const maxF = Math.max(1.3, Math.max(...sm) / ftp * 1.08), X = t => t / n * w, Y = f => h - 2 - (f / maxF) * (h - 6);
+  const pts = sm.map((v, i) => [X(i + 0.5), Y(v / ftp), v / ftp]); pts.unshift([0, pts[0][1], pts[0][2]]); pts.push([w, pts[pts.length - 1][1], pts[pts.length - 1][2]]);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1]; c.fillStyle = zoneColor((a[2] + b[2]) / 2);
+    c.beginPath(); c.moveTo(a[0], h); c.lineTo(a[0], a[1]); c.lineTo(b[0] + 0.6, b[1]); c.lineTo(b[0] + 0.6, h); c.closePath(); c.fill();
+  }
+  c.globalAlpha = 0.5; c.strokeStyle = "#fff"; c.setLineDash([3, 4]); c.lineWidth = 1; c.beginPath(); c.moveTo(0, Y(1)); c.lineTo(w, Y(1)); c.stroke(); c.setLineDash([]); c.globalAlpha = 1;
+  const trace = (col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = "round"; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); };
+  trace("rgba(0,0,0,.55)", 2.4); trace("#ff2d2d", 1.1);
+}
 function drawProfile(cv, o) {
   cv = cv || $("profile"); o = o || {};
   const dpr = o.dpr || window.devicePixelRatio || 1;
   const w = o.w || cv.clientWidth, h = o.h || cv.clientHeight; if (!w || !h) return;
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
   const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  if (o.actual) return drawActual(c, w, h);
   if (!W.loaded || !W.steps.length) return;
   const tl = timeline(), total = tl.total, ftp = W.ftp; if (total <= 0) return;
   const histMax = W.tgtHist.length ? Math.max(...W.tgtHist) / ftp : 0;
@@ -899,12 +1002,19 @@ if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available.
 $("btnTrainer").onclick = connectTrainer; $("btnHR").onclick = connectHR;
 $("btnLaunch").onclick = () => { if (loadWorkout()) showScreen("run"); };
 $("btnEdit").onclick = () => { if (!W.running) showScreen("landing"); };
-$("wo").addEventListener("input", updateWoInfo); $("ftp").addEventListener("input", updateWoInfo);
+$("wo").addEventListener("input", updateWoInfo); $("ftp").addEventListener("input", updateWoInfo); $("ftp").addEventListener("change", renderLibrary);
+$("woFolder").onchange = () => { const nw = $("woFolder").value === "__new__"; $("woFolderNew").style.display = nw ? "" : "none"; if (nw) $("woFolderNew").focus(); };
 $("btnSaveLib").onclick = saveToLibrary; $("btnLibExport").onclick = exportLibrary; $("btnLibImport").onclick = () => $("libFile").click(); $("libFile").onchange = e => importLibrary(e.target.files[0]);
 $("btnSaveImg").onclick = saveSummaryImage; $("btnSaveFit").onclick = saveFit; $("btnSumClose").onclick = closeSummary; $("btnImgClose").onclick = () => { $("imgModal").style.display = "none"; };
 $("stTrainer2").onclick = () => { if (!cp) connectTrainer(); };      // tap a disconnected status in the ride header to reconnect
 $("stHR2").onclick = () => { if (live.hr == null) connectHR(); };
 $("btnStart").onclick = startWorkout;
+$("btnLaunchNo").onclick = () => { $("launchModal").style.display = "none"; pendingLaunch = null; };
+$("btnLaunchYes").onclick = () => {
+  const it = pendingLaunch; $("launchModal").style.display = "none"; pendingLaunch = null; if (!it) return;
+  $("wo").value = it.text; $("woName").value = it.name; refreshFolderSelect(it.folder || ""); updateWoInfo();
+  if (loadWorkout()) showScreen("run");
+};
 $("btnPause").onclick = togglePause; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
 $("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
 $("btnEndYes").onclick = () => { $("endModal").style.display = "none"; finishWorkout("Workout ended by user."); }; $("btnSkip").onclick = skipStep;
