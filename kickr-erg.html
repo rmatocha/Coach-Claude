@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kickr ERG</title>
+<style>
+  :root { --bg:#0b0d10; --card:#161a20; --fg:#f2f4f7; --dim:#8b94a3; --acc:#ffb020; --ok:#3ddc84; --bad:#ff5a5f; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:-apple-system,system-ui,sans-serif; padding:env(safe-area-inset-top) 12px 24px; }
+  h1 { font-size:16px; color:var(--dim); font-weight:600; margin:12px 0 8px; }
+  button { background:#242a33; color:var(--fg); border:0; border-radius:10px; padding:12px 14px; font-size:15px; font-weight:600; }
+  button.primary { background:var(--acc); color:#000; }
+  button:disabled { opacity:.4; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; align-items:center; }
+  .status { font-size:13px; color:var(--dim); }
+  .status.ok { color:var(--ok); } .status.bad { color:var(--bad); }
+  textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:13px; }
+  input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:10px; font-size:16px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .tile { background:var(--card); border-radius:14px; padding:10px 12px; }
+  .tile .l { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; }
+  .tile .v { font-size:44px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .tile .s { font-size:14px; color:var(--dim); font-variant-numeric:tabular-nums; }
+  .wide { grid-column:span 2; }
+  .big .v { font-size:76px; color:var(--acc); }
+  .bar { height:8px; background:#242a33; border-radius:4px; overflow:hidden; margin-top:6px; }
+  .bar > div { height:100%; width:0; background:var(--acc); }
+  details summary { color:var(--dim); font-size:14px; padding:6px 0; }
+  .hint { font-size:12px; color:var(--dim); line-height:1.4; }
+</style>
+</head>
+<body>
+
+<h1>SETUP</h1>
+<div class="row">
+  <button id="btnTrainer" class="primary">Connect trainer</button>
+  <button id="btnHR">Connect HR</button>
+</div>
+<div id="stTrainer" class="status">Trainer: not connected</div>
+<div id="stHR" class="status">HR: not connected</div>
+
+<details id="setup" open>
+  <summary>Workout &amp; FTP</summary>
+  <div class="row">
+    <label>FTP (W)</label>
+    <input id="ftp" type="number" value="250" inputmode="numeric">
+  </div>
+  <textarea id="wo" spellcheck="false">10:00 @ 40-60%
+3x: 5:00 @ 90%, 3:00 @ 50%
+5:00 @ 55-40%</textarea>
+  <div class="hint">
+    One step per line: <code>mm:ss @ 75%</code>, <code>mm:ss @ 250w</code>, or ramp <code>10:00 @ 50-75%</code>.<br>
+    Repeat: <code>4x: 1:00 @ 120%, 1:00 @ 50%</code>. You can also paste Zwift .zwo XML.
+  </div>
+  <div class="row"><button id="btnLoad">Load workout</button><span id="stWo" class="status"></span></div>
+</details>
+
+<div class="row">
+  <button id="btnStart" class="primary" disabled>Start</button>
+  <button id="btnPause" disabled>Pause</button>
+  <button id="btnSkip" disabled>Skip step</button>
+  <button id="btnDn" disabled>-1%</button>
+  <button id="btnUp" disabled>+1%</button>
+</div>
+
+<div class="grid">
+  <div class="tile big wide">
+    <div class="l">Target power</div>
+    <div class="v"><span id="target">--</span><span style="font-size:24px"> W</span></div>
+    <div class="s">Interval avg <b id="iavg">--</b> W &nbsp;·&nbsp; <span id="iavgPct">--</span>% of target</div>
+  </div>
+  <div class="tile wide" style="padding:8px">
+    <canvas id="profile" style="width:100%;height:110px;display:block"></canvas>
+  </div>
+  <div class="tile"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
+  <div class="tile"><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div>
+  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
+  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed">0:00</div><div class="s" id="remain">--</div></div>
+  <div class="tile"><div class="l">Norm. power</div><div class="v" id="np">--</div><div class="s" id="ifTss">IF -- · TSS --</div></div>
+  <div class="tile"><div class="l">Energy</div><div class="v" id="kj">0</div><div class="s">kJ</div></div>
+</div>
+
+<div id="log" class="hint" style="margin-top:14px;white-space:pre-wrap"></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const FTMS = 0x1826, BIKE_DATA = 0x2ad2, CTRL_POINT = 0x2ad9, HR_SVC = 0x180d, HR_CHAR = 0x2a37;
+
+function log(m) { const el = $("log"); el.textContent = (new Date().toLocaleTimeString() + " " + m + "\n" + el.textContent).slice(0, 2500); }
+function setStatus(id, text, cls) { const e = $(id); e.textContent = text; e.className = "status " + (cls || ""); }
+const fmt = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(ss).padStart(2, "0"); };
+
+/* ---------------- live data ---------------- */
+const live = { power: null, hr: null, cad: null };
+const powerBuf = [];            // {t, w} raw notifications for 3s smoothing
+function power3s() {
+  const now = Date.now(); while (powerBuf.length && now - powerBuf[0].t > 3000) powerBuf.shift();
+  if (!powerBuf.length) return null;
+  return powerBuf.reduce((a, b) => a + b.w, 0) / powerBuf.length;
+}
+
+/* ---------------- trainer (FTMS) ---------------- */
+let trainer = null, cp = null, writeChain = Promise.resolve(), cpWaiters = [];
+
+function parseBike(dv) {
+  const f = dv.getUint16(0, true); let o = 2; const r = {};
+  if (!(f & 1)) { o += 2; }                          // instantaneous speed
+  if (f & 2) o += 2;                                 // average speed
+  if (f & 4) { r.cad = dv.getUint16(o, true) * 0.5; o += 2; }
+  if (f & 8) o += 2;                                 // average cadence
+  if (f & 16) o += 3;                                // total distance
+  if (f & 32) o += 2;                                // resistance level
+  if (f & 64) { r.power = dv.getInt16(o, true); o += 2; }
+  return r;
+}
+
+function cpWrite(bytes) {
+  // serialise writes; wait for the indication response of each request
+  writeChain = writeChain.then(async () => {
+    const op = bytes[0];
+    const resp = new Promise(res => { const w = { op, res }; cpWaiters.push(w); setTimeout(() => res(null), 2000); });
+    await cp.writeValueWithResponse(new Uint8Array(bytes));
+    return resp;
+  }).catch(e => log("CP write error: " + e.message));
+  return writeChain;
+}
+function onCpIndication(ev) {
+  const dv = ev.target.value;
+  if (dv.getUint8(0) !== 0x80) return;
+  const reqOp = dv.getUint8(1), result = dv.getUint8(2);
+  if (result !== 1) log("FTMS op 0x" + reqOp.toString(16) + " result " + result);
+  const i = cpWaiters.findIndex(w => w.op === reqOp);
+  if (i >= 0) cpWaiters.splice(i, 1)[0].res(result);
+}
+const setTargetPower = w => cpWrite([0x05, w & 0xff, (w >> 8) & 0xff]);   // sint16 LE watts
+
+async function connectTrainer() {
+  try {
+    const dev = await navigator.bluetooth.requestDevice({ filters: [{ services: [FTMS] }], optionalServices: [FTMS] });
+    setStatus("stTrainer", "Trainer: connecting…");
+    dev.addEventListener("gattserverdisconnected", () => { setStatus("stTrainer", "Trainer: disconnected", "bad"); cp = null; refreshButtons(); });
+    const server = await dev.gatt.connect();
+    const svc = await server.getPrimaryService(FTMS);
+    const bike = await svc.getCharacteristic(BIKE_DATA);
+    bike.addEventListener("characteristicvaluechanged", e => {
+      const r = parseBike(e.target.value);
+      if (r.power != null) { live.power = r.power; powerBuf.push({ t: Date.now(), w: r.power }); }
+      if (r.cad != null) live.cad = r.cad;
+    });
+    await bike.startNotifications();
+    cp = await svc.getCharacteristic(CTRL_POINT);
+    cp.addEventListener("characteristicvaluechanged", onCpIndication);
+    await cp.startNotifications();                 // control point responses arrive as indications
+    trainer = dev;
+    await cpWrite([0x00]);                         // request control
+    setStatus("stTrainer", "Trainer: connected (" + (dev.name || "FTMS") + ")", "ok");
+    refreshButtons();
+  } catch (e) { setStatus("stTrainer", "Trainer: " + e.message, "bad"); log("Trainer error: " + e.message); }
+}
+
+/* ---------------- heart rate ---------------- */
+async function connectHR() {
+  try {
+    const dev = await navigator.bluetooth.requestDevice({ filters: [{ services: [HR_SVC] }] });
+    dev.addEventListener("gattserverdisconnected", () => { setStatus("stHR", "HR: disconnected", "bad"); live.hr = null; });
+    const server = await dev.gatt.connect();
+    const ch = await (await server.getPrimaryService(HR_SVC)).getCharacteristic(HR_CHAR);
+    ch.addEventListener("characteristicvaluechanged", e => {
+      const dv = e.target.value; live.hr = (dv.getUint8(0) & 1) ? dv.getUint16(1, true) : dv.getUint8(1);
+    });
+    await ch.startNotifications();
+    setStatus("stHR", "HR: connected (" + (dev.name || "strap") + ")", "ok");
+  } catch (e) { setStatus("stHR", "HR: " + e.message, "bad"); }
+}
+
+/* ---------------- workout parsing ---------------- */
+// Step: { dur (s), a, b (fraction of FTP at start/end) }
+function parseTime(s) { const p = s.trim().split(":").map(Number); return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p.length === 2 ? p[0] * 60 + p[1] : p[0]; }
+
+function parseStepText(txt, ftp) {
+  const m = txt.trim().match(/^([\d:]+)\s*@\s*([\d.]+)(?:\s*-\s*([\d.]+))?\s*(%|w)?$/i);
+  if (!m) throw new Error("Can't parse: " + txt);
+  const dur = parseTime(m[1]); let a = parseFloat(m[2]), b = m[3] != null ? parseFloat(m[3]) : a;
+  if ((m[4] || "%").toLowerCase() === "w") { a /= ftp; b /= ftp; } else { a /= 100; b /= 100; }
+  return { dur, a, b };
+}
+
+function parseText(src, ftp) {
+  const steps = [];
+  for (const raw of src.split("\n")) {
+    const line = raw.trim(); if (!line || line.startsWith("#")) continue;
+    const rep = line.match(/^(\d+)\s*x\s*:?\s*(.*)$/i);
+    if (rep) { const block = rep[2].split(",").map(s => parseStepText(s, ftp)); for (let i = 0; i < +rep[1]; i++) block.forEach(s => steps.push({ ...s })); }
+    else steps.push(parseStepText(line, ftp));
+  }
+  return steps;
+}
+
+function parseZwo(src) {
+  const doc = new DOMParser().parseFromString(src, "text/xml");
+  const wk = doc.querySelector("workout"); if (!wk) throw new Error("No <workout> in ZWO");
+  const steps = [], n = (el, k, d) => el.getAttribute(k) != null ? parseFloat(el.getAttribute(k)) : d;
+  for (const el of wk.children) {
+    const t = el.tagName;
+    if (t === "Warmup" || t === "Cooldown" || t === "Ramp") steps.push({ dur: n(el, "Duration"), a: n(el, "PowerLow"), b: n(el, "PowerHigh") });
+    else if (t === "SteadyState") steps.push({ dur: n(el, "Duration"), a: n(el, "Power"), b: n(el, "Power") });
+    else if (t === "IntervalsT") for (let i = 0; i < n(el, "Repeat", 1); i++) {
+      steps.push({ dur: n(el, "OnDuration"), a: n(el, "OnPower"), b: n(el, "OnPower") });
+      steps.push({ dur: n(el, "OffDuration"), a: n(el, "OffPower"), b: n(el, "OffPower") });
+    }
+    else if (t === "FreeRide") steps.push({ dur: n(el, "Duration"), a: 0.5, b: 0.5 });
+  }
+  return steps;
+}
+
+/* ---------------- workout engine ---------------- */
+const W = { tgtHist: [], steps: [], loaded: false, running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1,
+  ftp: 250, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null };
+
+function loadWorkout() {
+  try {
+    W.ftp = +$("ftp").value || 250;
+    const src = $("wo").value;
+    W.steps = src.includes("<workout") ? parseZwo(src) : parseText(src, W.ftp);
+    if (!W.steps.length) throw new Error("No steps found");
+    const total = W.steps.reduce((a, s) => a + s.dur, 0);
+    setStatus("stWo", W.steps.length + " steps, " + fmt(total), "ok");
+    W.loaded = true; resetWorkout(); refreshButtons(); render();
+  } catch (e) { setStatus("stWo", e.message, "bad"); W.loaded = false; refreshButtons(); }
+}
+function resetWorkout() {
+  clearInterval(W.timer); Object.assign(W, { tgtHist: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
+}
+const stepTarget = () => {
+  const s = W.steps[W.idx]; if (!s) return null;
+  const frac = s.a + (s.b - s.a) * Math.min(1, W.stepT / s.dur);
+  return Math.round(frac * W.ftp * W.adj);
+};
+
+async function startWorkout() {
+  if (!cp) return;
+  resetWorkout(); W.running = true;
+  await cpWrite([0x07]);                           // start / resume
+  await pushTarget(true);
+  W.timer = setInterval(tick, 1000);
+  try { if ("wakeLock" in navigator) { window._wl = await navigator.wakeLock.request("screen"); } } catch (e) { log("Wake lock: " + e.message); }
+  $("setup").open = false; refreshButtons();
+}
+function pushTarget(force) {
+  const t = stepTarget(); if (t == null) return;
+  if (force || t !== W.lastTarget) { W.lastTarget = t; return setTargetPower(t); }
+}
+function tick() {
+  if (!W.running || W.paused) return;
+  W.tgtHist.push(stepTarget());
+  W.t++; W.stepT++;
+  const p = live.power ?? 0;
+  W.kj += p / 1000; W.iSum += p; W.iN++;
+  W.pw.push(p);
+  if (W.pw.length >= 30) {
+    const avg30 = W.pw.slice(-30).reduce((a, b) => a + b, 0) / 30;
+    W.sum4 += avg30 ** 4; W.n4++;
+  }
+  if (W.stepT >= W.steps[W.idx].dur) {
+    W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0;
+    if (W.idx >= W.steps.length) { finishWorkout(); return; }
+  }
+  pushTarget(false); render();
+}
+function finishWorkout() {
+  W.running = false; clearInterval(W.timer);
+  cpWrite([0x05, 0, 0]); cpWrite([0x08, 0x01]);     // 0 W target, then stop
+  try { window._wl && window._wl.release(); } catch (e) {}
+  log("Workout complete."); refreshButtons(); render();
+}
+function skipStep() {
+  if (!W.running) return;
+  W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0;
+  if (W.idx >= W.steps.length) return finishWorkout();
+  pushTarget(true); render();
+}
+function togglePause() {
+  if (!W.running) return;
+  W.paused = !W.paused; $("btnPause").textContent = W.paused ? "Resume" : "Pause";
+  if (W.paused) { W.lastTarget = null; setTargetPower(50); } else pushTarget(true);
+}
+function adjust(d) { W.adj = Math.max(0.5, W.adj + d); if (W.running && !W.paused) pushTarget(true); render(); }
+
+/* ---------------- rendering ---------------- */
+function render() {
+  const p3 = power3s(); $("p3").textContent = p3 == null ? "--" : Math.round(p3);
+  $("pctFtp").textContent = p3 == null ? "-- % FTP" : Math.round(p3 / W.ftp * 100) + " % FTP";
+  $("hr").textContent = live.hr ?? "--";
+  drawProfile();
+  if (!W.loaded) return;
+  $("elapsed").textContent = fmt(W.t);
+  const total = W.steps.reduce((a, s) => a + s.dur, 0);
+  $("remain").textContent = fmt(total - W.t) + " remaining";
+  const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
+  $("target").textContent = tgt ?? "--";
+  $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
+  $("stepName").textContent = W.running ? "Step " + (W.idx + 1) + " / " + W.steps.length + (W.adj !== 1 ? "  (" + Math.round(W.adj * 100) + "%)" : "") : "--";
+  $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
+  const ia = W.iN ? W.iSum / W.iN : null;
+  $("iavg").textContent = ia == null ? "--" : Math.round(ia);
+  $("iavgPct").textContent = ia == null || !tgt ? "--" : Math.round(ia / tgt * 100);
+  $("kj").textContent = Math.round(W.kj);
+  if (W.n4) {
+    const np = (W.sum4 / W.n4) ** 0.25, IF = np / W.ftp, tss = (W.t * np * IF) / (W.ftp * 3600) * 100;
+    $("np").textContent = Math.round(np); $("ifTss").textContent = "IF " + IF.toFixed(2) + " · TSS " + Math.round(tss);
+  }
+}
+function zoneColor(f) {
+  return f < 0.56 ? "#7a8594" : f < 0.76 ? "#3b9cff" : f < 0.91 ? "#3ddc84" : f < 1.06 ? "#ffd23f" : f < 1.21 ? "#ff8a3d" : "#ff4d5e";
+}
+function drawProfile() {
+  const cv = $("profile"), dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  if (!W.loaded || !W.steps.length) return;
+  const total = W.steps.reduce((a, s) => a + s.dur, 0), ftp = W.ftp;
+  const histMax = W.tgtHist.length ? Math.max(...W.tgtHist) / ftp : 0;
+  const maxF = Math.max(1.3, W.steps.reduce((m, s) => Math.max(m, s.a, s.b), 0) * W.adj * 1.05, histMax * 1.05);
+  const X = t => t / total * w, Y = f => h - 2 - (f / maxF) * (h - 6);
+  const cursor = X(W.t);
+
+  // remaining part of the plan, scaled by the current intensity adjustment
+  c.save(); c.beginPath(); c.rect(cursor, 0, w - cursor, h); c.clip(); c.globalAlpha = 0.4;
+  let t0 = 0;
+  for (const s of W.steps) {
+    const x0 = X(t0), x1 = X(t0 + s.dur); c.fillStyle = zoneColor((s.a + s.b) / 2 * W.adj);
+    c.beginPath(); c.moveTo(x0, h); c.lineTo(x0, Y(s.a * W.adj)); c.lineTo(x1, Y(s.b * W.adj)); c.lineTo(x1, h); c.closePath(); c.fill();
+    t0 += s.dur;
+  }
+  c.restore();
+
+  // completed part: the targets that were actually sent, one column per second
+  c.globalAlpha = 1; const cw = Math.max(1, X(1) + 0.6);
+  W.tgtHist.forEach((tg, i) => { const f = tg / ftp; c.fillStyle = zoneColor(f); c.fillRect(X(i), Y(f), cw, h - Y(f)); });
+
+  // FTP reference line
+  c.globalAlpha = 0.5; c.strokeStyle = "#fff"; c.setLineDash([3, 4]); c.lineWidth = 1;
+  c.beginPath(); c.moveTo(0, Y(1)); c.lineTo(w, Y(1)); c.stroke(); c.setLineDash([]); c.globalAlpha = 1;
+
+  // actual power trace (3-sample smoothing), dark outline under a bright line so it reads over any bar color
+  if (W.pw.length > 1) {
+    const pts = W.pw.map((_, i) => { const sl = W.pw.slice(Math.max(0, i - 2), i + 1); return [X(i + 1), Math.max(0, Y(sl.reduce((a, b) => a + b, 0) / sl.length / ftp))]; });
+    const trace = (col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = "round"; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); };
+    trace("rgba(0,0,0,.85)", 4.5); trace("#ff2d2d", 2.2);
+  }
+
+  // progress cursor
+  if (W.running || W.t > 0) { c.strokeStyle = "#fff"; c.lineWidth = 2; c.beginPath(); c.moveTo(cursor, 0); c.lineTo(cursor, h); c.stroke(); }
+}
+window.addEventListener("resize", drawProfile);
+function refreshButtons() {
+  const ready = !!cp && W.loaded;
+  $("btnStart").disabled = !ready || W.running;
+  ["btnPause", "btnSkip", "btnUp", "btnDn"].forEach(id => $(id).disabled = !W.running);
+  $("btnStart").textContent = W.running ? "Running" : "Start";
+}
+
+/* ---------------- wire up ---------------- */
+if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available. Open this page in the Bluefy browser (over https).", "bad"); $("btnTrainer").disabled = $("btnHR").disabled = true; }
+$("btnTrainer").onclick = connectTrainer; $("btnHR").onclick = connectHR;
+$("btnLoad").onclick = loadWorkout; $("btnStart").onclick = startWorkout;
+$("btnPause").onclick = togglePause; $("btnSkip").onclick = skipStep;
+$("btnUp").onclick = () => adjust(0.01); $("btnDn").onclick = () => adjust(-0.01);
+setInterval(render, 250);
+loadWorkout();
+</script>
+</body>
+</html>
