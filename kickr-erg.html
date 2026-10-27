@@ -72,6 +72,9 @@
   .card h2 { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin:0 0 6px; }
   .card summary { padding:2px 0; }
   .big { width:100%; height:54px; font-size:18px; border-radius:12px; margin-top:8px; }
+  .seg { display:flex; gap:0; margin:6px 0; background:var(--card); border-radius:10px; padding:3px; }
+  .seg button { flex:1; background:none; border-radius:8px; padding:8px; font-size:15px; color:var(--dim); }
+  .seg button.on { background:var(--acc); color:#000; }
   .mini { padding:3px 9px; font-size:12px; border-radius:8px; }
   #btnEdit { padding:calc(var(--u)*0.8) calc(var(--u)*2); font-size:calc(var(--u)*2.2); font-weight:700; border-radius:10px; background:#2f3742; }
   #run .top .status:not(.ok) { text-decoration:underline dotted; }
@@ -90,7 +93,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v1.0.1</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v1.0.3</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -100,10 +103,20 @@
     <span id="stHR" class="status">HR: not connected</span>
   </div>
 
+  <div class="seg" id="tabBar"><button id="tabPlan" class="on">Plan</button><button id="tabData">Data</button></div>
+
+  <div id="planTab">
   <div class="card" id="todayCard">
     <h2>Today</h2>
     <div id="todayList" class="hint" style="font-size:14px">Connect intervals.icu above to see today's planned workout.</div>
     <div class="row" style="margin:8px 0 0"><button id="btnToday" style="flex:1">Refresh</button></div>
+  </div>
+
+  <div class="card" id="weekCard">
+    <h2>Next 7 days</h2>
+    <div id="planWeekGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+    <div id="planWeekList" style="margin-top:10px;font-size:14px"></div>
+    <div id="planWeekOut" class="hint" style="margin-top:6px;font-size:13px"></div>
   </div>
 
   <div class="card">
@@ -165,6 +178,47 @@ Cooldown
     <div class="row" style="margin:0;flex-wrap:nowrap"><button id="btnIcuSave" style="flex:1">Save key</button><button id="btnIcuTest" class="primary" style="flex:1">Test today</button></div>
     <div id="icuOut" class="hint" style="margin-top:8px;white-space:pre-wrap;font-size:13px;word-break:break-word"></div>
   </details>
+  </div>
+
+  <div id="dataTab" style="display:none">
+    <div class="card">
+      <h2>Training load per day</h2>
+      <div id="fitTiles" style="display:flex;gap:16px;margin:0 0 6px;font-size:13px;color:var(--dim)">
+        <span>CTL <b id="vCtl" style="font-size:20px;color:#35b6e4">--</b></span>
+        <span>ATL <b id="vAtl" style="font-size:20px;color:#d946d6">--</b></span>
+        <span>TSB <b id="vTsb" style="font-size:20px;color:#b0b0b0">--</b></span>
+        <span id="vDay" style="margin-left:auto;align-self:flex-end;font-size:12px"></span>
+      </div>
+      <canvas id="cvLoad" style="width:100%;height:150px;display:block;border-radius:6px"></canvas>
+      <canvas id="cvForm" style="width:100%;height:118px;display:block;margin-top:4px;border-radius:6px"></canvas>
+      <div class="row" style="margin:10px 0 0;justify-content:space-between;flex-wrap:nowrap">
+        <span class="status">Look back</span>
+        <button id="btnBackMinus" class="mini" style="width:40px;flex:none">−</button><b id="vBack" style="min-width:34px;text-align:center">42</b><button id="btnBackPlus" class="mini" style="width:40px;flex:none">+</button>
+        <span class="status">days</span>
+      </div>
+      <div class="row" style="margin:6px 0 0;justify-content:space-between;flex-wrap:nowrap">
+        <span class="status">Look ahead</span>
+        <button id="btnAheadMinus" class="mini" style="width:40px;flex:none">−</button><b id="vAhead" style="min-width:34px;text-align:center">7</b><button id="btnAheadPlus" class="mini" style="width:40px;flex:none">+</button>
+        <span class="status">days</span>
+      </div>
+      <div id="fitNote" class="hint" style="margin-top:8px;font-size:12px"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>Weekly TSS</h2>
+      <div id="tssTop" style="font-size:13px;color:var(--dim);margin:0 0 6px;min-height:20px"></div>
+      <canvas id="cvWeek" style="width:100%;height:150px;display:block;border-radius:6px"></canvas>
+      <div id="weekNote" class="hint" style="margin-top:8px;font-size:12px"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>Annual summary</h2>
+      <div class="row" style="margin:0 0 8px;justify-content:space-between;flex-wrap:nowrap">
+        <button id="btnYearMinus" class="mini" style="width:40px;flex:none">−</button><b id="vYear" style="font-size:18px">--</b><button id="btnYearPlus" class="mini" style="width:40px;flex:none">+</button>
+      </div>
+      <div id="yearTiles" style="display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin:0 0 10px;font-size:13px;color:var(--dim)"></div>
+      <table id="yearTable" style="width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums"></table>
+      <div id="vYearNote" class="hint" style="margin-top:8px;font-size:12px"></div>
+    </div>
+  </div>
 </div>
 
 <div id="run">
@@ -172,7 +226,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.1</span>
+  <span class="ver">v1.0.3</span>
 </div>
 
 <div class="ctrl">
@@ -1132,10 +1186,208 @@ $("btnSaveLib").onclick = saveToLibrary;
 const icuOut = (t, bad) => { const e = $("icuOut"); e.textContent = t; e.style.color = bad ? "var(--bad, #ff6b6b)" : ""; };
 try { const k = localStorage.getItem("kickrIcuKey"), id = localStorage.getItem("kickrIcuId"); if (k) $("icuKey").value = k; if (id) $("icuId").value = id; } catch (e) {}
 $("btnIcuSave").onclick = () => {
-  try { localStorage.setItem("kickrIcuKey", $("icuKey").value.trim()); localStorage.setItem("kickrIcuId", $("icuId").value.trim() || "0"); icuOut("Saved on this phone."); }
+  try { localStorage.setItem("kickrIcuKey", $("icuKey").value.trim()); localStorage.setItem("kickrIcuId", $("icuId").value.trim() || "0"); ACT = null; icuOut("Saved on this phone."); loadNext7(); }
   catch (e) { icuOut("Couldn't save (browser storage unavailable).", true); }
 };
 const localDay = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+/* ---------------- Data tab: training load (CTL / ATL / TSB) ---------------- */
+const FIT = { back: 42, ahead: 7 };
+try { const f = JSON.parse(localStorage.getItem("kickrFitRange") || "null"); if (f) { FIT.back = f.back || 42; FIT.ahead = f.ahead != null ? f.ahead : 7; } } catch (e) {}
+function demoLoads(n) {                                    // stand-in daily load until intervals.icu data is wired in
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, out = [];
+  const wk = [0.55, 1.0, 1.25, 0.7, 1.35, 1.1, 0.45, 1.0, 1.3, 0.6];   // build, recovery and peak weeks repeating
+  for (let i = 0; i < n; i++) { const d = i % 7, sc = wk[Math.floor(i / 7) % wk.length]; out.push(d === 3 ? 0 : d === 0 ? 25 * sc + rnd() * 15 : (50 + rnd() * 50) * sc); }
+  return out;
+}
+function fitSeries(loads, back, ahead) {                   // CTL = 42-day, ATL = 7-day exponential averages; TSB = yesterday's CTL - ATL
+  let ctl = 0, atl = 0; const all = loads.map(L => { const pc = ctl, pa = atl; ctl = pc + (L - pc) / 42; atl = pa + (L - pa) / 7; return { ctl, atl, tsb: pc - pa, load: L }; });
+  const todayIdx = all.length - 1 - ahead, from = Math.max(0, todayIdx - back);
+  return { days: all.slice(from), todayIdx: todayIdx - from };
+}
+function fitCanvasSize(cv) { const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); return { c, w, h }; }
+function drawLoadTop(cv, S) {
+  const { c, w, h } = fitCanvasSize(cv), days = S.days, n = days.length, padL = 26, padR = 4, padT = 6, padB = 6;
+  c.fillStyle = "#1f2227"; c.fillRect(0, 0, w, h);
+  const yMax = Math.max(70, Math.ceil(Math.max(...days.map(d => Math.max(d.ctl, d.atl))) / 10) * 10 + 10);
+  const X = i => padL + (i / Math.max(1, n - 1)) * (w - padL - padR), Y = v => padT + (1 - v / yMax) * (h - padT - padB);
+  c.font = "10px -apple-system,system-ui,sans-serif"; c.textBaseline = "middle";
+  for (let v = 0; v <= yMax; v += 10) { c.strokeStyle = "#2c3036"; c.lineWidth = 1; c.beginPath(); c.moveTo(padL, Y(v)); c.lineTo(w - padR, Y(v)); c.stroke(); c.fillStyle = "#7b8291"; c.fillText(String(v), 2, Y(v)); }
+  // CTL with a soft fill underneath
+  c.beginPath(); days.forEach((d, i) => i ? c.lineTo(X(i), Y(d.ctl)) : c.moveTo(X(i), Y(d.ctl)));
+  c.lineTo(X(n - 1), Y(0)); c.lineTo(X(0), Y(0)); c.closePath(); c.fillStyle = "rgba(53,182,228,.14)"; c.fill();
+  const line = (key, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = "round"; c.beginPath(); days.forEach((d, i) => i ? c.lineTo(X(i), Y(d[key])) : c.moveTo(X(i), Y(d[key]))); c.stroke(); };
+  line("atl", "#d946d6", 1.6); line("ctl", "#35b6e4", 2.2);
+  // today marker
+  drawMarkers(c, S, X, h);
+}
+function drawMarkers(c, S, X, h) {                       // dashed = today; solid = the day you tapped
+  const t = X(S.todayIdx); c.setLineDash([4, 4]); c.strokeStyle = "rgba(255,255,255,.4)"; c.lineWidth = 1; c.beginPath(); c.moveTo(t, 0); c.lineTo(t, h); c.stroke(); c.setLineDash([]);
+  if (S.cur !== S.todayIdx) { const x = X(S.cur); c.strokeStyle = "#ffffff"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
+}
+function formZoneColor(v) { return v >= 20 ? "#f2c94c" : v >= 5 ? "#35b6e4" : v > -10 ? "#a9adb5" : v >= -30 ? "#3fc56b" : "#e5534b"; }
+function drawFormBottom(cv, S) {
+  const { c, w, h } = fitCanvasSize(cv), days = S.days, n = days.length, padL = 26, padR = 4, padT = 4, padB = 4;
+  const lo = -35, hi = 30;
+  c.fillStyle = "#1f2227"; c.fillRect(0, 0, w, h);
+  const Y = v => padT + (1 - (v - lo) / (hi - lo)) * (h - padT - padB), X = i => padL + (i / Math.max(1, n - 1)) * (w - padL - padR);
+  const bands = [[30, 20, "#c9a227", .30], [20, 5, "#2e7fb5", .30], [5, -10, "#7b8291", .18], [-10, -30, "#2f9e4f", .26], [-30, -35, "#c0392b", .30]];
+  bands.forEach(([a, b, col, al]) => { c.globalAlpha = al; c.fillStyle = col; c.fillRect(padL, Y(a), w - padL - padR, Y(b) - Y(a)); }); c.globalAlpha = 1;
+  c.font = "10px -apple-system,system-ui,sans-serif"; c.textBaseline = "middle"; c.fillStyle = "#7b8291";
+  [20, 5, -10, -30].forEach(v => c.fillText(String(v), 2, Y(v)));
+  c.lineWidth = 2; c.lineJoin = "round";
+  for (let i = 0; i < n - 1; i++) { const v = (days[i].tsb + days[i + 1].tsb) / 2; c.strokeStyle = formZoneColor(v); c.beginPath(); c.moveTo(X(i), Y(days[i].tsb)); c.lineTo(X(i + 1), Y(days[i + 1].tsb)); c.stroke(); }
+  drawMarkers(c, S, X, h);
+}
+let fitSel = null, fitLast = null;          // fitSel = the day the user tapped (null = today)
+function renderFit() {
+  if ($("dataTab").style.display === "none") return;
+  const loads = demoLoads(FIT.back + FIT.ahead + 120);
+  const S = fitSeries(loads, FIT.back, FIT.ahead);
+  fitLast = S;
+  S.cur = fitSel == null ? S.todayIdx : Math.min(S.days.length - 1, Math.max(0, fitSel));
+  drawLoadTop($("cvLoad"), S); drawFormBottom($("cvForm"), S);
+  const t = S.days[S.cur], day = new Date(); day.setDate(day.getDate() + (S.cur - S.todayIdx));
+  $("vCtl").textContent = Math.round(t.ctl); $("vAtl").textContent = Math.round(t.atl); $("vTsb").textContent = Math.round(t.tsb);
+  const label = day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  $("vDay").textContent = fitSel == null ? label : label + "  \u2715";
+  $("vBack").textContent = FIT.back; $("vAhead").textContent = FIT.ahead;
+  $("fitNote").textContent = "Demo data. This will switch to your intervals.icu training load once it's connected.";
+}
+function setFitRange(k, v) { FIT[k] = v; try { localStorage.setItem("kickrFitRange", JSON.stringify(FIT)); } catch (e) {} renderFit(); }
+function showTab(name) {
+  const data = name === "data";
+  $("planTab").style.display = data ? "none" : ""; $("dataTab").style.display = data ? "" : "none";
+  $("tabPlan").classList.toggle("on", !data); $("tabData").classList.toggle("on", data);
+  if (data) {
+    fitSel = null; renderFit();
+    if (ACT && actSource !== "error") renderSummary();
+    else { $("vYearNote").textContent = "Loading from intervals.icu…"; loadActivities().then(renderSummary); }
+  }
+}
+$("tabPlan").onclick = () => showTab("plan"); $("tabData").onclick = () => showTab("data");
+$("btnBackMinus").onclick = () => setFitRange("back", Math.max(14, FIT.back - 7)); $("btnBackPlus").onclick = () => setFitRange("back", Math.min(90, FIT.back + 7));
+$("btnAheadMinus").onclick = () => setFitRange("ahead", Math.max(0, FIT.ahead - 1)); $("btnAheadPlus").onclick = () => setFitRange("ahead", Math.min(14, FIT.ahead + 1));
+window.addEventListener("resize", () => { renderFit(); renderSummary(); });
+// Tap or drag across a chart to read that day's CTL / ATL / TSB. Tap the date to return to today.
+function fitPick(cv, e) {
+  if (!fitLast) return;
+  const r = cv.getBoundingClientRect(), padL = 26, padR = 4, n = fitLast.days.length;
+  const frac = (e.clientX - r.left - padL) / Math.max(1, r.width - padL - padR);
+  fitSel = Math.round(Math.min(1, Math.max(0, frac)) * (n - 1));
+  renderFit();
+}
+["cvLoad", "cvForm", "cvWeek"].forEach(id => {                // tap a chart to read that day or week
+  const cv = $(id), pick = id === "cvWeek" ? weekPick : fitPick;
+  cv.style.touchAction = "manipulation";
+  cv.addEventListener("pointerdown", e => pick(cv, e));
+});
+$("vDay").onclick = () => { fitSel = null; renderFit(); };
+
+/* ---------------- Data tab: annual summary and weekly TSS ---------------- */
+let ACT = null, actSource = "", actErr = "", yearSel = new Date().getFullYear(), weekSel = null, weekLast = null;
+const ymd = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const toMi = m => m / 1609.344, toFt = m => m * 3.28084;
+const fmtHM = s => { const m = Math.round(s / 60); return Math.floor(m / 60) + ":" + String(m % 60).padStart(2, "0"); };
+function demoActivities() {                                  // stand-in rides until intervals.icu is connected
+  const loads = demoLoads(3 * 365 + 5), base = new Date(), out = [], n = loads.length;
+  base.setHours(12, 0, 0, 0);
+  loads.forEach((L, i) => {
+    if (L <= 0) return;
+    const dt = new Date(base); dt.setDate(dt.getDate() - (n - 1 - i));
+    const sec = Math.round(L * 36);
+    out.push({ date: ymd(dt), sec, dist: sec * 8.5, elev: sec * 0.05, load: L });
+  });
+  return out;
+}
+async function loadActivities() {                            // rides from the last two full years plus this year
+  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
+  if (!key) { ACT = demoActivities(); actSource = "demo"; return; }
+  const now = new Date(), oldest = ymd(new Date(now.getFullYear() - 2, 0, 1)), newest = ymd(now);
+  try {
+    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/activities?oldest=" + oldest + "&newest=" + newest, { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
+    if (!r.ok) throw new Error("intervals.icu replied " + r.status);
+    const arr = await r.json();
+    ACT = (Array.isArray(arr) ? arr : []).filter(a => /ride/i.test(a.type || "")).map(a => ({
+      date: String(a.start_date_local || "").slice(0, 10), sec: a.moving_time || a.elapsed_time || 0,
+      dist: a.distance || 0, elev: a.total_elevation_gain || 0, load: a.icu_training_load || 0
+    })).filter(a => a.date.length === 10);
+    actSource = "icu";
+  } catch (e) { ACT = demoActivities(); actSource = "error"; actErr = e.message; }
+}
+function sourceNote() {
+  if (actSource === "icu") return "From intervals.icu.";
+  if (actSource === "error") return "Couldn't reach intervals.icu (" + actErr + "). Showing demo data.";
+  return "Demo data. Connect intervals.icu to see your rides.";
+}
+function renderYear() {
+  const cur = new Date().getFullYear();
+  $("vYear").textContent = yearSel;
+  $("btnYearPlus").disabled = yearSel >= cur; $("btnYearMinus").disabled = yearSel <= cur - 2;
+  const months = Array.from({ length: 12 }, () => ({ rides: 0, dist: 0, sec: 0, elev: 0 }));
+  ACT.forEach(a => {
+    if (+a.date.slice(0, 4) !== yearSel) return;
+    const M = months[+a.date.slice(5, 7) - 1]; M.rides++; M.dist += a.dist; M.sec += a.sec; M.elev += a.elev;
+  });
+  const T = months.reduce((t, M) => ({ rides: t.rides + M.rides, dist: t.dist + M.dist, sec: t.sec + M.sec, elev: t.elev + M.elev }), { rides: 0, dist: 0, sec: 0, elev: 0 });
+  const tiles = [["Rides", T.rides], ["Miles", Math.round(toMi(T.dist)).toLocaleString()], ["Moving time", fmtHM(T.sec) + " h"], ["Climbing", Math.round(toFt(T.elev)).toLocaleString() + " ft"]];
+  $("yearTiles").innerHTML = tiles.map(([k, v]) => "<div>" + k + "<br><b style=\"font-size:20px;color:inherit\">" + v + "</b></div>").join("");
+  $("vYearNote").textContent = (yearSel === cur ? "Year to date. " : "Full year. ") + sourceNote();
+  const lastM = yearSel === cur ? new Date().getMonth() : 11;
+  const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const cell = (c, i, extra) => '<td style="padding:4px 2px;text-align:' + (i ? "right" : "left") + ';' + (extra || "") + '">' + c + '</td>';
+  const fmtRow = M => [M.rides || "–", M.rides ? fmtHM(M.sec) : "–", M.rides ? Math.round(toMi(M.dist)).toLocaleString() : "–", M.rides ? Math.round(toFt(M.elev)).toLocaleString() : "–"];
+  let html = '<tr style="color:#7b8291">' + ["Month", "Rides", "Time", "Miles", "Climb ft"].map((c, i) => cell(c, i)).join("") + "</tr>";
+  for (let m = 0; m <= lastM; m++) html += "<tr>" + [names[m], ...fmtRow(months[m])].map((c, i) => cell(c, i)).join("") + "</tr>";
+  html += '<tr style="font-weight:700;border-top:1px solid #2c3036">' + ["Total", ...fmtRow(T)].map((c, i) => cell(c, i)).join("") + "</tr>";
+  $("yearTable").innerHTML = html;
+}
+function renderWeek() {
+  const cv = $("cvWeek"), N = 26, now = new Date(), dow = (now.getDay() + 6) % 7;
+  const mon0 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+  const weeks = Array.from({ length: N }, (_, k) => { const s = new Date(mon0); s.setDate(s.getDate() - 7 * (N - 1 - k)); return { start: s, key: ymd(s), tss: 0, rides: 0 }; });
+  const byKey = new Map(weeks.map(w => [w.key, w]));
+  ACT.forEach(a => {
+    const [y, m, d] = a.date.split("-").map(Number), wd = (new Date(y, m - 1, d).getDay() + 6) % 7;
+    const w = byKey.get(ymd(new Date(y, m - 1, d - wd)));
+    if (w) { w.tss += a.load; w.rides++; }
+  });
+  weekLast = weeks;
+  if (weekSel == null) weekSel = N - 1;
+  const { c, w, h } = fitCanvasSize(cv);
+  const padL = 26, padR = 4, padT = 6, padB = 16;
+  const maxT = Math.max(...weeks.map(x => x.tss));
+  const step = maxT > 250 ? 100 : 50, yMax = Math.max(step, Math.ceil(maxT / step) * step);
+  c.fillStyle = "#1f2227"; c.fillRect(0, 0, w, h);
+  const Y = v => padT + (1 - v / yMax) * (h - padT - padB), slot = (w - padL - padR) / N;
+  c.font = "10px -apple-system,system-ui,sans-serif"; c.textBaseline = "middle";
+  for (let v = 0; v <= yMax; v += step) { c.strokeStyle = "#2c3036"; c.lineWidth = 1; c.beginPath(); c.moveTo(padL, Y(v)); c.lineTo(w - padR, Y(v)); c.stroke(); c.fillStyle = "#7b8291"; c.fillText(String(v), 2, Y(v)); }
+  weeks.forEach((x, i) => {
+    c.fillStyle = i === weekSel ? "#ffffff" : i === N - 1 ? "rgba(53,182,228,.45)" : "#35b6e4";
+    c.fillRect(padL + i * slot + slot * 0.18, Y(x.tss), slot * 0.64, Y(0) - Y(x.tss));
+  });
+  c.fillStyle = "#7b8291"; c.textBaseline = "top";
+  weeks.forEach((x, i) => {
+    if (i % 4) return;
+    const t = x.start.toLocaleDateString([], { month: "short", day: "numeric" }), lx = padL + i * slot;
+    if (lx + c.measureText(t).width <= w) c.fillText(t, lx, h - padB + 3);   // skip a label that would run off the right edge
+  });
+  const sel = weeks[weekSel];
+  const lbl = weekSel === N - 1 ? "This week so far" : "Week of " + sel.start.toLocaleDateString([], { month: "short", day: "numeric" });
+  $("tssTop").textContent = lbl + "  ·  " + Math.round(sel.tss) + " TSS  ·  " + sel.rides + (sel.rides === 1 ? " ride" : " rides");
+  const avg = weeks.slice(0, N - 1).reduce((t, x) => t + x.tss, 0) / (N - 1);
+  $("weekNote").textContent = "Average " + Math.round(avg) + " TSS per full week over the last " + (N - 1) + " weeks. " + sourceNote();
+}
+function weekPick(cv, e) {                                   // tap or drag across the bars to pick a week
+  if (!weekLast) return;
+  const r = cv.getBoundingClientRect(), padL = 26, padR = 4, N = weekLast.length;
+  const i = Math.floor((e.clientX - r.left - padL) / ((r.width - padL - padR) / N));
+  const idx = Math.min(N - 1, Math.max(0, i));
+  if (idx !== weekSel) { weekSel = idx; renderWeek(); }
+}
+function renderSummary() { if (!ACT || $("dataTab").style.display === "none") return; renderYear(); renderWeek(); }
+$("btnYearMinus").onclick = () => { yearSel = Math.max(new Date().getFullYear() - 2, yearSel - 1); renderYear(); };
+$("btnYearPlus").onclick = () => { yearSel = Math.min(new Date().getFullYear(), yearSel + 1); renderYear(); };
+
 // Fetch the planned workouts for one day from intervals.icu. Throws with a readable message on failure.
 async function icuEvents(day) {
   const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
@@ -1177,7 +1429,68 @@ async function loadToday() {
     row.append(b, go); box.appendChild(row);
   });
 }
-$("btnToday").onclick = loadToday;
+/* ---------------- Plan tab: next 7 days from the intervals.icu calendar (read-only) ---------------- */
+async function icuRange(oldest, newest, path) {
+  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
+  const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/" + path + "?oldest=" + oldest + "&newest=" + newest, { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
+  if (!r.ok) throw new Error("intervals.icu replied " + r.status);
+  const j = await r.json(); return Array.isArray(j) ? j : [];
+}
+async function loadNext7() {
+  const out = $("planWeekOut"), grid = $("planWeekGrid"), list = $("planWeekList");
+  const key = (localStorage.getItem("kickrIcuKey") || "").trim();
+  if (!key) { grid.innerHTML = ""; list.textContent = ""; out.textContent = "Connect intervals.icu below to see the next 7 days."; return; }
+  const now = new Date(), days = Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + i));
+  const start = ymd(days[0]), end = ymd(days[6]);
+  out.textContent = "Checking intervals.icu\u2026";
+  let ev, acts;
+  try { [ev, acts] = await Promise.all([icuRange(start, end, "events"), icuRange(start, end, "activities")]); }
+  catch (e) { out.textContent = "Couldn't load the calendar (" + e.message + ")."; return; }
+  const items = [];
+  ev.forEach(x => {
+    const date = String(x.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
+    const cat = x.category || "", text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
+    let dur = x.moving_time || 0, tss = x.icu_training_load != null ? x.icu_training_load : null;
+    if (cat === "WORKOUT" && text) { try { const st = parseText(text, +$("ftp").value || 270); dur = st.reduce((a, q) => a + q.dur, 0); tss = planStats(st).tss; } catch (e) {} }
+    items.push({ date, name: x.name || (cat === "WORKOUT" ? "Planned workout" : cat || "Event"), dur, tss, done: false });
+  });
+  acts.forEach(a => {
+    const date = String(a.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
+    items.push({ date, name: a.name || a.type || "Activity", dur: a.moving_time || 0, tss: a.icu_training_load != null ? a.icu_training_load : null, done: true });
+  });
+  const sums = days.map(d => items.filter(i => i.date === ymd(d)).reduce((t, i) => t + (i.tss || 0), 0));
+  const maxT = Math.max(100, ...sums);
+  grid.innerHTML = days.map((d, i) => {
+    const its = items.filter(x => x.date === ymd(d)), pct = Math.min(100, sums[i] / maxT * 100);
+    const col = its.some(x => !x.done) ? "#35b6e4" : "#3fc56b";
+    const label = sums[i] ? Math.round(sums[i]) + " TSS" : its.length ? its.length + (its.length > 1 ? " items" : " item") : "\u2013";
+    const wd = i === 0 ? "Today" : d.toLocaleDateString([], { weekday: "short" });
+    return '<div style="text-align:center;min-width:0"><div style="font-size:11px;color:#7b8291;' + (i === 0 ? "font-weight:700;color:inherit" : "") + '">' + wd + '</div>'
+      + '<div style="font-size:14px;font-weight:600;margin:2px 0">' + d.getDate() + '</div>'
+      + '<div style="position:relative;height:64px;background:#1f2227;border-radius:6px;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:' + pct + '%;background:' + col + '"></div></div>'
+      + '<div style="font-size:11px;color:#7b8291;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</div></div>';
+  }).join("");
+  list.textContent = "";
+  let any = false;
+  days.forEach((d, i) => {
+    const its = items.filter(x => x.date === ymd(d)).sort((a, b) => a.done - b.done);
+    if (!its.length) return;
+    any = true;
+    const head = document.createElement("div"); head.style.cssText = "font-weight:600;margin:10px 0 2px;font-size:13px;color:#7b8291";
+    head.textContent = i === 0 ? "Today" : d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+    list.appendChild(head);
+    its.forEach(x => {
+      const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px;align-items:baseline;margin:3px 0";
+      const n = document.createElement("span"); n.style.cssText = "flex:1;min-width:0;overflow-wrap:anywhere"; n.textContent = x.name + (x.done ? " \u2713" : "");
+      const m = document.createElement("span"); m.className = "r"; m.style.cssText = "flex:none;font-size:13px";
+      m.textContent = [x.dur ? fmtHM(x.dur) : "", x.tss != null ? "TSS " + Math.round(x.tss) : ""].filter(Boolean).join("  ");
+      row.append(n, m); list.appendChild(row);
+    });
+  });
+  if (!any) list.textContent = "Nothing planned or completed in the next 7 days.";
+  out.textContent = "";
+}
+$("btnToday").onclick = () => { loadToday(); loadNext7(); };
 $("btnIcuTest").onclick = async () => {
   const key = $("icuKey").value.trim(), id = ($("icuId").value.trim() || "0"), day = localDay();
   if (!key) { icuOut("Paste your API key first.", true); return; }
@@ -1219,6 +1532,7 @@ setInterval(render, 250);
 renderLibrary();
 loadWorkout();
 loadToday();
+loadNext7();
 </script>
 </body>
 </html>
