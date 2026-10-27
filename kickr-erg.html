@@ -11,6 +11,8 @@
   button { background:#242a33; color:var(--fg); border:0; border-radius:10px; padding:10px 12px; font-size:14px; font-weight:600; }
   button.primary { background:var(--acc); color:#000; }
   button:disabled { opacity:.4; }
+  .ctrl { display:flex; gap:6px; margin:6px 0; }
+  .ctrl button { flex:1 1 0; min-width:0; height:54px; font-size:20px; padding:0 6px; border-radius:12px; }
   .top { display:flex; flex-wrap:wrap; gap:2px 12px; align-items:center; margin:8px 0 2px; }
   .top .ver { margin-left:auto; font-size:12px; color:var(--dim); }
   .row { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; align-items:center; }
@@ -19,10 +21,10 @@
   textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:13px; }
   input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:8px; font-size:16px; }
   .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:6px; }
-  .tile { grid-column:span 2; background:var(--card); border-radius:12px; padding:6px 10px; min-width:0; }
-  .tile .l { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; }
-  .tile .v { font-size:28px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; white-space:nowrap; }
-  .tile .s { font-size:12px; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tile { grid-column:span 2; background:var(--card); border-radius:12px; padding:8px 10px; min-width:0; }
+  .tile .l { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; }
+  .tile .v { font-size:40px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; white-space:nowrap; }
+  .tile .s { font-size:14px; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .wide { grid-column:span 6; }
   .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .split .v { font-size:58px; }
@@ -39,7 +41,7 @@
 <div class="top">
   <span id="stTrainer" class="status">Trainer: not connected</span>
   <span id="stHR" class="status">HR: not connected</span>
-  <span class="ver">v1.9</span>
+  <span class="ver">v0.1</span>
 </div>
 
 <details id="setup" open>
@@ -53,24 +55,30 @@
     <input id="ftp" type="number" value="270" inputmode="numeric">
   </div>
   <textarea id="wo" spellcheck="false">Warmup
-- 10m ramp 40%-60%
+-5m ramp 50%-65%
+-5m 65%
+-2m 88%
+-3m 50%
 
 Main Set 3x
-- 5m 90%
-- 3m 50%
+-15m 88%
+-5m 50%
 
 Cooldown
-- 5m ramp 55%-40%</textarea>
+-10m 65%
+-5m ramp 65%-50%</textarea>
   <div class="row"><button id="btnLoad">Load workout</button><span id="stWo" class="status"></span></div>
 </details>
 
-<div class="row">
+<div class="ctrl">
   <button id="btnStart" class="primary" disabled>Start</button>
   <button id="btnPause" disabled>Pause</button>
-  <button id="btnEnd" style="display:none;background:#7a2a30">End workout</button>
-  <button id="btnSkip" disabled>Skip</button>
+  <button id="btnEnd" style="display:none;background:#7a2a30">End</button>
+</div>
+<div class="ctrl">
   <button id="btnDn" disabled>-1%</button>
   <button id="btnUp" disabled>+1%</button>
+  <button id="btnSkip" disabled>Skip</button>
 </div>
 
 <div class="grid">
@@ -90,8 +98,8 @@ Cooldown
   <div class="tile wide" style="padding:5px"><canvas id="hrgraph" style="width:100%;height:64px;display:block"></canvas></div>
   <div class="tile"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
   <div class="tile"><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div>
-  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:26px">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
-  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed" style="font-size:26px">0:00</div><div class="s" id="remain">--</div></div>
+  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:34px">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
+  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed" style="font-size:34px">0:00</div><div class="s" id="remain">--</div></div>
   <div class="tile"><div class="l">Norm. power</div><div class="v" id="np">--</div><div class="s" id="ifTss">IF -- TSS --</div></div>
   <div class="tile"><div class="l">Energy</div><div class="v" id="kj">0</div><div class="s">kJ</div></div>
 </div>
@@ -344,11 +352,11 @@ function tick() {
   }
   pushTarget(false); render();
 }
-function finishWorkout() {
+function finishWorkout(reason) {
   W.running = false; W.paused = false; clearInterval(W.timer); $("btnPause").textContent = "Pause";
   cpWrite([0x05, 0, 0]); cpWrite([0x08, 0x01]);     // 0 W target, then stop
   try { window._wl && window._wl.release(); } catch (e) {}
-  log("Workout complete."); refreshButtons(); render();
+  log(reason || "Workout complete."); refreshButtons(); render();
 }
 function skipStep() {
   if (!W.running) return;
@@ -372,12 +380,14 @@ function render() {
   drawProfile(); drawHR();
   if (!W.loaded) return;
   $("elapsed").textContent = fmt(W.t);
+  $("elapsed").style.fontSize = W.t >= 3600 ? "27px" : "34px";
   const total = W.steps.reduce((a, s) => a + s.dur, 0);
   $("remain").textContent = fmt(total - W.t) + " remaining";
   const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
   $("target").textContent = !W.running ? "--" : (tgt ?? "FREE");
   $("tgtPct").textContent = !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP" + (W.adj !== 1 ? " · adj " + Math.round(W.adj * 100) + "%" : "");
   $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
+  $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "27px" : "34px";
   $("stepName").textContent = W.running ? "Step " + (W.idx + 1) + " / " + W.steps.length : "--";
   $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
   const ia = W.iN ? W.iSum / W.iN : null;
@@ -478,7 +488,7 @@ $("btnTrainer").onclick = connectTrainer; $("btnHR").onclick = connectHR;
 $("btnLoad").onclick = loadWorkout; $("btnStart").onclick = startWorkout;
 $("btnPause").onclick = togglePause; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
 $("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
-$("btnEndYes").onclick = () => { $("endModal").style.display = "none"; log("Workout ended by user."); finishWorkout(); }; $("btnSkip").onclick = skipStep;
+$("btnEndYes").onclick = () => { $("endModal").style.display = "none"; finishWorkout("Workout ended by user."); }; $("btnSkip").onclick = skipStep;
 $("btnUp").onclick = () => adjust(0.01); $("btnDn").onclick = () => adjust(-0.01);
 setInterval(render, 250);
 loadWorkout();
