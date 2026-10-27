@@ -90,7 +90,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.15</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.16</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -157,7 +157,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v0.9.15</span>
+  <span class="ver">v0.9.16</span>
 </div>
 
 <div class="ctrl">
@@ -218,6 +218,15 @@ Cooldown
     <div id="launchName" style="font-size:20px;font-weight:700;margin-bottom:4px;overflow-wrap:anywhere"></div>
     <div id="launchInfo" class="hint" style="font-size:14px;margin-bottom:16px"></div>
     <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px">Cancel</button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px">Load workout</button></div>
+  </div>
+</div>
+
+<div id="renameModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%">
+    <div style="font-size:18px;font-weight:600;margin-bottom:4px">Rename folder</div>
+    <div class="hint" style="font-size:14px;margin-bottom:12px">Renames the folder for all of its workouts. <span id="renameFrom" style="color:var(--fg)"></span></div>
+    <input id="renameInput" type="text" maxlength="40" style="width:100%;box-sizing:border-box;margin-bottom:14px">
+    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnRenameNo" style="flex:1;height:48px">Cancel</button><button id="btnRenameYes" class="primary" style="flex:1;height:48px">Save name</button></div>
   </div>
 </div>
 
@@ -816,10 +825,13 @@ try { userLib = JSON.parse(localStorage.getItem("kickrLib") || "[]").filter(x =>
 const persistLib = () => { try { localStorage.setItem("kickrLib", JSON.stringify(userLib)); } catch (e) { libMsg("Couldn't save (browser storage unavailable)", true); } };
 function libMsg(t, bad) { const e = $("libMsg"); e.textContent = t; e.style.color = bad ? "var(--bad, #ff6b6b)" : ""; }
 const cmpName = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });   // "1.2 x" < "1.10 x"
+let FOLDER_ALIAS = {};                                     // renamed folder names: old -> new (built-in and saved workouts alike)
+try { FOLDER_ALIAS = JSON.parse(localStorage.getItem("kickrFolderAlias") || "{}") || {}; } catch (e) { FOLDER_ALIAS = {}; }
+const effFolder = f => (f && FOLDER_ALIAS[f]) || f || "";
 let foldOpen = {};
 try { foldOpen = JSON.parse(localStorage.getItem("kickrFolders") || "{}") || {}; } catch (e) { foldOpen = {}; }
 const saveFoldState = () => { try { localStorage.setItem("kickrFolders", JSON.stringify(foldOpen)); } catch (e) {} };
-const allFolders = () => [...new Set(LIBRARY.concat(userLib).map(x => x.folder || "").filter(Boolean))].sort(cmpName);
+const allFolders = () => [...new Set(LIBRARY.concat(userLib).map(x => effFolder(x.folder)).filter(Boolean))].sort(cmpName);
 function refreshFolderSelect(sel) {
   const cur = sel != null ? sel : ($("woFolder").value === "__new__" ? "" : $("woFolder").value), el = $("woFolder");
   el.innerHTML = "";
@@ -831,7 +843,7 @@ function refreshFolderSelect(sel) {
 const curFolder = () => $("woFolder").value === "__new__" ? $("woFolderNew").value.trim() : $("woFolder").value;
 let pendingLaunch = null;
 function askLaunch(item, dur, tss) {
-  pendingLaunch = item; $("launchName").textContent = item.name; $("launchInfo").textContent = [dur, tss, item.folder].filter(Boolean).join("  \u00b7  ");
+  pendingLaunch = item; $("launchName").textContent = item.name; $("launchInfo").textContent = [dur, tss, effFolder(item.folder)].filter(Boolean).join("  \u00b7  ");
   $("launchModal").style.display = "flex";
 }
 function libRow(item) {
@@ -844,7 +856,7 @@ function libRow(item) {
   const g = document.createElement("canvas"); if (steps && steps.length) drawMini(g, steps);
   const t = document.createElement("span"); t.textContent = tss; t.className = "r";
   b.append(n, d, g, t);
-  b.onclick = () => { $("wo").value = item.text; $("woName").value = item.name; refreshFolderSelect(item.folder || ""); updateWoInfo(); libMsg(""); $("woName").scrollIntoView({ behavior: "smooth", block: "start" }); };
+  b.onclick = () => { $("wo").value = item.text; $("woName").value = item.name; refreshFolderSelect(effFolder(item.folder)); updateWoInfo(); libMsg(""); $("woName").scrollIntoView({ behavior: "smooth", block: "start" }); };
   row.appendChild(b);
   const go = document.createElement("button"); go.textContent = "\u25b6"; go.title = "Load and launch"; go.style.cssText = "width:48px;margin:4px 0;font-size:16px;flex:none;background:var(--acc);color:#000";
   go.onclick = () => askLaunch(item, dur, tss);
@@ -868,26 +880,51 @@ function folderColor(f) {
   if (/^vo2/i.test(f)) return "#ff4d5e";
   return null;
 }
+let renameFrom = null;
+function openRename(f) {
+  renameFrom = f; $("renameFrom").textContent = f; $("renameInput").value = f; $("renameModal").style.display = "flex";
+  setTimeout(() => { $("renameInput").focus(); $("renameInput").select(); }, 50);
+}
+function applyRename() {
+  const oldF = renameFrom, neu = $("renameInput").value.trim().replace(/\s+/g, " ");
+  if (!oldF || !neu) { $("renameInput").focus(); return; }
+  if (neu !== oldF) {
+    for (const k of Object.keys(FOLDER_ALIAS)) if (FOLDER_ALIAS[k] === oldF) FOLDER_ALIAS[k] = neu;   // keep earlier renames pointing at the new name
+    FOLDER_ALIAS[oldF] = neu;
+    if (oldF in foldOpen) { foldOpen[neu] = foldOpen[oldF]; delete foldOpen[oldF]; saveFoldState(); }
+    try { localStorage.setItem("kickrFolderAlias", JSON.stringify(FOLDER_ALIAS)); } catch (e) { libMsg("Couldn't save the new name (browser storage unavailable)", true); }
+    libMsg("Renamed to \u201c" + neu + "\u201d");
+  }
+  $("renameModal").style.display = "none"; renameFrom = null; renderLibrary();
+}
 function renderLibrary() {
   const box = $("library"); box.innerHTML = "";
   const all = LIBRARY.map(x => ({ ...x, built: true })).concat(userLib.map((x, i) => ({ ...x, idx: i })));
   refreshFolderSelect();
   if (!all.length) { box.innerHTML = '<div class="hint" style="font-size:14px">No workouts yet. Build one below and tap Save to library.</div>'; return; }
   const groups = new Map();
-  all.forEach(it => { const f = it.folder || ""; if (!groups.has(f)) groups.set(f, []); groups.get(f).push(it); });
+  all.forEach(it => { const f = effFolder(it.folder); if (!groups.has(f)) groups.set(f, []); groups.get(f).push(it); });
   const names = [...groups.keys()].sort((a, b) => a === "" ? 1 : b === "" ? -1 : cmpName(a, b));
   const flat = names.length === 1 && names[0] === "";                       // no folders in use: plain list
   names.forEach(f => {
     const items = groups.get(f).sort((a, b) => cmpName(a.name, b.name));
     const open = flat || (f in foldOpen ? foldOpen[f] : f === "");
     if (!flat) {
-      const h = document.createElement("button");
+      const h = document.createElement("div");
       const fc = folderColor(f);
-      h.style.cssText = "display:flex;justify-content:space-between;width:100%;text-align:left;margin:6px 0 2px;padding:10px 12px 10px 18px;font-size:15px;background:#1c222b" + (fc ? ";box-shadow:inset 5px 0 0 " + fc : "");
-      const l = document.createElement("span"), c = document.createElement("span");
-      l.textContent = (open ? "▾ " : "▸ ") + (f || "Unsorted"); c.textContent = items.length; c.style.color = "var(--dim)";
-      h.append(l, c);
-      h.onclick = () => { foldOpen[f] = !open; saveFoldState(); renderLibrary(); };
+      h.style.cssText = "display:flex;align-items:stretch;width:100%;margin:6px 0 2px;background:#1c222b;border-radius:10px" + (fc ? ";box-shadow:inset 5px 0 0 " + fc : "");
+      const t = document.createElement("button"), l = document.createElement("span"), c = document.createElement("span");
+      t.style.cssText = "flex:1;min-width:0;display:flex;justify-content:space-between;text-align:left;background:none;padding:10px 6px 10px 18px;font-size:15px;border-radius:10px 0 0 10px";
+      l.textContent = (open ? "▾ " : "▸ ") + (f || "Unsorted"); l.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap"; c.textContent = items.length; c.style.color = "var(--dim)";
+      t.append(l, c);
+      t.onclick = () => { foldOpen[f] = !open; saveFoldState(); renderLibrary(); };
+      h.appendChild(t);
+      if (f) {                                             // rename: ⋮ button (not shown for the Unsorted group)
+        const m = document.createElement("button"); m.textContent = "\u22ee"; m.title = "Rename folder";
+        m.style.cssText = "width:44px;flex:none;background:none;font-size:20px;font-weight:700;padding:0;border-radius:0 10px 10px 0;color:var(--dim)";
+        m.onclick = e => { e.stopPropagation(); openRename(f); };
+        h.appendChild(m);
+      }
       box.appendChild(h);
     }
     if (open) items.forEach(it => box.appendChild(libRow(it)));
@@ -1063,6 +1100,8 @@ $("btnEdit").onclick = () => { if (!W.running) showScreen("landing"); };
 $("wo").addEventListener("input", updateWoInfo); $("ftp").addEventListener("input", updateWoInfo); $("ftp").addEventListener("change", renderLibrary);
 $("woFolder").onchange = () => { const nw = $("woFolder").value === "__new__"; $("woFolderNew").style.display = nw ? "" : "none"; if (nw) $("woFolderNew").focus(); };
 $("btnSaveLib").onclick = saveToLibrary;
+$("btnRenameNo").onclick = () => { $("renameModal").style.display = "none"; renameFrom = null; };
+$("btnRenameYes").onclick = applyRename; $("renameInput").onkeydown = e => { if (e.key === "Enter") applyRename(); };
 $("btnSaveImg").onclick = saveSummaryImage; $("btnSaveFit").onclick = saveFit; $("btnSumClose").onclick = closeSummary; $("btnImgClose").onclick = () => { $("imgModal").style.display = "none"; };
 $("stTrainer2").onclick = () => { if (!cp) connectTrainer(); };      // tap a disconnected status in the ride header to reconnect
 $("stHR2").onclick = () => { if (live.hr == null) connectHR(); };
