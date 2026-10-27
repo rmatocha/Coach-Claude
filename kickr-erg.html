@@ -32,7 +32,7 @@
 </head>
 <body>
 
-<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.5</span></h1>
+<h1>SETUP <span style="float:right;font-weight:400;opacity:.6">v1.7</span></h1>
 <div class="row">
   <button id="btnTrainer" class="primary">Connect trainer</button>
   <button id="btnTrainerAll">Trainer: show all devices</button>
@@ -56,10 +56,6 @@ Main Set 3x
 
 Cooldown
 - 5m ramp 55%-40%</textarea>
-  <div class="hint">
-    intervals.icu syntax. Steps start with <code>-</code>: <code>- 15m 90%</code>, <code>- 4m 250w</code>, <code>- 2m ramp 50%-70%</code>, <code>- 1m30s Z4</code>, <code>- 20m freeride</code>.<br>
-    Repeats: a line like <code>Main Set 4x</code> (or just <code>4x</code>) followed by its steps, with a blank line before and after the block. Zwift .zwo XML also works.
-  </div>
   <div class="row"><button id="btnLoad">Load workout</button><span id="stWo" class="status"></span></div>
 </details>
 
@@ -149,10 +145,21 @@ const errText = e => (e && (e.message || e.name)) || (typeof e === "string" ? e 
 async function connectTrainer(all) {
   let step = "choosing device";
   try {
-    const opts = all
-      ? { acceptAllDevices: true, optionalServices: [FTMS, 0x1818] }
-      : { filters: [{ services: [FTMS] }, { services: [0x1818] }, { namePrefix: "KICKR" }, { namePrefix: "Wahoo" }], optionalServices: [FTMS, 0x1818] };
-    const dev = await navigator.bluetooth.requestDevice(opts);
+    const FT = "00001826-0000-1000-8000-00805f9b34fb", CPW = "00001818-0000-1000-8000-00805f9b34fb";
+    const variants = all ? [
+      { name: "all+uuid", o: { acceptAllDevices: true, optionalServices: [FT, CPW] } },
+      { name: "all+alias", o: { acceptAllDevices: true, optionalServices: ["fitness_machine", "cycling_power"] } },
+      { name: "all, no optional", o: { acceptAllDevices: true } }
+    ] : [
+      { name: "filter+uuid", o: { filters: [{ services: [FT] }, { services: [CPW] }, { namePrefix: "KICKR" }], optionalServices: [FT, CPW] } },
+      { name: "filter+alias", o: { filters: [{ services: ["fitness_machine"] }], optionalServices: ["fitness_machine"] } }
+    ];
+    let dev = null;
+    for (const v of variants) {
+      try { dev = await navigator.bluetooth.requestDevice(v.o); log("Picker variant OK: " + v.name); break; }
+      catch (e) { log("Picker variant '" + v.name + "' failed: " + errText(e) + " (" + typeof e + ")"); if (e && e.name === "NotFoundError") throw e; }
+    }
+    if (!dev) throw new Error("every picker variant failed (see log)");
     log("Picked: " + (dev.name || dev.id));
     setStatus("stTrainer", "Trainer: connecting…");
     dev.addEventListener("gattserverdisconnected", () => { setStatus("stTrainer", "Trainer: disconnected", "bad"); cp = null; refreshButtons(); });
