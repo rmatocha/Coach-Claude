@@ -90,7 +90,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.9</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.10</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -158,7 +158,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v0.9.9</span>
+  <span class="ver">v0.9.10</span>
 </div>
 
 <div class="ctrl">
@@ -487,15 +487,22 @@ const stepTarget = () => {
 // Power at time t (seconds) inside step i, scaled by the +/- adjustment.
 const baseW = (i, t) => { const s = W.steps[i]; const f = s.a + (s.b - s.a) * Math.min(1, t / s.dur); return f * W.ftp * W.adj; };
 // Smooth transitions need both steps to be at least 4 s long and not freeride.
-const rampOK = (i, j) => { const a = W.steps[i], b = W.steps[j]; return !!a && !!b && !a.free && !b.free && a.dur >= 4 && b.dur >= 4; };
+// Ramp length scales with the power change: 1 s per 10% of FTP, between 2 and 10 s. It starts 1 s before the boundary,
+// so the rest (D-1 s) runs into the next interval. Returns 0 when the two intervals are too short to hold it.
+const rampLen = (i, j) => {
+  const a = W.steps[i], b = W.steps[j]; if (!a || !b || a.free || b.free || a.dur < 2) return 0;
+  const D = Math.min(10, Math.max(2, Math.round(Math.abs(baseW(j, 0) - baseW(i, a.dur)) / (W.ftp * 0.1))));
+  return b.dur >= D ? D : 0;
+};
+const rampOK = (i, j) => rampLen(i, j) > 0;
 // What the trainer should be held at right now: the prescribed power, except during the 4 s transition
 // (1 s before the next interval through its first 3 s), which moves evenly from the old target to the new one.
 function commandedTarget() {
   const s = W.steps[W.idx]; if (!s || s.free) return null;
   const r = W.ramp;
   if (r && (W.idx === r.to || W.idx === r.to - 1)) {
-    const p = (Date.now() - r.t0) / 4000;
-    if (p < 1) return Math.round(r.A + (baseW(r.to, 3) - r.A) * Math.max(0, p));
+    const p = (Date.now() - r.t0) / (r.D * 1000);
+    if (p < 1) return Math.round(r.A + (baseW(r.to, r.D - 1) - r.A) * Math.max(0, p));
   }
   W.ramp = null;
   return stepTarget();
@@ -550,8 +557,8 @@ function tick() {
     const avg30 = W.pw.slice(-30).reduce((a, b) => a + b, 0) / 30;
     W.sum4 += avg30 ** 4; W.n4++;
   }
-  if (W.stepT === W.steps[W.idx].dur - 1 && rampOK(W.idx, W.idx + 1)) {      // 1 s before the next interval: start the 4 s ramp
-    const A = commandedTarget(); if (A != null) W.ramp = { A, t0: Date.now(), to: W.idx + 1 };
+  if (W.stepT === W.steps[W.idx].dur - 1 && rampOK(W.idx, W.idx + 1)) {      // 1 s before the next interval: start the ramp
+    const A = commandedTarget(), D = rampLen(W.idx, W.idx + 1); if (A != null) W.ramp = { A, t0: Date.now(), to: W.idx + 1, D };
   }
   if (W.stepT >= W.steps[W.idx].dur) {
     W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0;
@@ -571,7 +578,7 @@ function skipStep() {
   const A = commandedTarget();                         // what the trainer is being held at right now
   W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0; W.ramp = null;
   if (W.idx >= W.steps.length) return finishWorkout();
-  if (A != null && rampOK(W.idx - 1, W.idx)) W.ramp = { A, t0: Date.now() - 1000, to: W.idx };
+  if (A != null && rampOK(W.idx - 1, W.idx)) W.ramp = { A, t0: Date.now() - 1000, to: W.idx, D: rampLen(W.idx - 1, W.idx) };
   pushTarget(true); render();
 }
 function togglePause() {
@@ -646,7 +653,7 @@ function prepareSummaryImage(d) {                       // square (1080x1080) so
   drawProfile(g1, { w: 484, h: 159, dpr: 2, noCursor: true, actual: true }); drawHR(g2, { w: 484, h: 107, dpr: 2, noCursor: true });
   c.fillStyle = "#161a20"; rrect(c, 48, 432, 984, 334, 20); c.fill(); rrect(c, 48, 778, 984, 230, 20); c.fill();
   if (g1.width) c.drawImage(g1, 56, 440); if (g2.width) c.drawImage(g2, 56, 786);
-  c.fillStyle = "#5c6573"; c.font = "400 24px " + F; c.fillText("Kickr ERG v0.9.9", 48, 1052);
+  c.fillStyle = "#5c6573"; c.font = "400 24px " + F; c.fillText("Kickr ERG v0.9.10", 48, 1052);
   cv.toBlob(b => { sumBlob = b; $("btnSaveImg").disabled = !b; }, "image/png");
 }
 function saveSummaryImage() {
