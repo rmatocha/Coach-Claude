@@ -41,7 +41,7 @@
 <div class="top">
   <span id="stTrainer" class="status">Trainer: not connected</span>
   <span id="stHR" class="status">HR: not connected</span>
-  <span class="ver">v0.2</span>
+  <span class="ver">v0.3</span>
 </div>
 
 <details id="setup" open>
@@ -74,6 +74,7 @@ Cooldown
   <button id="btnStart" class="primary" disabled>Start</button>
   <button id="btnPause" disabled>Pause</button>
   <button id="btnEnd" style="display:none;background:#7a2a30">End</button>
+  <button id="btnNew" style="display:none;background:#2d5fa8">New workout</button>
 </div>
 <div class="ctrl">
   <button id="btnDn" disabled>-1%</button>
@@ -94,8 +95,8 @@ Cooldown
       <div class="s"><span id="iavgPct">--</span>% of target</div>
     </div>
   </div>
-  <div class="tile wide" style="padding:5px"><canvas id="profile" style="width:100%;height:50px;display:block"></canvas></div>
-  <div class="tile wide" style="padding:5px"><canvas id="hrgraph" style="width:100%;height:38px;display:block"></canvas></div>
+  <div class="tile wide" style="padding:5px"><canvas id="profile" style="width:100%;height:65px;display:block"></canvas></div>
+  <div class="tile wide" style="padding:5px"><canvas id="hrgraph" style="width:100%;height:49px;display:block"></canvas></div>
   <div class="tile"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
   <div class="tile"><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div>
   <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:46px">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
@@ -370,6 +371,12 @@ function togglePause() {
   if (W.paused) { W.lastTarget = null; setTargetPower(50); } else pushTarget(true);
   refreshButtons();
 }
+function newWorkout() {
+  $("log").textContent = "";
+  $("setup").open = true;
+  loadWorkout();                       // re-reads the builder + FTP, clears all workout data, redraws the plan
+  window.scrollTo(0, 0);
+}
 function adjust(d) { W.adj = Math.max(0.5, W.adj + d); if (W.running && !W.paused) pushTarget(true); render(); }
 
 /* ---------------- rendering ---------------- */
@@ -394,6 +401,7 @@ function render() {
   $("iavg").textContent = ia == null ? "--" : Math.round(ia);
   $("iavgPct").textContent = ia == null || !tgt ? "--" : Math.round(ia / tgt * 100);
   $("kj").textContent = Math.round(W.kj);
+  if (!W.n4) { $("np").textContent = "--"; $("ifTss").textContent = "IF -- TSS --"; }
   if (W.n4) {
     const np = (W.sum4 / W.n4) ** 0.25, IF = np / W.ftp, tss = (W.t * np * IF) / (W.ftp * 3600) * 100;
     $("np").textContent = Math.round(np); $("ifTss").textContent = "IF " + IF.toFixed(2) + " TSS " + Math.round(tss);
@@ -480,13 +488,14 @@ function refreshButtons() {
   ["btnPause", "btnSkip", "btnUp", "btnDn"].forEach(id => $(id).disabled = !W.running);
   $("btnStart").textContent = W.running ? "Running" : "Start";
   $("btnEnd").style.display = (W.running && W.paused) ? "" : "none";     // End only appears while paused
+  $("btnNew").style.display = (!W.running && W.t > 0) ? "" : "none";     // New workout only after one has ended
 }
 
 /* ---------------- wire up ---------------- */
 if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available. Open this page in the Bluefy browser (over https).", "bad"); $("btnTrainer").disabled = $("btnHR").disabled = true; }
 $("btnTrainer").onclick = connectTrainer; $("btnHR").onclick = connectHR;
 $("btnLoad").onclick = loadWorkout; $("btnStart").onclick = startWorkout;
-$("btnPause").onclick = togglePause; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
+$("btnPause").onclick = togglePause; $("btnNew").onclick = newWorkout; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
 $("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
 $("btnEndYes").onclick = () => { $("endModal").style.display = "none"; finishWorkout("Workout ended by user."); }; $("btnSkip").onclick = skipStep;
 $("btnUp").onclick = () => adjust(0.01); $("btnDn").onclick = () => adjust(-0.01);
