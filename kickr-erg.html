@@ -28,7 +28,7 @@
   .wide { grid-column:span 6; }
   .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; position:relative; }
   .split .v { font-size:calc(var(--u)*6.49); }
-  .split .v small { font-size:20px; font-weight:600; color:var(--dim); margin-left:3px; }
+  .tile .v small { font-size:20px; font-weight:600; color:var(--dim); margin-left:3px; }
   #target { color:var(--acc); }
   #adjLbl { position:absolute; right:12px; bottom:6px; font-size:14px; font-weight:600; color:var(--ok); display:none; font-variant-numeric:tabular-nums; }
   #btnErg.on { background:var(--ok); color:#000; }
@@ -38,7 +38,8 @@
   label { display:flex; align-items:center; gap:8px; font-size:15px; }
   input[type=checkbox] { width:22px; height:22px; }
   #btnDn, #btnUp { font-size:32px; }
-  #tile3s { transition:background .35s; }
+  #pctFtp { transition:color .35s; }
+  #p3u { margin-left:1px; }
   .bar { height:6px; background:#242a33; border-radius:3px; overflow:hidden; margin-top:3px; }
   .bar > div { height:100%; width:0; background:var(--acc); }
   details summary { color:var(--dim); font-size:14px; padding:4px 0; }
@@ -50,7 +51,7 @@
 <div class="top">
   <span id="stTrainer" class="status">Trainer: not connected</span>
   <span id="stHR" class="status">HR: not connected</span>
-  <span class="ver">v0.7</span>
+  <span class="ver">v0.8</span>
 </div>
 
 <details id="setup" open>
@@ -115,7 +116,7 @@ Cooldown
   </div>
   <div class="tile wide" style="padding:4px"><canvas id="profile" style="width:100%;height:calc(var(--u)*8.14);display:block"></canvas></div>
   <div class="tile wide" style="padding:4px"><canvas id="hrgraph" style="width:100%;height:calc(var(--u)*6.05);display:block"></canvas></div>
-  <div class="tile" id="tile3s"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
+  <div class="tile"><div class="l">3s Power</div><div class="v"><span id="p3">--</span><small id="p3u" style="display:none">w</small></div><div class="s" id="pctFtp">-- % FTP</div></div>
   <div class="tile"><div class="l">Cadence</div><div class="v" id="cad">--</div><div class="s" id="govState">rpm</div></div>
   <div class="tile"><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div>
   <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:calc(var(--u)*4.84)">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
@@ -461,7 +462,8 @@ function render() {
   const p3 = power3s(); $("p3").textContent = p3 == null ? "--" : Math.round(p3);
   const pct = p3 == null ? null : Math.round(p3 / W.ftp * 100);
   $("pctFtp").textContent = pct == null ? "-- % FTP" : pct + " % FTP";
-  $("tile3s").style.background = pct == null || pct <= 55 ? "" : pct <= 75 ? "#1F77B4" : pct <= 90 ? "#2CA02C" : pct <= 105 ? "#FFCB0E" : pct <= 120 ? "#FF2A0E" : "#9467BD";
+  $("pctFtp").style.color = pct == null || pct <= 55 ? "" : pct <= 75 ? "#1F77B4" : pct <= 90 ? "#2CA02C" : pct <= 105 ? "#FFCB0E" : pct <= 120 ? "#FF2A0E" : "#9467BD";
+  $("p3u").style.display = p3 == null ? "none" : "";
   $("hr").textContent = live.hr ?? "--";
   const c3 = cad3s(), thr = Math.max(30, +$("govCad").value || 75);
   $("cad").textContent = c3 == null ? "--" : Math.round(c3);
