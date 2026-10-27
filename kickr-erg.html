@@ -90,7 +90,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.13</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Kickr ERG</span><span class="ver">v0.9.14</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -158,7 +158,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v0.9.13</span>
+  <span class="ver">v0.9.14</span>
 </div>
 
 <div class="ctrl">
@@ -845,7 +845,7 @@ function libRow(item) {
   const g = document.createElement("canvas"); if (steps && steps.length) drawMini(g, steps);
   const t = document.createElement("span"); t.textContent = tss; t.className = "r";
   b.append(n, d, g, t);
-  b.onclick = () => { $("wo").value = item.text; $("woName").value = item.name; refreshFolderSelect(item.folder || ""); updateWoInfo(); libMsg(""); };
+  b.onclick = () => { $("wo").value = item.text; $("woName").value = item.name; refreshFolderSelect(item.folder || ""); updateWoInfo(); libMsg(""); $("woName").scrollIntoView({ behavior: "smooth", block: "start" }); };
   row.appendChild(b);
   const go = document.createElement("button"); go.textContent = "\u25b6"; go.title = "Load and launch"; go.style.cssText = "width:48px;margin:4px 0;font-size:16px;flex:none;background:var(--acc);color:#000";
   go.onclick = () => askLaunch(item, dur, tss);
