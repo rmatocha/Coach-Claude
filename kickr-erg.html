@@ -21,10 +21,10 @@
   textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:13px; }
   input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:8px; font-size:16px; }
   .grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:6px; }
-  .tile { grid-column:span 2; background:var(--card); border-radius:12px; padding:8px 10px; min-width:0; }
-  .tile .l { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; }
-  .tile .v { font-size:40px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; white-space:nowrap; }
-  .tile .s { font-size:14px; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tile { grid-column:span 3; background:var(--card); border-radius:12px; padding:8px 10px; min-width:0; }
+  .tile .l { font-size:13px; color:var(--dim); text-transform:uppercase; letter-spacing:.05em; }
+  .tile .v { font-size:52px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1; white-space:nowrap; }
+  .tile .s { font-size:15px; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .wide { grid-column:span 6; }
   .split { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .split .v { font-size:58px; }
@@ -41,7 +41,7 @@
 <div class="top">
   <span id="stTrainer" class="status">Trainer: not connected</span>
   <span id="stHR" class="status">HR: not connected</span>
-  <span class="ver">v0.1</span>
+  <span class="ver">v0.2</span>
 </div>
 
 <details id="setup" open>
@@ -94,12 +94,12 @@ Cooldown
       <div class="s"><span id="iavgPct">--</span>% of target</div>
     </div>
   </div>
-  <div class="tile wide" style="padding:5px"><canvas id="profile" style="width:100%;height:84px;display:block"></canvas></div>
-  <div class="tile wide" style="padding:5px"><canvas id="hrgraph" style="width:100%;height:64px;display:block"></canvas></div>
+  <div class="tile wide" style="padding:5px"><canvas id="profile" style="width:100%;height:50px;display:block"></canvas></div>
+  <div class="tile wide" style="padding:5px"><canvas id="hrgraph" style="width:100%;height:38px;display:block"></canvas></div>
   <div class="tile"><div class="l">3s Power</div><div class="v" id="p3">--</div><div class="s" id="pctFtp">-- % FTP</div></div>
   <div class="tile"><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div>
-  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:34px">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
-  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed" style="font-size:34px">0:00</div><div class="s" id="remain">--</div></div>
+  <div class="tile"><div class="l">Interval left</div><div class="v" id="ileft" style="font-size:46px">--:--</div><div class="s" id="stepName">--</div><div class="bar"><div id="ibar"></div></div></div>
+  <div class="tile"><div class="l">Workout time</div><div class="v" id="elapsed" style="font-size:46px">0:00</div><div class="s" id="remain">--</div></div>
   <div class="tile"><div class="l">Norm. power</div><div class="v" id="np">--</div><div class="s" id="ifTss">IF -- TSS --</div></div>
   <div class="tile"><div class="l">Energy</div><div class="v" id="kj">0</div><div class="s">kJ</div></div>
 </div>
@@ -380,14 +380,14 @@ function render() {
   drawProfile(); drawHR();
   if (!W.loaded) return;
   $("elapsed").textContent = fmt(W.t);
-  $("elapsed").style.fontSize = W.t >= 3600 ? "27px" : "34px";
+  $("elapsed").style.fontSize = W.t >= 3600 ? "38px" : "46px";
   const total = W.steps.reduce((a, s) => a + s.dur, 0);
   $("remain").textContent = fmt(total - W.t) + " remaining";
   const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
   $("target").textContent = !W.running ? "--" : (tgt ?? "FREE");
   $("tgtPct").textContent = !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP" + (W.adj !== 1 ? " · adj " + Math.round(W.adj * 100) + "%" : "");
   $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
-  $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "27px" : "34px";
+  $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "38px" : "46px";
   $("stepName").textContent = W.running ? "Step " + (W.idx + 1) + " / " + W.steps.length : "--";
   $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
   const ia = W.iN ? W.iSum / W.iN : null;
