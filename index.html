@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.50</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.51</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -247,7 +247,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.50</span>
+  <span class="ver">v1.0.51</span>
 </div>
 
 <div class="ctrl">
@@ -364,7 +364,7 @@ Cooldown
 </div>
 
 <div id="summary">
-  <div class="sumtitle">Workout summary</div>
+  <div class="sumtitle">Workout Summary</div>
   <div class="sumdate" id="sumDate"></div>
   <div class="sumgrid" id="sumGrid"></div>
   <div class="tile wide" style="padding:4px"><canvas id="sumProfile" style="width:100%;height:76px;display:block"></canvas></div>
@@ -380,7 +380,7 @@ Cooldown
 
 <div id="imgModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:70;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px">
   <div class="hint" style="font-size:14px;text-align:center">Press and hold the image, then tap Save to Photos.</div>
-  <img id="imgView" alt="Workout summary" style="max-width:100%;max-height:72vh;object-fit:contain;border-radius:10px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto">
+  <img id="imgView" alt="Workout Summary" style="max-width:100%;max-height:72vh;object-fit:contain;border-radius:10px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto">
   <button id="btnImgClose" style="width:60%;height:48px;font-size:17px">Done</button>
 </div>
 
@@ -793,7 +793,7 @@ function prepareSummaryImage(d) {                       // square (1080x1080) so
   const S = 1080, H = 814, cv = document.createElement("canvas"); cv.width = S; cv.height = H;
   const c = cv.getContext("2d"), F = "-apple-system,system-ui,sans-serif";
   c.fillStyle = "#0b0d10"; c.fillRect(0, 0, S, H);
-  c.fillStyle = "#f2f4f7"; c.font = "700 54px " + F; c.fillText("Workout summary", 48, 82);
+  c.fillStyle = "#f2f4f7"; c.font = "700 54px " + F; c.fillText("Workout Summary", 48, 82);
   c.fillStyle = "#8b94a3"; c.font = "400 26px " + F; c.fillText($("sumDate").textContent, 48, 122);
   c.fillStyle = "rgba(255,210,63,.55)"; c.fillRect(48, 136, 984, 2);      // thin accent rule
   drawBarsLogo(c, 1080 - 48 - 91, 33, 0.1);
@@ -818,7 +818,7 @@ function saveSummaryImage() {
   if (!sumBlob) return;
   const file = new File([sumBlob], "workout-" + new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-") + ".png", { type: "image/png" });
   const fallback = () => { $("imgView").src = URL.createObjectURL(sumBlob); $("imgModal").style.display = "flex"; };
-  if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], title: "Workout summary" }).catch(e => { if (!e || e.name !== "AbortError") fallback(); });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], title: "Workout Summary" }).catch(e => { if (!e || e.name !== "AbortError") fallback(); });
   else fallback();
 }
 /* ---------------- .fit export ---------------- */
