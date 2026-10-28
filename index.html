@@ -93,7 +93,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.15</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.16</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -225,7 +225,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.15</span>
+  <span class="ver">v1.0.16</span>
 </div>
 
 <div class="ctrl">
@@ -804,7 +804,7 @@ async function uploadRide() {
     const r = await fetch(url, { method: "POST", headers: { Authorization: "Basic " + btoa("API_KEY:" + key) }, body: form });
     const txt = await r.text();
     if (!r.ok) { log("intervals.icu upload: " + r.status + " " + txt.slice(0, 200)); throw new Error("error " + r.status); }
-    rideUploaded = true; box.textContent = "Uploaded to intervals.icu.";
+    rideUploaded = true; box.style.color = "#3fc56b"; box.textContent = "Uploaded to intervals.icu.";
   } catch (e) {
     box.style.color = "var(--bad, #ff6b6b)";
     box.textContent = "Upload failed (" + e.message + ") ";
@@ -841,7 +841,7 @@ async function stravaUpload() {
       u = await q.json();
     }
     if (u.error) throw new Error(u.error);
-    box.textContent = u.activity_id ? "Uploaded to Strava." : "Sent to Strava, still processing.";
+    box.textContent = u.activity_id ? "Uploaded to Strava." : "Sent to Strava, still processing."; if (u.activity_id) box.style.color = "#3fc56b";
   } catch (e) {
     box.style.color = "var(--bad, #ff6b6b)";
     box.textContent = "Strava upload failed (" + e.message + ").";
