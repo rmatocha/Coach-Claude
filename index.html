@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.53</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.54</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -247,7 +247,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.53</span>
+  <span class="ver">v1.0.54</span>
 </div>
 
 <div class="ctrl">
@@ -1399,6 +1399,7 @@ icuCapture(); stravaCapture(); stravaShow(); icuShow();
 const localDay = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 /* ---------------- Data tab: training load (CTL / ATL / TSB) ---------------- */
 const FIT = { back: 42, ahead: 7 };
+let PLAN_TSS = {};                                           // date -> TSS still to do, from the calendar (filled by loadNext7)
 try { const f = JSON.parse(localStorage.getItem("kickrFitRange") || "null"); if (f) { FIT.back = f.back || 42; FIT.ahead = f.ahead != null ? f.ahead : 7; } } catch (e) {}
 function demoLoads(n) {                                    // stand-in daily load until intervals.icu data is wired in
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, out = [];
@@ -1492,7 +1493,7 @@ function fitWindow() {                                         // back days + to
     if (row) { const pc = ctl, pa = atl; ctl = row.ctl; atl = row.atl; days.push({ ctl, atl, tsb: row.tsb != null ? row.tsb : pc - pa }); }
     else days.push(step(dayOffset(n), 0));                    // no record that day: assume no load
   }
-  for (let n = 1; n <= FIT.ahead; n++) days.push(step(dayOffset(n), 0));
+  for (let n = 1; n <= FIT.ahead; n++) days.push(step(dayOffset(n), PLAN_TSS[dayOffset(n)] || 0));   // scheduled load for each future day
   return { days, todayIdx: FIT.back };
 }
 function renderFit() {
@@ -1506,8 +1507,8 @@ function renderFit() {
   const label = day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
   $("vDay").textContent = fitSel == null ? label : label + "  \u2715";
   $("vBack").textContent = FIT.back; $("vAhead").textContent = FIT.ahead;
-  $("fitNote").textContent = FIT_SRC === "icu" ? "From intervals.icu. Look-ahead assumes no training."
-    : FIT_SRC === "calc" ? "Calculated from your intervals.icu rides (" + FIT_ERR + "). Look-ahead assumes no training."
+  $("fitNote").textContent = FIT_SRC === "icu" ? "From intervals.icu. Look-ahead includes scheduled workouts."
+    : FIT_SRC === "calc" ? "Calculated from your intervals.icu rides (" + FIT_ERR + "). Look-ahead includes scheduled workouts."
     : "Demo data. Connect intervals.icu to see your real training load.";
 }
 function setFitRange(k, v) { FIT[k] = v; try { localStorage.setItem("kickrFitRange", JSON.stringify(FIT)); } catch (e) {} renderFit(); }
@@ -1721,6 +1722,8 @@ async function loadNext7() {
     const date = String(a.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
     items.push({ date, name: a.name || a.type || "Activity", dur: a.moving_time || 0, tss: a.icu_training_load != null ? a.icu_training_load : null, done: true });
   });
+  PLAN_TSS = {}; items.forEach(x => { if (!x.done && x.tss != null) PLAN_TSS[x.date] = (PLAN_TSS[x.date] || 0) + x.tss; });
+  if (FIT_DAYS) renderFit();                                   // refresh the Data tab look-ahead with the new schedule
   const sums = days.map(d => items.filter(i => i.date === ymd(d)).reduce((t, i) => t + (i.tss || 0), 0));
   const maxT = Math.max(100, ...sums);
   grid.innerHTML = days.map((d, i) => {
