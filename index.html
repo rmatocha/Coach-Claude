@@ -93,7 +93,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.9</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.10</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -170,8 +170,8 @@ Cooldown
     <div class="hint">Distance is estimated from power with a physics model (air drag + rolling resistance + momentum), scaled so 150 w holds this speed on flat ground. It goes into the summary and the .fit file.</div>
   </details>
 
-  <details class="card" id="icuCard">
-    <summary>intervals.icu connection (test)</summary>
+  <details class="card" id="icuCard" open>
+    <summary>Connections</summary>
     <div class="hint" style="margin-bottom:8px">Paste your intervals.icu API key. It's stored only on this phone, never in the app file. The test button asks intervals.icu for today's planned workouts and shows what comes back.</div>
     <input id="icuId" type="text" value="0" placeholder="Athlete ID (0 = you)" style="width:100%;box-sizing:border-box;margin-bottom:6px">
     <input id="icuKey" type="password" placeholder="API key" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:6px">
@@ -228,7 +228,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.9</span>
+  <span class="ver">v1.0.10</span>
 </div>
 
 <div class="ctrl">
