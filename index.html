@@ -93,7 +93,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.11</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.12</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -228,7 +228,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.11</span>
+  <span class="ver">v1.0.12</span>
 </div>
 
 <div class="ctrl">
@@ -318,6 +318,7 @@ Cooldown
   <div class="tile wide" style="padding:4px"><canvas id="sumProfile" style="width:100%;height:76px;display:block"></canvas></div>
   <div class="tile wide" style="padding:4px;margin-top:6px"><canvas id="sumHR" style="width:100%;height:54px;display:block"></canvas></div>
   <div id="sumUp" class="hint" style="margin:4px 0 0;font-size:14px;min-height:18px;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+  <div id="sumStrava" class="hint" style="margin:0;font-size:14px;min-height:18px;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
   <div class="ctrl sumbtns">
     <button id="btnSaveImg" class="primary" disabled>Save image</button>
     <button id="btnSaveFit" class="primary" disabled>Save .fit</button>
@@ -710,7 +711,7 @@ function showSummary() {
   $("sumDate").textContent = new Date().toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "  \u00b7  FTP " + W.ftp + " w";
   $("sumGrid").innerHTML = d.map(m => '<div class="tile"><div class="l">' + m.l + '</div><div class="v">' + m.v + (m.u && m.v !== "--" ? "<small>" + m.u + "</small>" : "") + "</div></div>").join("");
   $("summary").classList.add("show"); sumBlob = null; fitBlob = null; $("btnSaveImg").disabled = true; $("btnSaveFit").disabled = true;
-  setTimeout(() => { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); } uploadRide(); drawProfile($("sumProfile"), { noCursor: true, actual: true }); drawHR($("sumHR"), { noCursor: true }); prepareSummaryImage(d); }, 40);
+  setTimeout(() => { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); } uploadRide(); stravaUpload(); drawProfile($("sumProfile"), { noCursor: true, actual: true }); drawHR($("sumHR"), { noCursor: true }); prepareSummaryImage(d); }, 40);
 }
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function prepareSummaryImage(d) {                       // square (1080x1080) so Strava and other feeds don't crop it
@@ -811,6 +812,41 @@ async function uploadRide() {
     box.textContent = "Upload failed (" + e.message + ") ";
     const rb = document.createElement("button"); rb.textContent = "Retry upload"; rb.style.cssText = "margin-left:4px;padding:4px 10px;font-size:14px";
     rb.onclick = uploadRide; rb.style.marginLeft = "6px"; box.appendChild(rb);
+  }
+}
+// Upload the ride to Strava through the helper, if connected. Refreshes the token when it is close to expiring.
+async function stravaToken() {
+  let t = null; try { t = JSON.parse(localStorage.getItem("kickrStrava") || "null"); } catch (e) {}
+  if (!t || !t.access_token) return null;
+  if (t.expires_at - Date.now() / 1000 > 300) return t.access_token;
+  const r = await fetch(STRAVA_HELPER + "/refresh", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: t.refresh_token }) });
+  const j = await r.json();
+  if (!r.ok || !j.access_token) throw new Error("sign in to Strava again");
+  localStorage.setItem("kickrStrava", JSON.stringify({ access_token: j.access_token, refresh_token: j.refresh_token, expires_at: j.expires_at }));
+  return j.access_token;
+}
+async function stravaUpload() {
+  const box = $("sumStrava"); box.style.color = ""; box.textContent = "";
+  let token; try { token = await stravaToken(); } catch (e) { box.textContent = "Not uploaded to Strava (" + e.message + ")."; box.style.color = "var(--bad, #ff6b6b)"; return; }
+  if (!token) return;                                        // not connected: say nothing
+  if (!fitBlob) return;
+  box.textContent = "Uploading to Strava\u2026";
+  const name = fitName.replace(/\.fit$/, ""), ext = "kickr-" + W.startMs;
+  try {
+    const form = new FormData(); form.append("file", new File([fitBlob], fitName, { type: "application/octet-stream" }));
+    const r = await fetch(STRAVA_HELPER + "/upload?name=" + encodeURIComponent(name) + "&external_id=" + encodeURIComponent(ext), { method: "POST", headers: { "X-Strava-Token": token }, body: form });
+    let u = await r.json();
+    if (!r.ok || u.error) throw new Error(u.error || ("error " + r.status));
+    for (let i = 0; i < 20 && !u.activity_id && !u.error; i++) {          // Strava processes the file in the background
+      await new Promise(res => setTimeout(res, 1500));
+      const q = await fetch(STRAVA_HELPER + "/upload-status?id=" + encodeURIComponent(u.id), { headers: { "X-Strava-Token": token } });
+      u = await q.json();
+    }
+    if (u.error) throw new Error(u.error);
+    box.textContent = u.activity_id ? "Uploaded to Strava." : "Sent to Strava, still processing.";
+  } catch (e) {
+    box.style.color = "var(--bad, #ff6b6b)";
+    box.textContent = "Strava upload failed (" + e.message + ").";
   }
 }
 function closeSummary() {                               // back to the start screen, everything cleared
