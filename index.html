@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.55</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.56</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -248,7 +248,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.55</span>
+  <span class="ver">v1.0.56</span>
 </div>
 
 <div class="ctrl">
@@ -1400,7 +1400,25 @@ icuCapture(); stravaCapture(); stravaShow(); icuShow();
 const localDay = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 /* ---------------- Data tab: training load (CTL / ATL / TSB) ---------------- */
 const FIT = { back: 42, ahead: 7 };
-let PLAN_TSS = {};                                           // date -> TSS still to do, from the calendar (filled by loadNext7)
+let PLAN_TSS = {};                                           // date -> TSS still to do, from the calendar (filled by loadNext7 and loadPlanAhead)
+let PLAN_TO = "";                                            // last day covered by loadPlanAhead
+async function loadPlanAhead() {                             // calendar load for look-ahead days 8..14
+  const end = dayOffset(FIT.ahead), start = dayOffset(8);
+  if (!icuAuth() || FIT.ahead <= 7) return;
+  PLAN_TO = end;
+  try {
+    const ev = await icuRange(start, end, "events");
+    Object.keys(PLAN_TSS).forEach(k => { if (k >= start && k <= end) delete PLAN_TSS[k]; });
+    ev.forEach(x => {
+      const date = String(x.start_date_local || "").slice(0, 10); if (date.length !== 10 || date < start || date > end) return;
+      const cat = x.category || "", text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
+      let tss = x.icu_training_load != null ? x.icu_training_load : null;
+      if (cat === "WORKOUT" && text) { try { tss = planStats(parseText(text, +$("ftp").value || 270)).tss; } catch (e) {} }
+      if (tss != null) PLAN_TSS[date] = (PLAN_TSS[date] || 0) + tss;
+    });
+    renderFit();
+  } catch (e) { PLAN_TO = ""; }
+}
 try { const f = JSON.parse(localStorage.getItem("kickrFitRange") || "null"); if (f) { FIT.back = f.back || 42; FIT.ahead = f.ahead != null ? f.ahead : 7; } } catch (e) {}
 function demoLoads(n) {                                    // stand-in daily load until intervals.icu data is wired in
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, out = [];
@@ -1499,6 +1517,7 @@ function fitWindow() {                                         // back days + to
 }
 function renderFit() {
   if ($("dataTab").style.display === "none") return;
+  if (FIT.ahead > 7 && PLAN_TO !== dayOffset(FIT.ahead)) loadPlanAhead();
   const S = fitWindow();
   fitLast = S;
   S.cur = fitSel == null ? S.todayIdx : Math.min(S.days.length - 1, Math.max(0, fitSel));
@@ -1764,7 +1783,8 @@ async function loadNext7() {
     const date = String(a.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
     items.push({ date, name: a.name || a.type || "Activity", dur: a.moving_time || 0, tss: a.icu_training_load != null ? a.icu_training_load : null, done: true });
   });
-  PLAN_TSS = {}; items.forEach(x => { if (!x.done && x.tss != null) PLAN_TSS[x.date] = (PLAN_TSS[x.date] || 0) + x.tss; });
+  const endDay = ymd(days[6]), keep = {}; Object.keys(PLAN_TSS).forEach(k => { if (k > endDay) keep[k] = PLAN_TSS[k]; }); PLAN_TSS = keep;   // days past the 7-day window come from loadPlanAhead
+  items.forEach(x => { if (!x.done && x.tss != null) PLAN_TSS[x.date] = (PLAN_TSS[x.date] || 0) + x.tss; });
   if (FIT_DAYS) renderFit();                                   // refresh the Data tab look-ahead with the new schedule
   const sums = days.map(d => items.filter(i => i.date === ymd(d)).reduce((t, i) => t + (i.tss || 0), 0));
   const maxT = Math.max(100, ...sums);
