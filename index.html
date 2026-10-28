@@ -88,12 +88,24 @@
   .sumgrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:6px 0; }
   .sumgrid .tile { grid-column:auto; padding:6px 10px; }
   .sumbtns { margin-top:auto; padding-top:10px; }
+  /* header stays on screen while scrolling; it shrinks once you've scrolled down */
+  #stickyTop { position:sticky; top:0; z-index:5; background:var(--bg); padding-top:env(safe-area-inset-top); transition:padding .15s; }
+  body.compact #stickyTop { padding-bottom:0; }
+  body.compact .top { margin:2px 0 0; }
+  body.compact .top span:first-child { font-size:14px !important; }
+  body.compact .ctrl { margin:0; }
+  body.compact .ctrl button { height:calc(var(--u)*3.4); font-size:14px; }
+  body.compact .row { margin:0 !important; }
+  body.compact .row .status { font-size:11px !important; }
+  body.compact .seg { margin:2px 0; }
+  body.compact .seg button { padding:4px; font-size:13px; }
 </style>
 </head>
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.25</span></div>
+  <div id="stickyTop">
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.26</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -104,6 +116,7 @@
   </div>
 
   <div class="seg" id="tabBar"><button id="tabPlan" class="on">Plan</button><button id="tabData">Data</button></div>
+  </div>
 
   <div id="planTab">
   <div class="card" id="todayCard">
@@ -225,7 +238,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.25</span>
+  <span class="ver">v1.0.26</span>
 </div>
 
 <div class="ctrl">
@@ -1668,6 +1681,14 @@ loadWorkout();
 loadToday();
 loadNext7();
 loadFtp(true);
+</script>
+<script>
+// Shrink the sticky header after scrolling down; expand again near the top (two thresholds avoid flicker)
+window.addEventListener("scroll", () => {
+  const y = window.scrollY, c = document.body.classList.contains("compact");
+  if (!c && y > 80) document.body.classList.add("compact");
+  else if (c && y < 20) document.body.classList.remove("compact");
+}, { passive: true });
 </script>
 </body>
 </html>
