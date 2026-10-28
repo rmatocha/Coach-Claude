@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.40</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.50</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -164,9 +164,9 @@ Cooldown
 -10m 65%
 -5m ramp 65%-50%</textarea>
     <div id="woInfo" class="status" style="margin-top:6px;font-size:14px"></div>
-    <canvas id="woGraph" style="width:100%;height:64px;display:block;margin-top:8px;border-radius:8px;background:#11151a"></canvas>
-    <div class="row" style="margin:8px 0 0"><button id="btnSaveLib" style="flex:1;height:44px;font-size:16px">Save to library</button></div>
-    <div class="row" style="margin:0;flex-wrap:nowrap;align-items:stretch"><button id="btnSchedule" title="Add to intervals.icu calendar" disabled style="width:54px;height:54px;flex:none;font-size:20px;border-radius:12px;margin-top:8px;padding:0">📅</button><button id="btnLaunch" class="primary big" style="width:auto;flex:1;margin-top:8px">Launch workout</button></div>
+    <canvas id="woGraph" style="width:100%;height:64px;display:block;margin-top:8px;border-radius:8px;background:#11151a;cursor:pointer"></canvas>
+    <div id="woPick" class="status" style="font-size:14px;min-height:20px;margin-top:4px;color:var(--fg)"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><button id="btnSaveLib" class="primary" style="width:100%;height:44px;font-size:16px;margin:0">Save to Library</button><div style="display:flex;gap:8px;align-items:stretch"><button id="btnSchedule" title="Add to intervals.icu calendar" disabled style="height:44px;flex:none;border-radius:12px;margin:0;padding:0 12px;font-size:16px;display:flex;align-items:center;gap:6px;white-space:nowrap"><span style="font-size:18px">📅</span>Schedule</button><button id="btnLaunch" class="primary big" style="width:auto;flex:1;height:44px;margin:0;font-size:16px;min-width:0;border-radius:12px">Launch Workout</button></div></div>
   </div>
 
   <details class="card">
@@ -247,7 +247,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.40</span>
+  <span class="ver">v1.0.50</span>
 </div>
 
 <div class="ctrl">
@@ -322,6 +322,17 @@ Cooldown
   </div>
 </div>
 <div id="toast" style="display:none;position:fixed;left:16px;right:16px;bottom:24px;z-index:60;background:#232830;border-radius:12px;padding:12px 16px;font-size:15px;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.5)"></div>
+
+<div id="hardModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:18px;font-weight:600;margin-bottom:4px">Hard intervals</div>
+    <div id="hardName" style="font-size:16px;font-weight:700;margin-bottom:12px;overflow-wrap:anywhere"></div>
+    <div class="row" style="justify-content:center;flex-wrap:nowrap;margin-bottom:12px"><button id="btnHardPct" style="flex:1;height:44px">% FTP</button><button id="btnHardW" style="flex:1;height:44px">Watts</button></div>
+    <input id="hardVal" type="number" inputmode="numeric" min="1" style="width:100%;box-sizing:border-box;font-size:20px;text-align:center;margin-bottom:8px">
+    <div id="hardPreview" class="hint" style="font-size:14px;margin-bottom:16px"></div>
+    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnHardNo" style="flex:1;height:48px">Cancel</button><button id="btnHardYes" class="primary" style="flex:1;height:48px">Load workout</button></div>
+  </div>
+</div>
 
 <div id="renameModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
   <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%">
@@ -597,9 +608,9 @@ function updateWoInfo() {                                // live duration under 
   try {
     const p = readPlan(), total = p.steps.reduce((a, st) => a + st.dur, 0), ps = planStats(p.steps);
     $("woInfo").textContent = "Total " + fmt(total) + "  \u00b7  " + p.steps.length + " steps  \u00b7  TSS " + Math.round(ps.tss);
-    drawMini($("woGraph"), p.steps, { h: 128, ftpLine: true }); $("woInfo").className = "status ok"; $("btnLaunch").disabled = false; $("btnSchedule").disabled = false;
+    drawMini($("woGraph"), p.steps, { h: 128, ftpLine: true }); woSteps = p.steps; $("woInfo").className = "status ok"; $("btnLaunch").disabled = false; $("btnSchedule").disabled = false;
     return p;
-  } catch (e) { $("woGraph").getContext("2d").clearRect(0, 0, $("woGraph").width, $("woGraph").height); $("woInfo").textContent = e.message; $("woInfo").className = "status bad"; $("btnLaunch").disabled = true; $("btnSchedule").disabled = true; return null; }
+  } catch (e) { woSteps = null; $("woPick").textContent = ""; $("woGraph").getContext("2d").clearRect(0, 0, $("woGraph").width, $("woGraph").height); $("woInfo").textContent = e.message; $("woInfo").className = "status bad"; $("btnLaunch").disabled = true; $("btnSchedule").disabled = true; return null; }
 }
 function loadWorkout() {
   const p = updateWoInfo();
@@ -932,6 +943,7 @@ function planStats(steps) {                              // estimated NP / IF / 
   const np = k ? (sum4 / k) ** 0.25 : f.reduce((a, b) => a + b, 0) / n;
   return { dur: n, np, IF: np, tss: n / 3600 * np * np * 100 };
 }
+let woSteps = null, woPickT = null;                 // parsed steps of the builder graph, for tap-to-read
 function drawMini(cv, steps, o) {
   o = o || {}; const w = 600, h = o.h || 52; cv.width = w; cv.height = h;
   const c = cv.getContext("2d"), total = steps.reduce((a, s) => a + s.dur, 0); if (!total) return;
@@ -948,65 +960,58 @@ function drawMini(cv, steps, o) {
 /* ---------------- workout library ---------------- */
 // Add workouts here as { name: "Sweet spot 2x20", text: "Warmup\n-10m ramp 50%-65%\n\nMain Set 2x\n-20m 90%\n-5m 55%" }
 const LIBRARY = [
-  {"name": "60' Endurance 57%-60%", "folder": "Endurance 60", "text": "-2m 45%\n-3m 50%\n-10m 60%\n-10m 57%\n-10m 60%\n-10m 57%\n-10m 60%\n-5m 57%\n"},
-  {"name": "60' Endurance 57%-65%", "folder": "Endurance 60", "text": "-2m 45%\n-3m 50%\n-10m 65%\n-10m 57%\n-10m 65%\n-10m 57%\n-10m 65%\n-5m 57%\n"},
-  {"name": "60' Endurance 57%-70%", "folder": "Endurance 60", "text": "-2m 45%\n-3m 50%\n-10m 70%\n-10m 57%\n-10m 70%\n-10m 57%\n-10m 70%\n-5m 57%\n"},
-  {"name": "60' Endurance 57%-72%", "folder": "Endurance 60", "text": "-2m 45%\n-3m 50%\n-10m 72%\n-10m 57%\n-10m 72%\n-10m 57%\n-10m 72%\n-5m 57%\n"},
-  {"name": "60' Endurance 57%-75%", "folder": "Endurance 60", "text": "-2m 45%\n-3m 50%\n-10m 75%\n-10m 57%\n-10m 75%\n-10m 57%\n-10m 75%\n-5m 57%\n"},
-  {"name": "60' Recovery 45%-55%", "folder": "Endurance 60", "text": "-22m 45%\n-15m 55%\n-18m 50%\n-5m 40%\n"},
-  {"name": "60' Recovery 50%", "folder": "Endurance 60", "text": "-2m 45%\n-3m 50%\n-10m 50%\n-10m 50%\n-10m 50%\n-10m 50%\n-10m 50%\n-5m 45%\n"},
-  {"name": "60' Recovery 50%-60%", "folder": "Endurance 60", "text": "-22m 50%\n-15m 60%\n-18m 55%\n-5m 40%\n"},
-  {"name": "2h Endurance 57%-60%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-22m 60%\n-22m 57%\n-22m 60%\n-22m 57%\n-22m 60%\n-5m 57%\n"},
-  {"name": "2h Endurance 57%-63%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-22m 63%\n-22m 57%\n-22m 63%\n-22m 57%\n-22m 63%\n-5m 57%\n"},
-  {"name": "2h Endurance 57%-68%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-22m 68%\n-22m 57%\n-22m 68%\n-22m 57%\n-22m 68%\n-5m 57%\n"},
-  {"name": "2h Endurance 57%-72%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-22m 72%\n-22m 57%\n-22m 72%\n-22m 57%\n-22m 72%\n-5m 57%\n"},
-  {"name": "2h Endurance w/ Surges", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-5m 62%\n-30s 110%\n-5m 62%\n-30s 130%\n-5m 62%\n-30s 150%\n-5m 62%\n-30s 110%\n-5m 57%\n-30s 110%\n-5m 57%\n-30s 130%\n-5m 57%\n-30s 150%\n-5m 57%\n-30s 110%\n-5m 62%\n-30s 110%\n-5m 62%\n-30s 130%\n-5m 62%\n-30s 150%\n-5m 62%\n-30s 110%\n-5m 57%\n-30s 110%\n-5m 57%\n-30s 130%\n-5m 57%\n-30s 150%\n-5m 57%\n-30s 110%\n-5m 62%\n-30s 110%\n-5m 62%\n-30s 130%\n-5m 62%\n-30s 150%\n-5m 62%\n-30s 110%\n-5m 57%\n"},
-  {"name": "90' Endurance 45%-55%", "folder": "Endurance 90-120", "text": "-22m 45%\n-15m 55%\n-18m 50%\n-15m 55%\n-15m 50%\n-5m 40%\n"},
-  {"name": "90' Endurance 57%-60%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-16m 60%\n-16m 57%\n-16m 60%\n-16m 57%\n-16m 60%\n-5m 57%\n"},
-  {"name": "90' Endurance 57%-64%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-16m 64%\n-16m 57%\n-16m 64%\n-16m 57%\n-16m 64%\n-5m 57%\n"},
-  {"name": "90' Endurance 57%-67%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-16m 67%\n-16m 57%\n-16m 67%\n-16m 57%\n-16m 67%\n-5m 57%\n"},
-  {"name": "90' Endurance 57%-70%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-16m 70%\n-16m 57%\n-16m 70%\n-16m 57%\n-16m 70%\n-5m 57%\n"},
-  {"name": "90' Endurance 57%-74%", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-16m 74%\n-16m 57%\n-16m 74%\n-16m 57%\n-16m 74%\n-5m 57%\n"},
-  {"name": "90' Endurance 65%-75%", "folder": "Endurance 90-120", "text": "-2m ramp 40%-50%\n-3m 50%\n-5m 60%\n-15m 70%\n-15m 65%\n-15m 75%\n-15m 70%\n-15m 75%\n-5m 50%\n"},
-  {"name": "90' Endurance 67%-70%", "folder": "Endurance 90-120", "text": "-2m ramp 40%-50%\n-3m 50%\n-5m 60%\n-15m 70%\n-15m 67%\n-15m 75%\n-15m 65%\n-15m 70%\n-5m 50%\n"},
-  {"name": "90' Endurance w/ Surges", "folder": "Endurance 90-120", "text": "-2m 45%\n-3m 50%\n-5m 62%\n-20s 110%\n-5m 62%\n-20s 130%\n-5m 62%\n-20s 150%\n-5m 57%\n-20s 110%\n-5m 57%\n-20s 130%\n-5m 57%\n-20s 150%\n-5m 62%\n-20s 110%\n-5m 62%\n-20s 130%\n-5m 62%\n-20s 150%\n-5m 57%\n-20s 110%\n-5m 57%\n-20s 130%\n-5m 57%\n-20s 150%\n-5m 62%\n-20s 110%\n-5m 62%\n-20s 130%\n-5m 62%\n-20s 150%\n-5m 57%\n"},
-  {"name": "90' Endurance+ 74%", "folder": "Endurance 90-120", "text": "-1m 40%\n-1m 50%\n-1m 65%\n-85m 74%\n-1m 60%\n-1m 40%\n"},
-  {"name": "Back to Blue - 120", "folder": "Endurance 90-120", "text": "-10m ramp 50%-83%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-5m ramp 63%-50%\n"},
-  {"name": "END+ 120", "folder": "Endurance 90-120", "text": "-10m ramp 50%-75%\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 65%\n-1m 75%\n\nMain Set 3x\n-3m 65%\n-1m 75%\n\nMain Set 3x\n-3m 65%\n-1m 75%\n\nMain Set 2x\n-3m 65%\n-1m 75%\n\n-6m ramp 50%-40%\n"},
-  {"name": "Slow Burn 120", "folder": "Endurance 90-120", "text": "-10m ramp 50%-83%\n-1m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-4m 50%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-5m ramp 63%-42%\n"},
-  {"name": "Slow Burn 90", "folder": "Endurance 90-120", "text": "-10m ramp 50%-83%\n-1m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-4m 50%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-5m ramp 63%-42%\n"},
-  {"name": "SST 1.1 3x15", "folder": "SST Base 1", "text": "-8m ramp 45%-65%\n-2m 88%\n-15m 70%\n-5m 60%\n-15m 88%\n-5m 60%\n-15m 88%\n-5m 60%\n-15m 88%\n-5m ramp 60%-40%\n"},
-  {"name": "SST 1.2 2x22", "folder": "SST Base 1", "text": "-8m ramp 45%-65%\n-2m 88%\n-10m 70%\n-5m 60%\n-22m 85%\n-10m 60%\n-22m 85%\n-6m 60%\n-5m ramp 60%-40%\n"},
-  {"name": "SST 2.1 4x12", "folder": "SST Base 1", "text": "-8m ramp 45%-65%\n-2m 90%\n-10m 65%\n-2m 50%\n-12m 90%\n-5m 60%\n-12m 90%\n-5m 60%\n-12m 90%\n-5m 60%\n-12m 90%\n-5m ramp 70%-40%\n"},
-  {"name": "SST 2.2 2x22", "folder": "SST Base 1", "text": "-8m ramp 45%-65%\n-2m 90%\n-18m 65%\n-2m 50%\n-22m 86%\n-5m 60%\n-22m 86%\n-6m 65%\n-5m ramp 70%-40%\n"},
-  {"name": "SST 3.1 4x15", "folder": "SST Base 1", "text": "-5m ramp 45%-65%\n-2m 90%\n-3m 50%\n-15m 90%\n-5m 60%\n-15m 90%\n-5m 60%\n-15m 90%\n-5m 60%\n-15m 90%\n-5m ramp 60%-40%\n"},
-  {"name": "SST 3.2 2x30", "folder": "SST Base 1", "text": "-8m ramp 45%-65%\n-2m 88%\n-7m 65%\n-3m 50%\n-30m 86%\n-5m 60%\n-30m 86%\n-5m ramp 70%-40%\n"},
-  {"name": "SST 4.1 3x20", "folder": "SST Base 1", "text": "-5m ramp 45%-65%\n-2m 90%\n-3m 50%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-5m ramp 60%-40%\n"},
-  {"name": "SST 4.2 2x30", "folder": "SST Base 1", "text": "-8m ramp 45%-65%\n-2m 88%\n-7m 65%\n-3m 50%\n-30m 90%\n-5m 60%\n-30m 90%\n-5m ramp 70%-40%\n"},
-  {"name": "SST 5.1 3x25", "folder": "SST Base 1", "text": "-5m ramp 45%-65%\n-2m 90%\n-8m 50%\n-25m 90%\n-5m 60%\n-25m 90%\n-5m 60%\n-25m 90%\n-5m ramp 60%-40%\n"},
-  {"name": "SST 5.2 2x35", "folder": "SST Base 1", "text": "-8m ramp 45%-65%\n-2m 88%\n-7m 65%\n-3m 50%\n-35m 92%\n-5m 60%\n-35m 92%\n-5m ramp 70%-40%\n"},
-  {"name": "SST 6.1 3x30", "folder": "SST Base 1", "text": "-5m ramp 45%-65%\n-2m 88%\n-3m 50%\n-30m 86%\n-5m 60%\n-30m 86%\n-10m 60%\n-30m 86%\n-5m ramp 60%-45%\n"},
-  {"name": "SST 6.2 3x20", "folder": "SST Base 1", "text": "-5m ramp 45%-65%\n-2m 90%\n-3m 50%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-5m ramp 60%-40%\n"},
-  {"name": "Threshold 1.1 - O/U 3x12", "folder": "Threshold Build", "text": "-5m ramp 50%-60%\n-10m 65%\n-30s 105%\n-30s 50%\n-30s 105%\n-30s 50%\n-30s 105%\n-150s 50%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-5m 50%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-5m 50%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 50%\n-20m 65%\n-2m ramp 65%-50%\n"},
-  {"name": "Threshold 1.2 - O/U 3x15", "folder": "Threshold Build", "text": "-5m ramp 50%-60%\n-10m 65%\n-30s 105%\n-30s 50%\n-30s 105%\n-30s 50%\n-30s 105%\n-150s 50%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-5m 50%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-5m 50%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 50%\n-12m 65%\n-1m ramp 60%-50%\n"},
-  {"name": "Threshold 2.1 - O/U 3x12", "folder": "Threshold Build", "text": "-5m ramp 50%-60%\n-10m 65%\n-30s 105%\n-30s 50%\n-30s 105%\n-30s 50%\n-30s 105%\n-150s 50%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-5m 50%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-5m 50%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-2m 50%\n-20m 65%\n-2m ramp 60%-50%\n"},
-  {"name": "Threshold 2.2 - 4x10 Hard Starts", "folder": "Threshold Build", "text": "-5m ramp 50%-60%\n-10m 65%\n-2m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-10m 70%\n-3m ramp 70%-50%\n"},
-  {"name": "Threshold 3.2 - 5x10 Hard Starts", "folder": "Threshold Build", "text": "-5m ramp 50%-60%\n-10m 65%\n-2m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-3m 50%\n"},
-  {"name": "VO2 30/30s 4x8", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-10m 55%\n-3m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-6m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-6m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-6m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-3m 40%\n-8m 55%\n-2m ramp 50%-40%\n"},
-  {"name": "VO2 5x4", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-2m 40%\n-4m 55%\n-5m 60%\n-4m 50%\n-2m ramp 55%-40%\n"},
-  {"name": "VO2 5x4 @ 110%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-4m 110%\n-4m 40%\n-4m 110%\n-4m 40%\n-4m 110%\n-4m 40%\n-4m 110%\n-4m 40%\n-4m 110%\n-2m 40%\n-4m 55%\n-5m 60%\n-4m 50%\n-2m ramp 55%-40%\n"},
-  {"name": "VO2 5x4 @ 112%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-4m 112%\n-4m 40%\n-4m 112%\n-4m 40%\n-4m 112%\n-4m 40%\n-4m 112%\n-4m 40%\n-4m 112%\n-2m 40%\n-4m 55%\n-5m 60%\n-4m 50%\n-2m ramp 55%-40%\n"},
-  {"name": "VO2 5x4 @ 115%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-4m 115%\n-4m 40%\n-4m 115%\n-4m 40%\n-4m 115%\n-4m 40%\n-4m 115%\n-4m 40%\n-4m 115%\n-2m 40%\n-4m 55%\n-5m 60%\n-4m 50%\n-2m ramp 55%-40%\n"},
-  {"name": "VO2 5x5", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-45s 85%\n-15s 120%\n-45s 85%\n-15s 120%\n-45s 85%\n-15s 120%\n-20m 55%\n-3m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-2m 40%\n-3m 55%\n-3m ramp 55%-40%\n"},
-  {"name": "VO2 5x5 @ 108%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-5m 108%\n-5m 40%\n-5m 108%\n-5m 40%\n-5m 108%\n-5m 40%\n-5m 108%\n-5m 40%\n-5m 108%\n-2m 40%\n-3m 55%\n-3m ramp 55%-40%\n"},
-  {"name": "VO2 5x5 @ 110%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-5m 110%\n-5m 40%\n-5m 110%\n-5m 40%\n-5m 110%\n-5m 40%\n-5m 110%\n-5m 40%\n-5m 110%\n-2m 40%\n-3m 55%\n-3m ramp 55%-40%\n"},
-  {"name": "VO2 6x3", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-6m 55%\n-4m 60%\n-4m 55%\n-3m ramp 55%-40%\n"},
-  {"name": "VO2 6x3 @ 115%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-3m 115%\n-3m 40%\n-3m 115%\n-3m 40%\n-3m 115%\n-3m 40%\n-3m 115%\n-3m 40%\n-3m 115%\n-3m 40%\n-3m 115%\n-3m 40%\n-6m 55%\n-4m 60%\n-4m 55%\n-3m ramp 55%-40%\n"},
-  {"name": "VO2 6x3 @ 118%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-3m 118%\n-3m 40%\n-3m 118%\n-3m 40%\n-3m 118%\n-3m 40%\n-3m 118%\n-3m 40%\n-3m 118%\n-3m 40%\n-3m 118%\n-3m 40%\n-6m 55%\n-4m 60%\n-4m 55%\n-3m ramp 55%-40%\n"},
-  {"name": "VO2 6x3 @ 120%", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-45s 85%\n-15s 110%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-6m 55%\n-4m 60%\n-4m 55%\n-3m ramp 55%-40%\n"},
-  {"name": "VO2 7x3", "folder": "VO2 Block", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-9m 55%\n-2m ramp 55%-40%\n"},
-  {"name": "XCO VO2 HIDIT", "folder": "VO2 HIDIT", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-8m 55%\n-5m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"},
-  {"name": "XCO VO2 HIDIT+", "folder": "VO2 HIDIT", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-4m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"}
+  {"name": "60' Endurance 57%-60%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-10m 60%\n-10m 57%\n-10m 60%\n-10m 57%\n-10m 60%\n-5m 57%\n"},
+  {"name": "60' Endurance 57%-65%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-10m 65%\n-10m 57%\n-10m 65%\n-10m 57%\n-10m 65%\n-5m 57%\n"},
+  {"name": "60' Endurance 57%-70%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-10m 70%\n-10m 57%\n-10m 70%\n-10m 57%\n-10m 70%\n-5m 57%\n"},
+  {"name": "60' Endurance 57%-72%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-10m 72%\n-10m 57%\n-10m 72%\n-10m 57%\n-10m 72%\n-5m 57%\n"},
+  {"name": "60' Endurance 57%-75%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-10m 75%\n-10m 57%\n-10m 75%\n-10m 57%\n-10m 75%\n-5m 57%\n"},
+  {"name": "60' Recovery 45%-55%", "folder": "Endurance", "text": "-22m 45%\n-15m 55%\n-18m 50%\n-5m 40%\n"},
+  {"name": "60' Recovery 50%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-10m 50%\n-10m 50%\n-10m 50%\n-10m 50%\n-10m 50%\n-5m 45%\n"},
+  {"name": "60' Recovery 50%-60%", "folder": "Endurance", "text": "-22m 50%\n-15m 60%\n-18m 55%\n-5m 40%\n"},
+  {"name": "2h Endurance 57%-60%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-22m 60%\n-22m 57%\n-22m 60%\n-22m 57%\n-22m 60%\n-5m 57%\n"},
+  {"name": "2h Endurance 57%-63%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-22m 63%\n-22m 57%\n-22m 63%\n-22m 57%\n-22m 63%\n-5m 57%\n"},
+  {"name": "2h Endurance 57%-68%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-22m 68%\n-22m 57%\n-22m 68%\n-22m 57%\n-22m 68%\n-5m 57%\n"},
+  {"name": "2h Endurance 57%-72%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-22m 72%\n-22m 57%\n-22m 72%\n-22m 57%\n-22m 72%\n-5m 57%\n"},
+  {"name": "2h Endurance w/ Surges", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-5m 62%\n-30s 110%\n-5m 62%\n-30s 130%\n-5m 62%\n-30s 150%\n-5m 62%\n-30s 110%\n-5m 57%\n-30s 110%\n-5m 57%\n-30s 130%\n-5m 57%\n-30s 150%\n-5m 57%\n-30s 110%\n-5m 62%\n-30s 110%\n-5m 62%\n-30s 130%\n-5m 62%\n-30s 150%\n-5m 62%\n-30s 110%\n-5m 57%\n-30s 110%\n-5m 57%\n-30s 130%\n-5m 57%\n-30s 150%\n-5m 57%\n-30s 110%\n-5m 62%\n-30s 110%\n-5m 62%\n-30s 130%\n-5m 62%\n-30s 150%\n-5m 62%\n-30s 110%\n-5m 57%\n"},
+  {"name": "90' Endurance 45%-55%", "folder": "Endurance", "text": "-22m 45%\n-15m 55%\n-18m 50%\n-15m 55%\n-15m 50%\n-5m 40%\n"},
+  {"name": "90' Endurance 57%-60%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-16m 60%\n-16m 57%\n-16m 60%\n-16m 57%\n-16m 60%\n-5m 57%\n"},
+  {"name": "90' Endurance 57%-64%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-16m 64%\n-16m 57%\n-16m 64%\n-16m 57%\n-16m 64%\n-5m 57%\n"},
+  {"name": "90' Endurance 57%-67%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-16m 67%\n-16m 57%\n-16m 67%\n-16m 57%\n-16m 67%\n-5m 57%\n"},
+  {"name": "90' Endurance 57%-70%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-16m 70%\n-16m 57%\n-16m 70%\n-16m 57%\n-16m 70%\n-5m 57%\n"},
+  {"name": "90' Endurance 57%-74%", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-16m 74%\n-16m 57%\n-16m 74%\n-16m 57%\n-16m 74%\n-5m 57%\n"},
+  {"name": "90' Endurance 65%-75%", "folder": "Endurance", "text": "-2m ramp 40%-50%\n-3m 50%\n-5m 60%\n-15m 70%\n-15m 65%\n-15m 75%\n-15m 70%\n-15m 75%\n-5m 50%\n"},
+  {"name": "90' Endurance 67%-70%", "folder": "Endurance", "text": "-2m ramp 40%-50%\n-3m 50%\n-5m 60%\n-15m 70%\n-15m 67%\n-15m 75%\n-15m 65%\n-15m 70%\n-5m 50%\n"},
+  {"name": "90' Endurance w/ Surges", "folder": "Endurance", "text": "-2m 45%\n-3m 50%\n-5m 62%\n-20s 110%\n-5m 62%\n-20s 130%\n-5m 62%\n-20s 150%\n-5m 57%\n-20s 110%\n-5m 57%\n-20s 130%\n-5m 57%\n-20s 150%\n-5m 62%\n-20s 110%\n-5m 62%\n-20s 130%\n-5m 62%\n-20s 150%\n-5m 57%\n-20s 110%\n-5m 57%\n-20s 130%\n-5m 57%\n-20s 150%\n-5m 62%\n-20s 110%\n-5m 62%\n-20s 130%\n-5m 62%\n-20s 150%\n-5m 57%\n"},
+  {"name": "90' Endurance+ 74%", "folder": "Endurance", "text": "-1m 40%\n-1m 50%\n-1m 65%\n-85m 74%\n-1m 60%\n-1m 40%\n"},
+  {"name": "Back to Blue - 120", "folder": "Endurance", "text": "-10m ramp 50%-83%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-3m 66%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-2m ramp 71%-75%\n-2m ramp 75%-71%\n-5m ramp 63%-50%\n"},
+  {"name": "END+ 120", "folder": "Endurance", "text": "-10m ramp 50%-75%\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 65%\n-1m 75%\n\nMain Set 3x\n-3m 65%\n-1m 75%\n\nMain Set 3x\n-3m 65%\n-1m 75%\n\nMain Set 2x\n-3m 65%\n-1m 75%\n\n-6m ramp 50%-40%\n"},
+  {"name": "END+ 90", "folder": "Endurance", "text": "-10m ramp 50%-75%\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 71%\n-1m 82%\n\nMain Set 3x\n-3m 65%\n-1m 75%\n\nMain Set 2x\n-3m 65%\n-1m 75%\n"},
+  {"name": "Slow Burn 120", "folder": "Endurance", "text": "-10m ramp 50%-83%\n-1m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-4m 50%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-5m ramp 63%-42%\n"},
+  {"name": "Slow Burn 90", "folder": "Endurance", "text": "-10m ramp 50%-83%\n-1m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-4m 50%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-3m 71%\n-2m 63%\n-5m ramp 63%-42%\n"},
+  {"name": "SST 1.1 3x15", "folder": "Sweet Spot", "text": "-8m ramp 45%-65%\n-2m 88%\n-15m 70%\n-5m 60%\n-15m 88%\n-5m 60%\n-15m 88%\n-5m 60%\n-15m 88%\n-5m ramp 60%-40%\n"},
+  {"name": "SST 1.2 2x22", "folder": "Sweet Spot", "text": "-8m ramp 45%-65%\n-2m 88%\n-10m 70%\n-5m 60%\n-22m 85%\n-10m 60%\n-22m 85%\n-6m 60%\n-5m ramp 60%-40%\n"},
+  {"name": "SST 2.1 4x12", "folder": "Sweet Spot", "text": "-8m ramp 45%-65%\n-2m 90%\n-10m 65%\n-2m 50%\n-12m 90%\n-5m 60%\n-12m 90%\n-5m 60%\n-12m 90%\n-5m 60%\n-12m 90%\n-5m ramp 70%-40%\n"},
+  {"name": "SST 2.2 2x22", "folder": "Sweet Spot", "text": "-8m ramp 45%-65%\n-2m 90%\n-18m 65%\n-2m 50%\n-22m 86%\n-5m 60%\n-22m 86%\n-6m 65%\n-5m ramp 70%-40%\n"},
+  {"name": "SST 3.1 4x15", "folder": "Sweet Spot", "text": "-5m ramp 45%-65%\n-2m 90%\n-3m 50%\n-15m 90%\n-5m 60%\n-15m 90%\n-5m 60%\n-15m 90%\n-5m 60%\n-15m 90%\n-5m ramp 60%-40%\n"},
+  {"name": "SST 3.2 2x30", "folder": "Sweet Spot", "text": "-8m ramp 45%-65%\n-2m 88%\n-7m 65%\n-3m 50%\n-30m 86%\n-5m 60%\n-30m 86%\n-5m ramp 70%-40%\n"},
+  {"name": "SST 4.1 3x20", "folder": "Sweet Spot", "text": "-5m ramp 45%-65%\n-2m 90%\n-3m 50%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-5m ramp 60%-40%\n"},
+  {"name": "SST 4.2 2x30", "folder": "Sweet Spot", "text": "-8m ramp 45%-65%\n-2m 88%\n-7m 65%\n-3m 50%\n-30m 90%\n-5m 60%\n-30m 90%\n-5m ramp 70%-40%\n"},
+  {"name": "SST 5.1 3x25", "folder": "Sweet Spot", "text": "-5m ramp 45%-65%\n-2m 90%\n-8m 50%\n-25m 90%\n-5m 60%\n-25m 90%\n-5m 60%\n-25m 90%\n-5m ramp 60%-40%\n"},
+  {"name": "SST 5.2 2x35", "folder": "Sweet Spot", "text": "-8m ramp 45%-65%\n-2m 88%\n-7m 65%\n-3m 50%\n-35m 92%\n-5m 60%\n-35m 92%\n-5m ramp 70%-40%\n"},
+  {"name": "SST 6.1 3x30", "folder": "Sweet Spot", "text": "-5m ramp 45%-65%\n-2m 88%\n-3m 50%\n-30m 86%\n-5m 60%\n-30m 86%\n-10m 60%\n-30m 86%\n-5m ramp 60%-45%\n"},
+  {"name": "SST 6.2 3x20", "folder": "Sweet Spot", "text": "-5m ramp 45%-65%\n-2m 90%\n-3m 50%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-20m 90%\n-5m 60%\n-5m ramp 60%-40%\n"},
+  {"name": "Threshold 1.1 - O/U 3x12", "folder": "Threshold", "text": "-5m ramp 50%-60%\n-10m 65%\n-30s 105%\n-30s 50%\n-30s 105%\n-30s 50%\n-30s 105%\n-150s 50%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-5m 50%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-5m 50%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 105%\n-2m 90%\n-2m 50%\n-20m 65%\n-2m ramp 65%-50%\n"},
+  {"name": "Threshold 1.2 - O/U 3x15", "folder": "Threshold", "text": "-5m ramp 50%-60%\n-10m 65%\n-30s 105%\n-30s 50%\n-30s 105%\n-30s 50%\n-30s 105%\n-150s 50%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-5m 50%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-5m 50%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 105%\n-3m 90%\n-2m 50%\n-12m 65%\n-1m ramp 60%-50%\n"},
+  {"name": "Threshold 2.1 - O/U 3x12", "folder": "Threshold", "text": "-5m ramp 50%-60%\n-10m 65%\n-30s 105%\n-30s 50%\n-30s 105%\n-30s 50%\n-30s 105%\n-150s 50%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-5m 50%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-5m 50%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-90s 108%\n-90s 92%\n-2m 50%\n-20m 65%\n-2m ramp 60%-50%\n"},
+  {"name": "Threshold 2.2 - 4x10 Hard Starts", "folder": "Threshold", "text": "-5m ramp 50%-60%\n-10m 65%\n-2m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-10m 70%\n-3m ramp 70%-50%\n"},
+  {"name": "Threshold 3.2 - 5x10 Hard Starts", "folder": "Threshold", "text": "-5m ramp 50%-60%\n-10m 65%\n-2m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-5m 50%\n-30s 120%\n-30s ramp 85%-95%\n-9m 96%\n-3m 50%\n"},
+  {"name": "VO2 30/30s 4x8", "folder": "VO2", "custom": "hard", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-10m 55%\n-3m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-6m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-6m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-6m 40%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-30s 120%\n-30s 90%\n-3m 40%\n-8m 55%\n-2m ramp 50%-40%\n"},
+  {"name": "VO2 5x4", "folder": "VO2", "custom": "hard", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-4m 40%\n-4m 120%\n-2m 40%\n-4m 55%\n-5m 60%\n-4m 50%\n-2m ramp 55%-40%\n"},
+  {"name": "VO2 5x5", "folder": "VO2", "custom": "hard", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-45s 85%\n-15s 120%\n-45s 85%\n-15s 120%\n-45s 85%\n-15s 120%\n-20m 55%\n-3m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-5m 40%\n-5m 120%\n-2m 40%\n-3m 55%\n-3m ramp 55%-40%\n"},
+  {"name": "VO2 6x3", "folder": "VO2", "custom": "hard", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-6m 55%\n-4m 60%\n-4m 55%\n-3m ramp 55%-40%\n"},
+  {"name": "VO2 7x3", "folder": "VO2", "custom": "hard", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-9m 55%\n-2m ramp 55%-40%\n"},
+  {"name": "XCO VO2 HIDIT", "folder": "VO2", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-8m 55%\n-5m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"},
+  {"name": "XCO VO2 HIDIT+", "folder": "VO2", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-4m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"}
 ];
 let userLib = [];
 try { userLib = JSON.parse(localStorage.getItem("kickrLib") || "[]").filter(x => x && x.name && x.text); } catch (e) { userLib = []; }
@@ -1088,6 +1093,10 @@ function applyRename() {
   }
   $("renameModal").style.display = "none"; renameFrom = null; renderLibrary();
 }
+function woStats(it) {                              // planned duration (s) and TSS for sorting
+  try { const st = parseText(it.text, +$("ftp").value || 270); return { d: st.reduce((a, q) => a + q.dur, 0), t: planStats(st).tss }; }
+  catch (e) { return { d: Infinity, t: Infinity }; }
+}
 function renderLibrary() {
   const box = $("library"); box.innerHTML = "";
   const all = LIBRARY.map(x => ({ ...x, built: true })).concat(userLib.map((x, i) => ({ ...x, idx: i })));
@@ -1098,7 +1107,12 @@ function renderLibrary() {
   const names = [...groups.keys()].sort((a, b) => a === "" ? 1 : b === "" ? -1 : cmpName(a, b));
   const flat = names.length === 1 && names[0] === "";                       // no folders in use: plain list
   names.forEach(f => {
-    const items = groups.get(f).sort((a, b) => cmpName(a.name, b.name));
+    const items = groups.get(f).sort((a, b) => {
+      if (f !== "Endurance") return cmpName(a.name, b.name);
+      // Endurance: easiest first, by planned time, then by TSS
+      const x = woStats(a), y = woStats(b);
+      return (x.d - y.d) || (x.t - y.t) || cmpName(a.name, b.name);
+    });
     const open = flat || (f in foldOpen ? foldOpen[f] : f === "");
     if (!flat) {
       const h = document.createElement("div");
@@ -1319,7 +1333,7 @@ function changeWorkout() {
   $("switchBanner").style.display = ""; $("btnLaunch").textContent = "Switch to this workout";
   showScreen("landing");
 }
-function endSwitch() { switching = false; $("switchBanner").style.display = "none"; $("btnLaunch").textContent = "Launch workout"; }
+function endSwitch() { switching = false; $("switchBanner").style.display = "none"; $("btnLaunch").textContent = "Launch Workout"; }
 function applySwitch() {                                     // the new workout replaces the rest of the plan; the ride clock and what was already ridden carry on
   const p = updateWoInfo(); if (!p) return false;
   W.steps = p.steps; W.ftp = p.ftp; W.idx = 0; W.stepT = 0; W.iSum = 0; W.iN = 0; W.ramp = null; W.name = $("woName").value.trim();
@@ -1788,9 +1802,71 @@ $("btnSchedYes").onclick = async () => {
     toast("Added \u201c" + it.name + "\u201d to " + date + ".");
   } catch (e) { toast("Couldn't schedule (" + e.message + ").", true); }
 };
+/* ---------------- Hard intervals: choose a power target before launching ---------------- */
+let hardMode = "pct", pendingHard = null;
+const hardFtp = () => +$("ftp").value || 270;
+// Work intervals: everything above 100% FTP lasting 30 seconds or more, from the first 10+ minute block onward.
+// Warm-up primers and the warm-up itself stay as written.
+function hardText(text, mode, val) {
+  const pct = mode === "w" ? Math.round(val / hardFtp() * 100) : Math.round(val);
+  let work = false;
+  return text.split("\n").map(l => {
+    const m = l.match(/^-(\d+)(m|s) (\d+)%\s*$/);
+    if (!m) return l;
+    const secs = m[2] === "m" ? +m[1] * 60 : +m[1];
+    if (secs >= 600) work = true;
+    return work && secs >= 30 && +m[3] > 100 ? l.replace(/(\d+)%\s*$/, pct + "%") : l;
+  }).join("\n");
+}
+function hardPreview() {
+  const v = +$("hardVal").value; if (!(v > 0)) { $("hardPreview").textContent = "Enter a value."; return; }
+  const pct = hardMode === "w" ? Math.round(v / hardFtp() * 100) : Math.round(v);
+  const watts = hardMode === "w" ? Math.round(v) : Math.round(hardFtp() * pct / 100);
+  $("hardPreview").textContent = "Work Intervals at " + watts + " W (" + pct + "% of " + hardFtp() + " W FTP)";
+}
+function setHardMode(m) {
+  const v = +$("hardVal").value || 0;
+  if (m !== hardMode && v > 0) $("hardVal").value = m === "w" ? Math.round(v * hardFtp() / 100) : Math.round(v / hardFtp() * 100);
+  hardMode = m;
+  $("btnHardPct").className = m === "pct" ? "primary" : ""; $("btnHardW").className = m === "w" ? "primary" : "";
+  hardPreview();
+}
+function askHard(item) {
+  pendingHard = item; $("hardName").textContent = item.name;
+  hardMode = "pct"; $("hardVal").value = 120; setHardMode("pct");
+  $("hardModal").style.display = "flex";
+}
+$("btnHardPct").onclick = () => setHardMode("pct"); $("btnHardW").onclick = () => setHardMode("w");
+$("hardVal").oninput = hardPreview;
+$("btnHardNo").onclick = () => { $("hardModal").style.display = "none"; pendingHard = null; };
+$("btnHardYes").onclick = () => {
+  const it = pendingHard, v = +$("hardVal").value;
+  if (!it || !(v > 0)) { toast("Enter a target above 0.", true); return; }
+  $("hardModal").style.display = "none"; pendingHard = null;
+  $("wo").value = hardText(it.text, hardMode, v); $("woName").value = it.name; refreshFolderSelect(it.folder || ""); updateWoInfo();
+  if (switching) { applySwitch(); return; }
+  if (loadWorkout()) showScreen("run");
+};
+/* ---------------- Tap the builder graph to read an interval's target ---------------- */
+const mmss = sec => Math.floor(sec / 60) + ":" + String(Math.round(sec % 60)).padStart(2, "0");
+$("woGraph").onclick = e => {
+  if (!woSteps || !woSteps.length) return;
+  const r = $("woGraph").getBoundingClientRect();
+  const total = woSteps.reduce((a, q) => a + q.dur, 0);
+  const t = (e.clientX - r.left) / r.width * total;          // the graph is drawn across the full width, in seconds
+  let acc = 0, hit = woSteps[woSteps.length - 1];
+  for (const st of woSteps) { if (t >= acc && t < acc + st.dur) { hit = st; break; } acc += st.dur; }
+  const ftp = hardFtp(), w0 = Math.round(hit.a * ftp), w1 = Math.round(hit.b * ftp);
+  const p0 = Math.round(hit.a * 100), p1 = Math.round(hit.b * 100);
+  $("woPick").textContent = Math.abs(hit.a - hit.b) < 0.005
+    ? w0 + " W (" + p0 + "% FTP) \u00b7 " + mmss(hit.dur)
+    : "Ramp " + w0 + " \u2192 " + w1 + " W (" + p0 + "% \u2192 " + p1 + "%) \u00b7 " + mmss(hit.dur);
+  clearTimeout(woPickT); woPickT = setTimeout(() => { $("woPick").textContent = ""; }, 6000);
+};
 $("btnLaunchNo").onclick = () => { $("launchModal").style.display = "none"; pendingLaunch = null; };
 $("btnLaunchYes").onclick = () => {
   const it = pendingLaunch; $("launchModal").style.display = "none"; pendingLaunch = null; if (!it) return;
+  if (it.custom === "hard") { askHard(it); return; }
   $("wo").value = it.text; $("woName").value = it.name; refreshFolderSelect(it.folder || ""); updateWoInfo();
   if (switching) { applySwitch(); return; }
   if (loadWorkout()) showScreen("run");
