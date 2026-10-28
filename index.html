@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.51</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.53</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -247,7 +247,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.51</span>
+  <span class="ver">v1.0.53</span>
 </div>
 
 <div class="ctrl">
@@ -1849,19 +1849,38 @@ $("btnHardYes").onclick = () => {
 };
 /* ---------------- Tap the builder graph to read an interval's target ---------------- */
 const mmss = sec => Math.floor(sec / 60) + ":" + String(Math.round(sec % 60)).padStart(2, "0");
+// Draw the graph, with one interval highlighted: a white outline, a vertical marker and its watts above it.
+function drawWoGraph(sel) {
+  drawMini($("woGraph"), woSteps, { h: 128, ftpLine: true });
+  if (sel == null || !woSteps) return;
+  const cv = $("woGraph"), c = cv.getContext("2d"), w = cv.width, h = cv.height;
+  const total = woSteps.reduce((a, q) => a + q.dur, 0);
+  let acc = 0; for (let i = 0; i < sel.idx; i++) acc += woSteps[i].dur;
+  const st = woSteps[sel.idx];
+  const x0 = acc / total * w, x1 = (acc + st.dur) / total * w, xc = (x0 + x1) / 2;
+  c.fillStyle = "rgba(255,255,255,0.18)"; c.fillRect(x0, 0, x1 - x0, h);
+  c.strokeStyle = "#ffffff"; c.lineWidth = 2; c.strokeRect(x0 + 1, 1, x1 - x0 - 2, h - 2);
+  c.beginPath(); c.moveTo(xc, 0); c.lineTo(xc, h); c.lineWidth = 3; c.stroke();
+  const label = sel.label; c.font = "400 24px -apple-system, system-ui, sans-serif"; c.textBaseline = "middle";
+  const tw = c.measureText(label).width;
+  let lx = xc - tw / 2; lx = Math.max(6, Math.min(w - tw - 6, lx));
+  c.lineJoin = "round"; c.lineWidth = 5; c.strokeStyle = "rgba(11,13,16,0.85)"; c.strokeText(label, lx, 26);   // thin dark edge keeps it readable over the bars
+  c.fillStyle = "#f2f4f7"; c.fillText(label, lx, 26);
+}
 $("woGraph").onclick = e => {
   if (!woSteps || !woSteps.length) return;
   const r = $("woGraph").getBoundingClientRect();
   const total = woSteps.reduce((a, q) => a + q.dur, 0);
   const t = (e.clientX - r.left) / r.width * total;          // the graph is drawn across the full width, in seconds
-  let acc = 0, hit = woSteps[woSteps.length - 1];
-  for (const st of woSteps) { if (t >= acc && t < acc + st.dur) { hit = st; break; } acc += st.dur; }
-  const ftp = hardFtp(), w0 = Math.round(hit.a * ftp), w1 = Math.round(hit.b * ftp);
+  let acc = 0, idx = woSteps.length - 1;
+  for (let i = 0; i < woSteps.length; i++) { if (t >= acc && t < acc + woSteps[i].dur) { idx = i; break; } acc += woSteps[i].dur; }
+  const hit = woSteps[idx], ftp = hardFtp(), w0 = Math.round(hit.a * ftp), w1 = Math.round(hit.b * ftp);
   const p0 = Math.round(hit.a * 100), p1 = Math.round(hit.b * 100);
   $("woPick").textContent = Math.abs(hit.a - hit.b) < 0.005
     ? w0 + " W (" + p0 + "% FTP) \u00b7 " + mmss(hit.dur)
     : "Ramp " + w0 + " \u2192 " + w1 + " W (" + p0 + "% \u2192 " + p1 + "%) \u00b7 " + mmss(hit.dur);
-  clearTimeout(woPickT); woPickT = setTimeout(() => { $("woPick").textContent = ""; }, 6000);
+  drawWoGraph({ idx, label: Math.abs(hit.a - hit.b) < 0.005 ? w0 + " W" : w0 + "\u2192" + w1 + " W" });
+  clearTimeout(woPickT); woPickT = setTimeout(() => { $("woPick").textContent = ""; drawWoGraph(null); }, 6000);
 };
 $("btnLaunchNo").onclick = () => { $("launchModal").style.display = "none"; pendingLaunch = null; };
 $("btnLaunchYes").onclick = () => {
