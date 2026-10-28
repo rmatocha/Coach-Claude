@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.54</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.55</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -220,6 +220,7 @@ Cooldown
         <button id="btnAheadMinus" class="mini" style="width:40px;flex:none">−</button><b id="vAhead" style="min-width:34px;text-align:center">7</b><button id="btnAheadPlus" class="mini" style="width:40px;flex:none">+</button>
         <span class="status">days</span>
       </div>
+      <div id="dayList" style="margin-top:10px"></div>
       <div id="fitNote" class="hint" style="margin-top:8px;font-size:12px"></div>
     </div>
     <div class="card" style="margin-top:12px">
@@ -247,7 +248,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.54</span>
+  <span class="ver">v1.0.55</span>
 </div>
 
 <div class="ctrl">
@@ -1507,6 +1508,7 @@ function renderFit() {
   const label = day.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
   $("vDay").textContent = fitSel == null ? label : label + "  \u2715";
   $("vBack").textContent = FIT.back; $("vAhead").textContent = FIT.ahead;
+  renderDayList(dayOffset(S.cur - S.todayIdx));
   $("fitNote").textContent = FIT_SRC === "icu" ? "From intervals.icu. Look-ahead includes scheduled workouts."
     : FIT_SRC === "calc" ? "Calculated from your intervals.icu rides (" + FIT_ERR + "). Look-ahead includes scheduled workouts."
     : "Demo data. Connect intervals.icu to see your real training load.";
@@ -1526,6 +1528,46 @@ $("tabPlan").onclick = () => showTab("plan"); $("tabData").onclick = () => showT
 $("btnBackMinus").onclick = () => setFitRange("back", Math.max(14, FIT.back - 7)); $("btnBackPlus").onclick = () => setFitRange("back", Math.min(90, FIT.back + 7));
 $("btnAheadMinus").onclick = () => setFitRange("ahead", Math.max(0, FIT.ahead - 1)); $("btnAheadPlus").onclick = () => setFitRange("ahead", Math.min(14, FIT.ahead + 1));
 window.addEventListener("resize", () => { renderFit(); renderSummary(); });
+/* ---------------- Data tab: everything on the selected day (calendar entries and completed activities) ---------------- */
+let dayKey = "", dayReq = 0;
+function dayRowEl(kind, name, dur, tss, steps) {
+  const row = document.createElement("div"); row.style.cssText = "background:#1c222b;border-radius:10px;padding:10px 12px;margin:6px 0;display:flex;flex-direction:column;gap:4px";
+  const tag = document.createElement("div"); tag.textContent = kind === "done" ? "COMPLETED" : "PLANNED";
+  tag.style.cssText = "font-size:11px;letter-spacing:.04em;font-weight:600;color:" + (kind === "done" ? "#3fc56b" : "var(--dim)");
+  const top = document.createElement("div"); top.style.cssText = "display:flex;justify-content:space-between;gap:8px;align-items:baseline";
+  const n = document.createElement("span"); n.textContent = name; n.style.cssText = "font-weight:600;overflow-wrap:anywhere;min-width:0";
+  const m = document.createElement("span"); m.className = "r"; m.style.cssText = "flex:none;font-size:13px;text-align:right";
+  m.textContent = [dur ? fmtHM(dur) : "", tss != null ? "TSS " + Math.round(tss) : ""].filter(Boolean).join("  ");
+  top.append(n, m); row.append(tag, top);
+  if (steps && steps.length) { const cv = document.createElement("canvas"); cv.style.cssText = "width:100%;height:26px;display:block;border-radius:4px"; row.appendChild(cv); drawMini(cv, steps, { h: 40 }); }
+  return row;
+}
+async function renderDayList(date) {
+  const box = $("dayList");
+  if (date === dayKey) return;                              // same day: keep what is shown
+  dayKey = date; const my = ++dayReq;
+  const auth = icuAuth();
+  if (!auth) { box.textContent = ""; return; }
+  box.innerHTML = ""; const wait = document.createElement("div"); wait.className = "hint"; wait.style.fontSize = "13px"; wait.textContent = "Checking intervals.icu\u2026"; box.appendChild(wait);
+  const base = "https://intervals.icu/api/v1/athlete/" + encodeURIComponent(icuId());
+  const get = path => fetch(base + path, { headers: { Authorization: auth, Accept: "application/json" } }).then(r => { if (!r.ok) throw new Error("intervals.icu replied " + r.status); return r.json(); });
+  let ev, acts;
+  try { [ev, acts] = await Promise.all([get("/events?oldest=" + date + "&newest=" + date), get("/activities?oldest=" + date + "&newest=" + date)]); }
+  catch (e) { if (my === dayReq) { box.textContent = "Couldn't load this day (" + e.message + ")."; } return; }
+  if (my !== dayReq) return;
+  box.innerHTML = "";
+  const ftp = +$("ftp").value || 270;
+  const planned = (Array.isArray(ev) ? ev : []).filter(x => String(x.start_date_local || "").slice(0, 10) === date);
+  const done = (Array.isArray(acts) ? acts : []).filter(a => String(a.start_date_local || "").slice(0, 10) === date);
+  if (!planned.length && !done.length) { const none = document.createElement("div"); none.className = "hint"; none.style.fontSize = "13px"; none.textContent = "Nothing scheduled or completed on this day."; box.appendChild(none); return; }
+  planned.forEach(x => {
+    const text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
+    let dur = x.moving_time || 0, tss = x.icu_training_load != null ? x.icu_training_load : null, steps = null;
+    if (text) { try { steps = parseText(text, ftp); dur = steps.reduce((a, q) => a + q.dur, 0); tss = planStats(steps).tss; } catch (e) { steps = null; } }
+    box.appendChild(dayRowEl("plan", x.name || (x.category === "WORKOUT" ? "Planned workout" : x.category || "Event"), dur, tss, steps));
+  });
+  done.forEach(a => box.appendChild(dayRowEl("done", a.name || a.type || "Activity", a.moving_time || a.elapsed_time || 0, a.icu_training_load != null ? a.icu_training_load : null, null)));
+}
 // Tap or drag across a chart to read that day's CTL / ATL / TSB. Tap the date to return to today.
 function fitPick(cv, e) {
   if (!fitLast) return;
