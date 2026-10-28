@@ -93,7 +93,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.12</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.14</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -172,11 +172,8 @@ Cooldown
 
   <details class="card" id="icuCard" open>
     <summary>Connections</summary>
-    <div class="hint" style="margin-bottom:8px">Paste your intervals.icu API key. It's stored only on this phone, never in the app file. The test button asks intervals.icu for today's planned workouts and shows what comes back.</div>
-    <input id="icuId" type="text" value="0" placeholder="Athlete ID (0 = you)" style="width:100%;box-sizing:border-box;margin-bottom:6px">
-    <input id="icuKey" type="password" placeholder="API key" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:6px">
-    <div class="row" style="margin:0;flex-wrap:nowrap"><button id="btnIcuSave" style="flex:1">Save key</button><button id="btnIcuTest" class="primary" style="flex:1">Test today</button></div>
-    <div id="icuOut" class="hint" style="margin-top:8px;white-space:pre-wrap;font-size:13px;word-break:break-word"></div>
+    <div class="row" style="margin:0"><button id="btnIcuConnect" style="flex:1;background:#35b6e4;color:#001018;border-color:#35b6e4;font-weight:700">Connect intervals.icu</button></div>
+    <div id="icuOut" class="hint" style="margin-top:8px;font-size:13px"></div>
     <div class="row" style="margin:12px 0 0"><button id="btnStrava" style="flex:1;background:#FC4C02;color:#fff;border-color:#FC4C02;font-weight:700">Connect Strava</button></div>
     <div id="stravaOut" class="hint" style="margin-top:8px;font-size:13px"></div>
   </details>
@@ -228,7 +225,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.12</span>
+  <span class="ver">v1.0.14</span>
 </div>
 
 <div class="ctrl">
@@ -604,7 +601,7 @@ function sentTarget() { const t = commandedTarget(); return t == null ? null : M
 
 async function startWorkout() {
   if (!cp) return;
-  resetWorkout(); W.running = true; W.startMs = Date.now();
+  resetWorkout(); W.running = true; W.startMs = Date.now(); W.name = $("woName").value.trim();
   await cpWrite([0x07]);                           // start / resume
   await pushTarget(true);
   W.timer = setInterval(tick, 1000);
@@ -780,7 +777,8 @@ function buildFit() {
 }
 function prepareFit() {
   fitBlob = new Blob([buildFit()], { type: "application/octet-stream" });
-  fitName = "kickr-erg-" + new Date(W.startMs).toISOString().slice(0, 16).replace(/[:T]/g, "-") + ".fit";
+  const ld = new Date(W.startMs), p2 = n => String(n).padStart(2, "0");   // local time, not UTC
+  fitName = "kickr-erg-" + ld.getFullYear() + "-" + p2(ld.getMonth() + 1) + "-" + p2(ld.getDate()) + "-" + p2(ld.getHours()) + "-" + p2(ld.getMinutes()) + ".fit";
   $("btnSaveFit").disabled = false;
 }
 function saveFit() {
@@ -831,7 +829,7 @@ async function stravaUpload() {
   if (!token) return;                                        // not connected: say nothing
   if (!fitBlob) return;
   box.textContent = "Uploading to Strava\u2026";
-  const name = fitName.replace(/\.fit$/, ""), ext = "kickr-" + W.startMs;
+  const name = "Intervals - " + (W.name || "Ride"), ext = "kickr-" + W.startMs;
   try {
     const form = new FormData(); form.append("file", new File([fitBlob], fitName, { type: "application/octet-stream" }));
     const r = await fetch(STRAVA_HELPER + "/upload?name=" + encodeURIComponent(name) + "&external_id=" + encodeURIComponent(ext), { method: "POST", headers: { "X-Strava-Token": token }, body: form });
@@ -1222,7 +1220,6 @@ $("woFolder").onchange = () => { const nw = $("woFolder").value === "__new__"; $
 $("btnSaveLib").onclick = saveToLibrary;
 /* ---------------- intervals.icu connection (test) ---------------- */
 const icuOut = (t, bad) => { const e = $("icuOut"); e.textContent = t; e.style.color = bad ? "var(--bad, #ff6b6b)" : ""; };
-try { const k = localStorage.getItem("kickrIcuKey"), id = localStorage.getItem("kickrIcuId"); if (k) $("icuKey").value = k; if (id) $("icuId").value = id; } catch (e) {}
 async function loadFtp(quiet) {                              // read FTP from the intervals.icu athlete profile
   const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
   if (!key) return;
@@ -1249,11 +1246,20 @@ function stravaShow() {
   $("btnStrava").textContent = t && t.access_token ? "Reconnect Strava" : "Connect Strava";
 }
 $("btnStrava").onclick = () => { location.href = STRAVA_HELPER + "/auth"; };
-stravaCapture(); stravaShow();
-$("btnIcuSave").onclick = () => {
-  try { localStorage.setItem("kickrIcuKey", $("icuKey").value.trim()); localStorage.setItem("kickrIcuId", $("icuId").value.trim() || "0"); ACT = null; icuOut("Saved on this phone."); loadFtp(false); loadNext7(); }
-  catch (e) { icuOut("Couldn't save (browser storage unavailable).", true); }
+function icuShow() {
+  const k = (localStorage.getItem("kickrIcuKey") || "").trim();
+  icuOut(k ? "Connected to intervals.icu." : "Not connected to intervals.icu.");
+  $("btnIcuConnect").textContent = k ? "Reconnect intervals.icu" : "Connect intervals.icu";
+}
+$("btnIcuConnect").onclick = () => {
+  const v = window.prompt("Paste your intervals.icu API key. It stays on this phone.", "");
+  if (v === null) return;
+  const key = v.trim();
+  if (!key) { icuOut("No key entered.", true); return; }
+  try { localStorage.setItem("kickrIcuKey", key); } catch (e) { icuOut("Couldn't save (browser storage unavailable).", true); return; }
+  ACT = null; icuShow(); loadFtp(false); loadNext7(); loadToday();
 };
+stravaCapture(); stravaShow(); icuShow();
 const localDay = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 /* ---------------- Data tab: training load (CTL / ATL / TSB) ---------------- */
 const FIT = { back: 42, ahead: 7 };
@@ -1556,22 +1562,6 @@ async function loadNext7() {
   out.textContent = "";
 }
 $("btnToday").onclick = () => { loadToday(); loadNext7(); };
-$("btnIcuTest").onclick = async () => {
-  const key = $("icuKey").value.trim(), id = ($("icuId").value.trim() || "0"), day = localDay();
-  if (!key) { icuOut("Paste your API key first.", true); return; }
-  icuOut("Asking intervals.icu for " + day + "…");
-  const url = "https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/events?category=WORKOUT&oldest=" + day + "&newest=" + day;
-  try {
-    const r = await fetch(url, { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
-    const txt = await r.text();
-    if (!r.ok) { icuOut("intervals.icu replied " + r.status + " " + r.statusText + "\n" + txt.slice(0, 300), true); return; }
-    const ev = JSON.parse(txt);
-    if (!Array.isArray(ev) || !ev.length) { icuOut("Connected. No planned workouts on " + day + "."); return; }
-    icuOut("Connected. " + ev.length + " planned item(s) on " + day + ":\n" + ev.map(x => "\u2022 " + (x.name || "(no name)") + "  [" + (x.category || "?") + "]\n" + (x.description || (x.workout_doc && x.workout_doc.description) || "(no text)")).join("\n\n"));
-  } catch (e) {
-    icuOut("Couldn't reach intervals.icu from the app (" + e.message + "). Browsers may block this kind of request, which I need to know before building the Today card.", true);
-  }
-};
 $("btnRenameNo").onclick = () => { $("renameModal").style.display = "none"; renameFrom = null; };
 $("btnRenameYes").onclick = applyRename; $("renameInput").onkeydown = e => { if (e.key === "Enter") applyRename(); };
 $("btnSaveImg").onclick = saveSummaryImage; $("btnSaveFit").onclick = saveFit; $("btnSumClose").onclick = closeSummary; $("btnImgClose").onclick = () => { $("imgModal").style.display = "none"; };
