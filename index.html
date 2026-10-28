@@ -93,7 +93,7 @@
 <body data-screen="landing">
 
 <div id="landing">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.16</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.22</span></div>
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -225,7 +225,7 @@ Cooldown
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.16</span>
+  <span class="ver">v1.0.22</span>
 </div>
 
 <div class="ctrl">
@@ -298,6 +298,16 @@ Cooldown
   </div>
 </div>
 
+<div id="saveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:18px;font-weight:600;margin-bottom:8px">Save this ride?</div>
+    <div class="hint" style="margin-bottom:16px;font-size:14px">Saving uploads it to intervals.icu and Strava. Discarding uploads nothing.</div>
+    <div class="row" style="justify-content:center">
+      <button id="btnDiscardRide" style="background:#7a2a30">Discard</button>
+      <button id="btnSaveRide" class="primary">Save</button>
+    </div>
+  </div>
+</div>
 <div id="endModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
   <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
     <div style="font-size:18px;font-weight:600;margin-bottom:16px">Are you sure you would like to end the workout?</div>
@@ -319,7 +329,7 @@ Cooldown
   <div class="ctrl sumbtns">
     <button id="btnSaveImg" class="primary" disabled>Save image</button>
     <button id="btnSaveFit" class="primary" disabled>Save .fit</button>
-    <button id="btnSumClose">Close</button>
+    <button id="btnSumClose" style="background:#35b6e4;color:#001018;border-color:#35b6e4;font-weight:700">Home</button>
   </div>
 </div>
 
@@ -649,7 +659,7 @@ function finishWorkout(reason) {
   cpWrite([0x05, 0, 0]); cpWrite([0x08, 0x01]);     // 0 W target, then stop
   try { window._wl && window._wl.release(); } catch (e) {}
   log(reason || "Workout complete."); refreshButtons(); render();
-  if (W.t > 0) showSummary(); else closeSummary();
+  if (W.t > 0) { if (reason === "Workout ended by user.") askSaveRide(); else showSummary(true); } else closeSummary();
 }
 function skipStep() {
   if (!W.running) return;
@@ -665,7 +675,11 @@ function togglePause() {
   if (W.paused) { W.ramp = null; W.gov = 1; W.lastTarget = null; if (W.erg) setTargetPower(50); } else pushTarget(true);
   refreshButtons();
 }
-function showScreen(name) { document.body.dataset.screen = name; fitH(); render(); window.scrollTo(0, 0); }
+function collapseAllFolders() {                          // home page always starts with every folder closed
+  new Set([...LIBRARY, ...userLib].map(x => effFolder(x.folder))).forEach(f => { foldOpen[f] = false; });
+  saveFoldState(); renderLibrary();
+}
+function showScreen(name) { document.body.dataset.screen = name; if (name === "landing") collapseAllFolders(); fitH(); render(); window.scrollTo(0, 0); }
 
 /* ---------------- distance model ---------------- */
 const MOD = { m: 85, rho: 1.2, crr: 0.004, eta: 0.975, g: 9.81, wheel: 1.5, refW: 150 };
@@ -703,34 +717,46 @@ function summaryData() {
     { l: "Energy", v: f(W.kj), u: "kJ" },        { l: "Avg speed", v: f(sim.mph, 1), u: "mph" }
   ];
 }
-function showSummary() {
+function showSummary(save = true) {
   const d = summaryData();
   $("sumDate").textContent = new Date().toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "  \u00b7  FTP " + W.ftp + " w";
   $("sumGrid").innerHTML = d.map(m => '<div class="tile"><div class="l">' + m.l + '</div><div class="v">' + m.v + (m.u && m.v !== "--" ? "<small>" + m.u + "</small>" : "") + "</div></div>").join("");
   $("summary").classList.add("show"); sumBlob = null; fitBlob = null; $("btnSaveImg").disabled = true; $("btnSaveFit").disabled = true;
-  setTimeout(() => { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); } uploadRide(); stravaUpload(); drawProfile($("sumProfile"), { noCursor: true, actual: true }); drawHR($("sumHR"), { noCursor: true }); prepareSummaryImage(d); }, 40);
+  setTimeout(() => {
+    if (save) { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); } uploadRide(); stravaUpload(); }
+    else { $("sumUp").textContent = "Discarded. Not uploaded."; $("sumUp").style.color = ""; $("sumStrava").textContent = ""; }
+    drawProfile($("sumProfile"), { noCursor: true, actual: true }); drawHR($("sumHR"), { noCursor: true }); prepareSummaryImage(d);
+  }, 40);
 }
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function drawBarsLogo(c, x, y, k) {                          // the five bars from the app icon, no text; (x, y) = top-left of the 1024 frame
+  [[115, 330, "#3b9cff"], [281, 470, "#3ddc84"], [447, 330, "#ffd23f"], [613, 640, "#ff8a3d"], [779, 470, "#ff4d5e"]].forEach(([bx, bh, col]) => {
+    c.fillStyle = col; rrect(c, x + bx * k, y + (750 - bh) * k, 130 * k, bh * k, 18 * k); c.fill();
+  });
+}
 function prepareSummaryImage(d) {                       // square (1080x1080) so Strava and other feeds don't crop it
   const S = 1080, H = 814, cv = document.createElement("canvas"); cv.width = S; cv.height = H;
   const c = cv.getContext("2d"), F = "-apple-system,system-ui,sans-serif";
   c.fillStyle = "#0b0d10"; c.fillRect(0, 0, S, H);
   c.fillStyle = "#f2f4f7"; c.font = "700 54px " + F; c.fillText("Workout summary", 48, 82);
   c.fillStyle = "#8b94a3"; c.font = "400 26px " + F; c.fillText($("sumDate").textContent, 48, 122);
-  const cols = 5, gap = 12, tw = (S - 96 - gap * (cols - 1)) / cols, th = 124;
+  c.fillStyle = "rgba(255,210,63,.55)"; c.fillRect(48, 136, 984, 2);      // thin accent rule
+  drawBarsLogo(c, 1080 - 48 - 91, 33, 0.1);
+  const cols = 5, gap = 12, tw = (S - 96 - gap * (cols - 1)) / cols, th = 150;
   d.forEach((m, i) => {
     const x = 48 + (i % cols) * (tw + gap), y = 148 + Math.floor(i / cols) * (th + gap);
     c.fillStyle = "#161a20"; rrect(c, x, y, tw, th, 16); c.fill();
     c.fillStyle = "#8b94a3"; c.font = "600 18px " + F; c.fillText(m.l.toUpperCase(), x + 14, y + 32);
     let vs = 50; const hasU = m.u && m.v !== "--";
     for (; vs > 28; vs -= 2) { c.font = "700 " + vs + "px " + F; const uw = hasU ? (c.measureText(" ").width + 40) : 0; if (c.measureText(m.v).width + uw < tw - 24) break; }
-    c.font = "700 " + vs + "px " + F; c.fillStyle = "#f2f4f7"; c.fillText(m.v, x + 14, y + 94);
-    if (hasU) { const vw = c.measureText(m.v).width; c.fillStyle = "#8b94a3"; c.font = "600 22px " + F; c.fillText(m.u, x + 14 + vw + 6, y + 94); }
+    c.font = "700 " + vs + "px " + F; c.fillStyle = "#f2f4f7"; c.fillText(m.v, x + 14, y + 114);
+    if (hasU) { const vw = c.measureText(m.v).width; c.fillStyle = "#8b94a3"; c.font = "600 22px " + F; c.fillText(m.u, x + 14 + vw + 6, y + 114); }
   });
   const g1 = document.createElement("canvas");
-  drawProfile(g1, { w: 484, h: 159, dpr: 2, noCursor: true, actual: true });
-  c.fillStyle = "#161a20"; rrect(c, 48, 432, 984, 334, 20); c.fill();
-  if (g1.width) c.drawImage(g1, 56, 440);
+  drawProfile(g1, { w: 484, h: 132, dpr: 2, noCursor: true, actual: true });
+  c.fillStyle = "#161a20"; rrect(c, 48, 484, 984, 280, 20); c.fill();
+  c.strokeStyle = "rgba(255,210,63,.35)"; c.lineWidth = 1; rrect(c, 48.5, 484.5, 983, 279, 20); c.stroke();
+  if (g1.width) c.drawImage(g1, 56, 492);
   cv.toBlob(b => { sumBlob = b; $("btnSaveImg").disabled = !b; }, "image/png");
 }
 function saveSummaryImage() {
@@ -1564,6 +1590,9 @@ async function loadNext7() {
 $("btnToday").onclick = () => { loadToday(); loadNext7(); };
 $("btnRenameNo").onclick = () => { $("renameModal").style.display = "none"; renameFrom = null; };
 $("btnRenameYes").onclick = applyRename; $("renameInput").onkeydown = e => { if (e.key === "Enter") applyRename(); };
+function askSaveRide() { $("saveModal").style.display = "flex"; }
+$("btnSaveRide").onclick = () => { $("saveModal").style.display = "none"; showSummary(true); };
+$("btnDiscardRide").onclick = () => { $("saveModal").style.display = "none"; showSummary(false); };
 $("btnSaveImg").onclick = saveSummaryImage; $("btnSaveFit").onclick = saveFit; $("btnSumClose").onclick = closeSummary; $("btnImgClose").onclick = () => { $("imgModal").style.display = "none"; };
 $("stTrainer2").onclick = () => { if (!cp) connectTrainer(); };      // tap a disconnected status in the ride header to reconnect
 $("stHR2").onclick = () => { if (live.hr == null) connectHR(); };
@@ -1584,7 +1613,7 @@ $("govOn").onchange = saveGov; $("govCad").onchange = saveGov;
 try { const m = localStorage.getItem("kickrDist"); if (m) $("distMph").value = m; } catch (e) {}
 $("distMph").onchange = () => { try { localStorage.setItem("kickrDist", String(distMph())); } catch (e) {} };
 setInterval(render, 250);
-renderLibrary();
+collapseAllFolders();                                 // launch lands on home with folders closed
 loadWorkout();
 loadToday();
 loadNext7();
