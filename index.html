@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.38</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.39</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -247,7 +247,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.38</span>
+  <span class="ver">v1.0.39</span>
 </div>
 
 <div class="ctrl">
@@ -853,15 +853,15 @@ function saveFit() {
 let rideUploaded = false;
 async function uploadRide() {
   const box = $("sumUp"); box.style.color = ""; box.textContent = ""; rideUploaded = false;
-  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
-  if (!key) { box.textContent = "Not uploaded: no intervals.icu key saved."; return; }
+  const auth = icuAuth(), id = icuId();
+  if (!auth) { box.textContent = "Not uploaded: not connected to intervals.icu."; return; }
   if (!fitBlob) { box.textContent = "Not uploaded: no .fit file was made."; box.style.color = "var(--bad, #ff6b6b)"; return; }
   box.textContent = "Uploading to intervals.icu\u2026";
   const name = fitName.replace(/\.fit$/, "");
   const url = "https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/activities?name=" + encodeURIComponent(name) + "&external_id=" + encodeURIComponent("kickr-" + W.startMs);
   const form = new FormData(); form.append("file", new File([fitBlob], fitName, { type: "application/octet-stream" }));
   try {
-    const r = await fetch(url, { method: "POST", headers: { Authorization: "Basic " + btoa("API_KEY:" + key) }, body: form });
+    const r = await fetch(url, { method: "POST", headers: { Authorization: auth }, body: form });
     const txt = await r.text();
     if (!r.ok) { log("intervals.icu upload: " + r.status + " " + txt.slice(0, 200)); throw new Error("error " + r.status); }
     rideUploaded = true; box.style.color = "#3fc56b"; box.textContent = "Uploaded to intervals.icu.";
@@ -1320,10 +1320,10 @@ $("btnSaveLib").onclick = saveToLibrary;
 /* ---------------- intervals.icu connection (test) ---------------- */
 const icuOut = (t, bad) => { const e = $("icuOut"); e.textContent = t; e.style.color = bad ? "var(--bad, #ff6b6b)" : ""; };
 async function loadFtp(quiet) {                              // read FTP from the intervals.icu athlete profile
-  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
-  if (!key) return;
+  const auth = icuAuth(), id = icuId();
+  if (!auth) return;
   try {
-    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id), { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
+    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id), { headers: { Authorization: auth, Accept: "application/json" } });
     if (!r.ok) throw new Error("intervals.icu replied " + r.status);
     const a = await r.json(), f = Math.round(+(a.icu_ftp || a.ftp));
     if (!(f > 0)) throw new Error("no FTP on the account");
@@ -1345,20 +1345,30 @@ function stravaShow() {
   $("btnStrava").textContent = t && t.access_token ? "Reconnect Strava" : "Connect Strava";
 }
 $("btnStrava").onclick = () => { location.href = STRAVA_HELPER + "/auth"; };
-function icuShow() {
+function icuAuth() {                               // OAuth token when connected; otherwise a saved API key (older setup)
+  let t = null; try { t = JSON.parse(localStorage.getItem("kickrIcuOAuth") || "null"); } catch (e) {}
+  if (t && t.access_token) return "Bearer " + t.access_token;
   const k = (localStorage.getItem("kickrIcuKey") || "").trim();
-  icuOut(k ? "Connected to intervals.icu." : "Not connected to intervals.icu.");
-  $("btnIcuConnect").textContent = k ? "Reconnect intervals.icu" : "Connect intervals.icu";
+  return k ? "Basic " + btoa("API_KEY:" + k) : null;
 }
-$("btnIcuConnect").onclick = () => {
-  const v = window.prompt("Paste your intervals.icu API key. It stays on this device.", "");
-  if (v === null) return;
-  const key = v.trim();
-  if (!key) { icuOut("No key entered.", true); return; }
-  try { localStorage.setItem("kickrIcuKey", key); } catch (e) { icuOut("Couldn't save (browser storage unavailable).", true); return; }
-  ACT = null; icuShow(); loadFtp(false); loadNext7(); loadToday(); loadFitData().then(renderFit);
-};
-stravaCapture(); stravaShow(); icuShow();
+function icuId() {
+  let t = null; try { t = JSON.parse(localStorage.getItem("kickrIcuOAuth") || "null"); } catch (e) {}
+  return String((t && t.athlete) || localStorage.getItem("kickrIcuId") || "0").trim() || "0";
+}
+function icuCapture() {                           // the Worker returns here after intervals.icu sign-in, with the token in the URL fragment
+  if (!location.hash.includes("icu_token=")) return;
+  const p = new URLSearchParams(location.hash.slice(1));
+  try { localStorage.setItem("kickrIcuOAuth", JSON.stringify({ access_token: p.get("icu_token"), athlete: p.get("icu_athlete") || "" })); } catch (e) {}
+  history.replaceState(null, "", location.pathname + location.search);   // hide the token from the address bar
+}
+function icuShow() {
+  let t = null; try { t = JSON.parse(localStorage.getItem("kickrIcuOAuth") || "null"); } catch (e) {}
+  const on = !!((t && t.access_token) || (localStorage.getItem("kickrIcuKey") || "").trim());
+  icuOut(on ? "Connected to intervals.icu." : "Not connected to intervals.icu.");
+  $("btnIcuConnect").textContent = on ? "Reconnect intervals.icu" : "Connect intervals.icu";
+}
+$("btnIcuConnect").onclick = () => { location.href = STRAVA_HELPER + "/icu-auth"; };   // sign in on intervals.icu; the helper brings us back
+icuCapture(); stravaCapture(); stravaShow(); icuShow();
 const localDay = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
 /* ---------------- Data tab: training load (CTL / ATL / TSB) ---------------- */
 const FIT = { back: 42, ahead: 7 };
@@ -1413,9 +1423,9 @@ let fitSel = null, fitLast = null;          // fitSel = the day the user tapped 
 let FIT_SRC = "demo", FIT_DAYS = null, FIT_ERR = "";
 const dayOffset = n => { const t = new Date(); return ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() + n)); };
 async function loadFitData() {
-  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
-  if (!key) { FIT_SRC = "demo"; FIT_DAYS = null; return; }
-  const base = "https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id), hdr = { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" };
+  const auth = icuAuth(), id = icuId();
+  if (!auth) { FIT_SRC = "demo"; FIT_DAYS = null; return; }
+  const base = "https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id), hdr = { Authorization: auth, Accept: "application/json" };
   const a = dayOffset(-260), b = dayOffset(0);
   const tries = [base + "/athlete-summary?start=" + a + "&end=" + b, base + "/athlete-summary?oldest=" + a + "&newest=" + b, base + "/wellness?oldest=" + a + "&newest=" + b];
   let lastErr = "";
@@ -1520,11 +1530,11 @@ function demoActivities() {                                  // stand-in rides u
   return out;
 }
 async function loadActivities() {                            // rides from the last two full years plus this year
-  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
-  if (!key) { ACT = demoActivities(); actSource = "demo"; return; }
+  const auth = icuAuth(), id = icuId();
+  if (!auth) { ACT = demoActivities(); actSource = "demo"; return; }
   const now = new Date(), oldest = ymd(new Date(now.getFullYear() - 2, 0, 1)), newest = ymd(now);
   try {
-    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/activities?oldest=" + oldest + "&newest=" + newest, { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
+    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/activities?oldest=" + oldest + "&newest=" + newest, { headers: { Authorization: auth, Accept: "application/json" } });
     if (!r.ok) throw new Error("intervals.icu replied " + r.status);
     const arr = await r.json();
     ACT = (Array.isArray(arr) ? arr : []).filter(a => /ride/i.test(a.type || "")).map(a => ({
@@ -1610,10 +1620,10 @@ $("btnYearPlus").onclick = () => { yearSel = Math.min(new Date().getFullYear(), 
 
 // Fetch the planned workouts for one day from intervals.icu. Throws with a readable message on failure.
 async function icuEvents(day) {
-  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
-  if (!key) throw new Error("no API key saved");
+  const auth = icuAuth(), id = icuId();
+  if (!auth) throw new Error("no API key saved");
   const url = "https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/events?category=WORKOUT&oldest=" + day + "&newest=" + day;
-  const r = await fetch(url, { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
+  const r = await fetch(url, { headers: { Authorization: auth, Accept: "application/json" } });
   if (!r.ok) throw new Error("intervals.icu replied " + r.status);
   const ev = await r.json();
   return Array.isArray(ev) ? ev : [];
@@ -1657,15 +1667,15 @@ async function loadToday() {
 }
 /* ---------------- Plan tab: next 7 days from the intervals.icu calendar (read-only) ---------------- */
 async function icuRange(oldest, newest, path) {
-  const key = (localStorage.getItem("kickrIcuKey") || "").trim(), id = (localStorage.getItem("kickrIcuId") || "0").trim() || "0";
-  const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/" + path + "?oldest=" + oldest + "&newest=" + newest, { headers: { Authorization: "Basic " + btoa("API_KEY:" + key), Accept: "application/json" } });
+  const auth = icuAuth(), id = icuId();
+  const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/" + path + "?oldest=" + oldest + "&newest=" + newest, { headers: { Authorization: auth, Accept: "application/json" } });
   if (!r.ok) throw new Error("intervals.icu replied " + r.status);
   const j = await r.json(); return Array.isArray(j) ? j : [];
 }
 async function loadNext7() {
   const out = $("planWeekOut"), grid = $("planWeekGrid"), list = $("planWeekList");
-  const key = (localStorage.getItem("kickrIcuKey") || "").trim();
-  if (!key) { grid.innerHTML = ""; list.textContent = ""; out.textContent = "Connect intervals.icu below to see the next 7 days."; return; }
+  const auth = icuAuth();
+  if (!auth) { grid.innerHTML = ""; list.textContent = ""; out.textContent = "Connect intervals.icu below to see the next 7 days."; return; }
   const now = new Date(), days = Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + i));
   const start = ymd(days[0]), end = ymd(days[6]);
   out.textContent = "Checking intervals.icu\u2026";
