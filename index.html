@@ -99,13 +99,15 @@
   body.compact .row .status { font-size:11px !important; }
   body.compact .seg { margin:2px 0; }
   body.compact .seg button { padding:4px; font-size:13px; }
+  .redbtn { background:#d93b3b; color:#fff; font-size:12px; font-weight:700; padding:3px 8px; border-radius:8px; }
 </style>
 </head>
 <body data-screen="landing">
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.26</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.32</span></div>
+  <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
     <button id="btnHR">Connect HR</button>
@@ -114,11 +116,16 @@
     <span id="stTrainer" class="status">Trainer: not connected</span>
     <span id="stHR" class="status">HR: not connected</span>
   </div>
+  </div>
 
   <div class="seg" id="tabBar"><button id="tabPlan" class="on">Plan</button><button id="tabData">Data</button></div>
   </div>
 
   <div id="planTab">
+  <div id="switchBanner" style="display:none;background:#2a2f38;border-radius:10px;padding:10px 12px;margin:0 0 8px;font-size:14px">
+    Changing workout. Pick one below, then tap <b>Switch to this workout</b>. The ride carries on from where you are.
+    <div class="row" style="margin:8px 0 0"><button id="btnSwitchCancel" style="flex:1">Cancel</button></div>
+  </div>
   <div class="card" id="todayCard">
     <h2>Today</h2>
     <div id="todayList" class="hint" style="font-size:14px">Connect intervals.icu above to see today's planned workout.</div>
@@ -237,19 +244,23 @@ Cooldown
 <div class="top">
   <button id="btnEdit" class="mini">‹ Library</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
+  <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
-  <span class="ver">v1.0.26</span>
+  <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
+  <span class="ver">v1.0.32</span>
 </div>
 
 <div class="ctrl">
   <button id="btnStart" class="primary" disabled>Start</button>
   <button id="btnPause" disabled>Pause</button>
+  <button id="btnChange" style="display:none;background:#35b6e4;color:#001018;font-weight:700">Change workout</button>
   <button id="btnEnd" style="display:none;background:#7a2a30">End</button>
 </div>
 <div class="ctrl">
   <button id="btnErg" disabled>ERG</button>
   <button id="btnDn" disabled>−</button>
   <button id="btnUp" disabled>+</button>
+  <button id="btnPlus1" disabled style="font-size:16px;padding:0 2px">+1 min</button>
   <button id="btnSkip" disabled aria-label="Skip to next interval"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" aria-hidden="true"><path d="M5 5l10 7-10 7z"/><rect x="17" y="5" width="3" height="14" rx="1.2"/></svg></button>
 </div>
 
@@ -379,7 +390,7 @@ function timeline() {
 }
 
 /* ---------------- live data ---------------- */
-const live = { power: null, hr: null, cad: null };
+const live = { power: null, hr: null, cad: null }; let hrOn = false;
 const powerBuf = [];            // {t, w} raw notifications for 3s smoothing
 function power3s() {
   const now = Date.now(); while (powerBuf.length && now - powerBuf[0].t > 3000) powerBuf.shift();
@@ -432,15 +443,16 @@ const setTargetPower = w => cpWrite([0x05, w & 0xff, (w >> 8) & 0xff]);   // sin
 
 const errText = e => (e && (e.message || e.name)) || (typeof e === "string" ? e : (() => { try { return JSON.stringify(e); } catch (x) { return String(e); } })()) || "unknown error";
 
-async function connectTrainer() {
+async function connectTrainer(known) {
   let step = "choosing device";
   try {
     // full-length UUIDs are required here: Bluefy rejects the short numeric form in the device request
     const FT = "00001826-0000-1000-8000-00805f9b34fb", CPW = "00001818-0000-1000-8000-00805f9b34fb";
-    const dev = await navigator.bluetooth.requestDevice({
+    const dev = known || await navigator.bluetooth.requestDevice({
       filters: [{ services: [FT] }, { services: [CPW] }, { namePrefix: "KICKR" }],
       optionalServices: [FT, CPW]
     });
+    try { localStorage.setItem("kickrTrainerId", dev.id); } catch (e) {}
     setStatus("stTrainer", "Trainer: connecting…");
     dev.addEventListener("gattserverdisconnected", () => { setStatus("stTrainer", "Trainer: disconnected", "bad"); cp = null; refreshButtons(); });
     step = "opening GATT connection";   const server = await dev.gatt.connect();
@@ -466,17 +478,26 @@ async function connectTrainer() {
 }
 
 /* ---------------- heart rate ---------------- */
-async function connectHR() {
+// On the ride screen, reconnect to the last trainer and HR strap if the browser still has permission for them.
+async function autoReconnect() {
+  if (!navigator.bluetooth || !navigator.bluetooth.getDevices) return;   // this browser can't list remembered devices
+  let devs; try { devs = await navigator.bluetooth.getDevices(); } catch (e) { return; }
+  const t = localStorage.getItem("kickrTrainerId"), h = localStorage.getItem("kickrHrId");
+  const td = t && !cp ? devs.find(d => d.id === t) : null; if (td) connectTrainer(td);
+  const hd = h && live.hr == null ? devs.find(d => d.id === h) : null; if (hd) connectHR(hd);
+}
+async function connectHR(known) {
   try {
-    const dev = await navigator.bluetooth.requestDevice({ filters: [{ services: [HR_SVC] }] });
-    dev.addEventListener("gattserverdisconnected", () => { setStatus("stHR", "HR: disconnected", "bad"); live.hr = null; });
+    const dev = known || await navigator.bluetooth.requestDevice({ filters: [{ services: [HR_SVC] }] });
+    try { localStorage.setItem("kickrHrId", dev.id); } catch (e) {}
+    dev.addEventListener("gattserverdisconnected", () => { setStatus("stHR", "HR: disconnected", "bad"); live.hr = null; hrOn = false; refreshDevBtns(); });
     const server = await dev.gatt.connect();
     const ch = await (await server.getPrimaryService(HR_SVC)).getCharacteristic(HR_CHAR);
     ch.addEventListener("characteristicvaluechanged", e => {
       const dv = e.target.value; live.hr = (dv.getUint8(0) & 1) ? dv.getUint16(1, true) : dv.getUint8(1);
     });
     await ch.startNotifications();
-    setStatus("stHR", "HR: connected", "ok");
+    hrOn = true; setStatus("stHR", "HR: connected", "ok"); refreshDevBtns();
   } catch (e) { setStatus("stHR", "HR: " + e.message, "bad"); }
 }
 
@@ -692,7 +713,7 @@ function collapseAllFolders() {                          // home page always sta
   new Set([...LIBRARY, ...userLib].map(x => effFolder(x.folder))).forEach(f => { foldOpen[f] = false; });
   saveFoldState(); renderLibrary();
 }
-function showScreen(name) { document.body.dataset.screen = name; if (name === "landing") collapseAllFolders(); fitH(); render(); window.scrollTo(0, 0); }
+function showScreen(name) { document.body.dataset.screen = name; if (name === "landing") collapseAllFolders(); if (name === "run") autoReconnect(); fitH(); render(); window.scrollTo(0, 0); }
 
 /* ---------------- distance model ---------------- */
 const MOD = { m: 85, rho: 1.2, crr: 0.004, eta: 0.975, g: 9.81, wheel: 1.5, refW: 150 };
@@ -1167,6 +1188,18 @@ function drawActual(c, w, h) {                           // summary view: colour
 }
 function drawProfile(cv, o) {
   cv = cv || $("profile"); o = o || {};
+  drawProfileGraph(cv, o);
+  if (o.actual || !W.name) return;
+  const dpr = o.dpr || window.devicePixelRatio || 1, w = cv.clientWidth; if (!w) return;
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.font = "600 11px -apple-system,system-ui,sans-serif"; c.textBaseline = "top";
+  let name = W.name; while (name.length > 1 && c.measureText(name).width > w - 12) name = name.slice(0, -1);
+  if (name !== W.name) name = name.slice(0, -1) + "\u2026";
+  c.textAlign = "right";
+  c.lineWidth = 3; c.strokeStyle = "rgba(0,0,0,.65)"; c.strokeText(name, w - 6, 3);
+  c.fillStyle = "rgba(242,244,247,.9)"; c.fillText(name, w - 6, 3); c.textAlign = "left";
+}
+function drawProfileGraph(cv, o) {
   const dpr = o.dpr || window.devicePixelRatio || 1;
   const w = o.w || cv.clientWidth, h = o.h || cv.clientHeight; if (!w || !h) return;
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
@@ -1239,20 +1272,47 @@ function drawHR(cv, o) {
   if (!o.noCursor && (W.running || W.t > 0)) { c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(X(W.t), 0); c.lineTo(X(W.t), h); c.stroke(); }
 }
 window.addEventListener("resize", () => { drawProfile(); drawHR(); });
+function refreshDevBtns() {                                  // red Connect buttons in the ride header while a device is missing
+  try {
+    const tOn = !!cp, hOn = hrOn;
+    $("btnTrainer2").style.display = tOn ? "none" : ""; $("stTrainer2").style.display = tOn ? "" : "none";
+    $("btnHR2").style.display = hOn ? "none" : ""; $("stHR2").style.display = hOn ? "" : "none";
+  } catch (e) {}
+}
+function syncPauseBtn() {                                    // Resume is green while paused
+  const b = $("btnPause");
+  if (W.paused) { b.style.background = "#3ddc84"; b.style.color = "#001018"; b.style.fontWeight = "700"; }
+  else { b.style.background = ""; b.style.color = ""; b.style.fontWeight = ""; }
+}
 function refreshButtons() {
+  refreshDevBtns(); syncPauseBtn();
   const ready = !!cp && W.loaded;
   $("btnStart").disabled = !ready || W.running;
-  ["btnPause", "btnSkip", "btnUp", "btnDn", "btnErg"].forEach(id => $(id).disabled = !W.running);
+  ["btnPause", "btnSkip", "btnUp", "btnDn", "btnErg", "btnPlus1"].forEach(id => $(id).disabled = !W.running);
   $("btnErg").classList.toggle("on", W.running && W.erg);
   $("btnStart").textContent = W.running ? "Running" : "Start";
   $("btnEnd").style.display = (W.running && W.paused) ? "" : "none";     // End only appears while paused
+  $("btnChange").style.display = (W.running && W.paused) ? "" : "none";  // Change workout also only while paused
   $("btnEdit").style.visibility = W.running ? "hidden" : "visible";       // back to the builder only while not riding
 }
 
 /* ---------------- wire up ---------------- */
 if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available. Open this page in the Bluefy browser (over https).", "bad"); $("btnTrainer").disabled = $("btnHR").disabled = true; }
-$("btnTrainer").onclick = connectTrainer; $("btnHR").onclick = connectHR;
-$("btnLaunch").onclick = () => { if (loadWorkout()) showScreen("run"); };
+$("btnTrainer").onclick = () => connectTrainer(); $("btnHR").onclick = () => connectHR();
+$("btnLaunch").onclick = () => { if (switching) { applySwitch(); return; } if (loadWorkout()) showScreen("run"); };
+let switching = false;                                       // true while picking a replacement for the paused workout
+function changeWorkout() {
+  switching = true; showTab("plan");
+  $("switchBanner").style.display = ""; $("btnLaunch").textContent = "Switch to this workout";
+  showScreen("landing");
+}
+function endSwitch() { switching = false; $("switchBanner").style.display = "none"; $("btnLaunch").textContent = "Launch workout"; }
+function applySwitch() {                                     // the new workout replaces the rest of the plan; the ride clock and what was already ridden carry on
+  const p = updateWoInfo(); if (!p) return false;
+  W.steps = p.steps; W.ftp = p.ftp; W.idx = 0; W.stepT = 0; W.iSum = 0; W.iN = 0; W.ramp = null; W.name = $("woName").value.trim();
+  endSwitch(); showScreen("run"); render(); return true;
+}
+$("btnChange").onclick = changeWorkout; $("btnSwitchCancel").onclick = () => { endSwitch(); showScreen("run"); };
 $("btnEdit").onclick = () => { if (!W.running) showScreen("landing"); };
 $("wo").addEventListener("input", updateWoInfo); $("ftp").addEventListener("input", updateWoInfo); $("ftp").addEventListener("change", renderLibrary);
 $("woFolder").onchange = () => { const nw = $("woFolder").value === "__new__"; $("woFolderNew").style.display = nw ? "" : "none"; if (nw) $("woFolderNew").focus(); };
@@ -1582,7 +1642,7 @@ async function loadToday() {
     const g = document.createElement("canvas"); if (steps && steps.length) drawMini(g, steps);
     b.append(n, d, g, t);
     const go = document.createElement("button"); go.textContent = "\u25b6"; go.title = "Load and launch"; go.style.cssText = "width:48px;margin:0;font-size:16px;flex:none;background:var(--acc);color:#000";
-    go.disabled = !steps; b.disabled = !steps;
+    go.style.display = steps ? "" : "none"; b.disabled = !steps;
     const item = { name: x.name || "Planned workout", text };
     b.onclick = () => { $("wo").value = text; $("woName").value = item.name; refreshFolderSelect(""); updateWoInfo(); $("woName").scrollIntoView({ behavior: "smooth", block: "start" }); };
     go.onclick = () => askLaunch(item, d.textContent, t.textContent);
@@ -1658,17 +1718,23 @@ $("btnSaveRide").onclick = () => { $("saveModal").style.display = "none"; showSu
 $("btnDiscardRide").onclick = () => { $("saveModal").style.display = "none"; showSummary(false); };
 $("btnSaveImg").onclick = saveSummaryImage; $("btnSaveFit").onclick = saveFit; $("btnSumClose").onclick = closeSummary; $("btnImgClose").onclick = () => { $("imgModal").style.display = "none"; };
 $("stTrainer2").onclick = () => { if (!cp) connectTrainer(); };      // tap a disconnected status in the ride header to reconnect
-$("stHR2").onclick = () => { if (live.hr == null) connectHR(); };
+$("stHR2").onclick = () => { if (!hrOn) connectHR(); };
+$("btnTrainer2").onclick = () => connectTrainer(); $("btnHR2").onclick = () => connectHR();
 $("btnStart").onclick = startWorkout;
 $("btnLaunchNo").onclick = () => { $("launchModal").style.display = "none"; pendingLaunch = null; };
 $("btnLaunchYes").onclick = () => {
   const it = pendingLaunch; $("launchModal").style.display = "none"; pendingLaunch = null; if (!it) return;
   $("wo").value = it.text; $("woName").value = it.name; refreshFolderSelect(it.folder || ""); updateWoInfo();
+  if (switching) { applySwitch(); return; }
   if (loadWorkout()) showScreen("run");
 };
 $("btnPause").onclick = togglePause; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
 $("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
 $("btnEndYes").onclick = () => { $("endModal").style.display = "none"; finishWorkout("Workout ended by user."); }; $("btnSkip").onclick = skipStep;
+$("btnPlus1").onclick = () => {                             // add a minute to the current interval
+  if (!W.running || W.idx >= W.steps.length) return;
+  W.steps[W.idx].dur += 60; render();
+};
 $("btnUp").onclick = () => adjust(1); $("btnDn").onclick = () => adjust(-1); $("btnErg").onclick = toggleErg;
 try { const g = JSON.parse(localStorage.getItem("kickrGov2") || "null"); if (g) { $("govOn").checked = !!g.on; if (g.rpm) $("govCad").value = g.rpm; } } catch (e) {}
 const saveGov = () => { try { localStorage.setItem("kickrGov2", JSON.stringify({ on: $("govOn").checked, rpm: +$("govCad").value || 55 })); } catch (e) {} };
