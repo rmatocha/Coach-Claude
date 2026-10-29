@@ -327,7 +327,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.05</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.06</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -475,7 +475,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.1.05</span>
+  <span class="ver">v1.1.06</span>
 </div>
 
 <div class="ctrl">
@@ -2710,7 +2710,7 @@ function game(dt, E) {
   if (!W) return;
   const i = E.idx, rel = E.rel, tg = E.tg, P3 = E.p3, onT = E.live && Math.abs(P3 - tg) <= Math.max(10, .08 * tg); R.live = E.live;
   const boss = E.boss, easy = E.mean < .56 || (!boss && E.prevBoss && E.mean < .7);
-  if (i !== R.idx) { R.idx = i; R.mobs = []; R.zones = []; R.adds = []; R.mech = null; R.egg = null; R.fade = .5;
+  if (i !== R.idx) { R.idx = i; R.mobs = []; if (!boss) R.hall = ((R.hall ?? -1) + 1 + Math.floor(Math.random() * (HALLS.length - 1))) % HALLS.length; R.zones = []; R.adds = []; R.mech = null; R.egg = null; R.fade = .5;
     if (boss) { const b = BOSSES[R.order[R.bossN++ % BOSSES.length]]; R.mode = "boss"; R.boss = { ...b, prog: 0, cast: null, castCd: 6, atkCd: 2, zoneCd: 3, mechCd: 5, hit: 0, dead: 0, addAt: [.28 + Math.random() * .08, .58 + Math.random() * .08], doomAt: .4 + Math.random() * .25, doom: Math.random() < .6, u: Math.max(1.7, Math.min(2.3, 1.7 + (E.mean - .85) * 2)) };
       say(b.name, E.zone + " raid boss", 2);
       if (R.eggPending && !opt.icon) { R.eggPending = false; R.egg = { t: 0, k: 0 }; R.boss.idle = true; }
@@ -2989,11 +2989,11 @@ function drawArena(now, B) {                                           // round 
   if (live) { c.save(); c.translate(A.cx, A.cy - 10); c.scale(1, .55); c.strokeStyle = `rgba(${T.ring},${pulse + .3})`; c.lineWidth = 3; c.beginPath(); c.arc(0, 0, A.rx * .26, 0, 6.283); c.stroke();
     const g = c.createRadialGradient(0, 0, 4, 0, 0, A.rx * .26); g.addColorStop(0, `rgba(${T.ring},${pulse})`); g.addColorStop(1, `rgba(${T.ring},0)`); c.fillStyle = g; c.beginPath(); c.arc(0, 0, A.rx * .26, 0, 6.283); c.fill(); c.restore(); }
 }
-// halls between bosses: the route runs through a changing mix of sections, 300 px each
-const HALLS = ["dungeon", "library", "cave", "sewer", "crypt", "dungeon", "cave", "library"];
+// halls between bosses: one theme for the whole interval, a new one for the next
+const HALLS = ["dungeon", "library", "cave", "sewer", "crypt"];
 function drawHall(now, rest) {
   c.fillStyle = "#0c0a10"; c.fillRect(0, 0, W, H); const wb = Math.round(H * .34), s = R.scroll, SEG = 300;
-  for (let n = Math.floor(s / SEG) - 1; n * SEG - s < W + SEG; n++) { const x0 = Math.round(n * SEG - s), th = HALLS[((n % HALLS.length) + HALLS.length) % HALLS.length], sd = n * 13.7;
+  for (let n = Math.floor(s / SEG) - 1; n * SEG - s < W + SEG; n++) { const x0 = Math.round(n * SEG - s), th = HALLS[R.hall || 0], sd = n * 13.7;
     c.save(); c.beginPath(); c.rect(x0, 0, SEG + 1, H); c.clip();
     if (th === "dungeon") { for (let row = 0; row * 11 < wb; row++) for (let x = x0 - 26; x < x0 + SEG; x += 26) { c.fillStyle = (row + Math.floor((x - x0) / 26)) % 3 ? "#1c1828" : "#221e30"; c.fillRect(x + (row % 2 ? 13 : 0) + 1, row * 11 + 1, 24, 9); }
       c.fillStyle = "#08060c"; c.fillRect(x0 + 180, wb - 30, 34, 30); c.fillStyle = "#3a3444"; c.fillRect(x0 + 177, wb - 33, 40, 4);
