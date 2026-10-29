@@ -185,6 +185,38 @@
   #arc .a-coins { position:absolute; right:7px; top:6px; font-family:"Press Start 2P","Courier New",monospace; font-size:9px; color:#ffd700; display:flex; align-items:center; gap:5px; }
   #arc[data-game="fighter"] #aCombo, #arc[data-game="fighter"] .a-coins { top:34px; }
   #arc[data-game="breakaway"] .a-coins { top:40px; }
+  #arc[data-game="comets"] .a-coins { top:50px; }
+  #aGames { position:absolute; left:50%; top:10px; transform:translateX(-50%); pointer-events:auto; z-index:2; font-family:"Press Start 2P","Courier New",monospace !important; font-size:15px !important; text-transform:uppercase;
+    background:#000 !important; color:#4ae0ff !important; border:3px solid #4ae0ff !important; box-shadow:4px 4px 0 #003a4a !important; padding:16px 22px; min-height:56px; border-radius:0 !important; cursor:pointer; height:auto; width:auto; white-space:nowrap; }
+  #aGames:active { transform:translate(calc(-50% + 3px), 3px); box-shadow:1px 1px 0 #003a4a !important; }
+/* Change workout in arcade mode: the library as an arcade "stage select", over the paused ride. */
+  #arcLib { display:none; position:fixed; inset:0; z-index:56; background:#000; color:#e8ffe8; font-family:"Press Start 2P","Courier New",monospace; text-transform:uppercase; overflow-y:auto;
+    padding:calc(14px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+  #arcLib.show { display:block; }
+  #arcLib::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:3; background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); }
+  #arcLib .l-in { max-width:460px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
+  #arcLib h2 { margin:4px 0 2px; text-align:center; font-size:16px; font-weight:normal; color:#ffd700; text-shadow:3px 3px 0 #ff3b3b, 6px 6px 0 #5a0000; letter-spacing:1px; }
+  #arcLib .l-sub { text-align:center; font-size:7px; color:#4ae0ff; line-height:1.6; margin-bottom:6px; }
+  #arcLib button { font:inherit; text-transform:uppercase; border-radius:0 !important; cursor:pointer; color:#e8ffe8 !important; }
+  #arcLib .l-fold { display:flex; justify-content:space-between; align-items:center; width:100%; background:#0b0618 !important; border:2px solid #ff3bff !important; box-shadow:4px 4px 0 #4a004a !important; padding:11px 10px; font-size:9px !important; text-align:left; height:auto; }
+  #arcLib .l-fold span:last-child { color:#7c6fa3 !important; }
+  #arcLib .l-fold:active, #arcLib .l-wo:active { transform:translate(2px,2px); }
+  #arcLib .l-wo { display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; gap:6px 8px; width:100%; background:#000 !important; border:2px solid #2b1650 !important; padding:8px 9px; text-align:left; margin-left:0; height:auto; }
+  #arcLib .l-wo .n { font-size:8px !important; line-height:1.4; color:#e8ffe8 !important; overflow-wrap:anywhere; text-transform:none; }
+  #arcLib .l-wo .d { font-size:8px !important; color:#ffd700 !important; white-space:nowrap; }
+  #arcLib .l-wo canvas { border:0 !important; background:transparent !important; grid-column:1 / -1; width:100%; height:22px; display:block; image-rendering:pixelated; }
+  #arcLib .l-wo.cur { border-color:#00ff41 !important; } #arcLib .l-wo.cur .d::before { content:"\25B6  "; color:#00ff41 !important; }
+  #arcLib .l-back { align-self:center; margin-top:10px; background:#000 !important; color:#7c6fa3 !important; border:2px solid #7c6fa3 !important; font-size:9px !important; padding:10px 16px; height:auto; }
+  #arcAsk { display:none; position:fixed; inset:0; z-index:57; background:rgba(0,0,0,.82); align-items:center; justify-content:center; padding:24px; font-family:"Press Start 2P","Courier New",monospace; text-transform:uppercase; }
+  #arcAsk.show { display:flex; }
+  #arcAsk .k-box { background:#000; border:3px solid #ffd700; box-shadow:6px 6px 0 #5a0000; padding:18px 16px; max-width:330px; width:100%; text-align:center; display:flex; flex-direction:column; gap:12px; }
+  #arcAsk .k-q { font-size:9px; color:#ff3bff; }
+  #arcAsk .k-n { font-size:11px; color:#ffd700; line-height:1.5; overflow-wrap:anywhere; text-transform:none; }
+  #arcAsk .k-i { font-size:7px; color:#4ae0ff; line-height:1.6; }
+  #arcAsk .k-row { display:flex; gap:10px; margin-top:4px; }
+  #arcAsk .k-row button { flex:1; height:46px; font:inherit; font-size:10px !important; text-transform:uppercase; border-radius:0 !important; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 6px; }
+  #arcAsk #arcAskNo { background:#000 !important; color:#e8ffe8 !important; border:2px solid #e8ffe8 !important; box-shadow:3px 3px 0 #333 !important; }
+  #arcAsk #arcAskYes { background:#00ff41 !important; color:#001018 !important; border:2px solid #000 !important; box-shadow:3px 3px 0 #003b10 !important; }
   #arc .a-coins i { width:9px; height:9px; background:#ffd700; box-shadow:inset -2px -2px 0 #b8860b; display:inline-block; }
   #aBoss { position:absolute; left:50%; top:6px; transform:translateX(-50%); width:44%; display:flex; flex-direction:column; gap:4px; align-items:center; }
   #aBossName { font-family:"Press Start 2P","Courier New",monospace; font-size:7px; color:#ff3b3b; text-transform:uppercase; white-space:nowrap; }
@@ -294,7 +326,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.99</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.03</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -437,12 +469,12 @@ Cooldown
 
 <div id="run">
 <div class="top">
-  <button id="btnEdit" class="mini">‹ Library</button>
+  <button id="btnEdit" class="mini">‹ Library</button><button id="btnGames" class="mini" type="button" style="display:none">&#9664; Games</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.99</span>
+  <span class="ver">v1.1.03</span>
 </div>
 
 <div class="ctrl">
@@ -511,6 +543,7 @@ Cooldown
       <div class="a-coins"><i></i><span id="aCoins">x00</span></div>
       <div id="aBoss" hidden><span id="aBossName">Boss</span><div class="bb"><i id="aBossHp"></i></div></div>
       <div id="aWarn" hidden><b>Warning!</b><span id="aWarnSub"></span></div>
+      <button id="aGames" type="button" hidden>&#9664; Back</button>
     </div>
   </div>
   <div class="a-map"><canvas id="arcMap"></canvas></div>
@@ -600,6 +633,15 @@ Cooldown
   </div>
 </div>
 
+<div id="arcLib" role="dialog" aria-label="Change workout"><div class="l-in">
+  <h2>Stage select</h2><div class="l-sub" id="arcLibSub">Pick a new workout &middot; your ride carries on</div>
+  <div id="arcLibList"></div>
+  <button class="l-back" id="arcLibBack" type="button">&#9664; Back</button>
+</div></div>
+<div id="arcAsk" role="dialog" aria-label="Load this workout?"><div class="k-box">
+  <div class="k-q">Load this workout?</div><div class="k-n" id="arcAskName"></div><div class="k-i" id="arcAskInfo"></div>
+  <div class="k-row"><button id="arcAskNo" type="button">Cancel</button><button id="arcAskYes" type="button">Load</button></div>
+</div></div>
 <div id="gameModal" role="dialog" aria-label="Choose your challenge">
   <div class="g-top"><span><b>1UP</b> 00</span><span>Credit <b id="gCredit">00</b></span></div>
   <canvas id="gStars"></canvas>
@@ -611,6 +653,7 @@ Cooldown
     <div class="g-item"><button class="g-card" id="gInv" type="button" data-game="invaders" aria-labelledby="gInvN"><canvas id="gInvCv" width="150" height="112"></canvas></button><span class="g-name" id="gInvN">Pedal Defense</span></div>
     <div class="g-item"><button class="g-card" id="gFight" type="button" data-game="fighter" aria-labelledby="gFightN"><canvas id="gFightCv" width="150" height="112"></canvas></button><span class="g-name" id="gFightN">Watt Fighter</span></div>
     <div class="g-item"><button class="g-card" id="gBr" type="button" data-game="breakaway" aria-labelledby="gBrN"><canvas id="gBrCv" width="150" height="112"></canvas></button><span class="g-name" id="gBrN">Breakaway</span></div>
+    <div class="g-item"><button class="g-card" id="gCm" type="button" data-game="comets" aria-labelledby="gCmN"><canvas id="gCmCv" width="150" height="112"></canvas></button><span class="g-name" id="gCmN">Comets</span></div>
   </div>
   <div class="g-coin" id="gCoin">Insert coin</div>
   <div class="g-tbl" id="gTbl"></div>
@@ -1041,6 +1084,10 @@ function applyArcade() {                                 // arcade look only on 
   const on = arcadeOn && (document.body.dataset.screen === "run" || $("summary").classList.contains("show"));
   document.body.classList.toggle("arcade", on);
   if (on) { startRider(); requestAnimationFrame(fitArc); }
+  syncTopBtns();
+}
+function syncTopBtns() {                                  // arcade: top-left is Library before the ride, Games once it has started
+  const g = arcadeOn && W.running; $("btnGames").style.display = g ? "" : "none"; $("btnEdit").style.display = g ? "none" : "";
 }
 function showScreen(name) { if (name === "landing") arcadeOn = false; document.body.dataset.screen = name; applyArcade(); if (name === "landing") collapseAllFolders(); if (name === "run") autoReconnect(); fitH(); render(); window.scrollTo(0, 0); }
 
@@ -1733,7 +1780,7 @@ function riderFrame(ts) {
   arcPlan(R); const pT = arcPlanT(R);                                  // position in the plan (the ride clock keeps running across a workout switch)
   R.tS = live2 ? Math.min(pT + 1, R.tS + dt) : pT; if (Math.abs(R.tS - pT) > 1.5) R.tS = pT;
   if (R.got < 0) R.got = R.coinT.filter(t => t <= pT).length;           // coins already passed in a rebuilt plan stay collected   // smooth workout clock for the scrolling trail
-  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : arcadeGame === "fighter" ? drawFighter : arcadeGame === "breakaway" ? drawBreakaway : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
+  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : arcadeGame === "fighter" ? drawFighter : arcadeGame === "breakaway" ? drawBreakaway : arcadeGame === "comets" ? drawComets : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
   requestAnimationFrame(riderFrame);
 }
 function arcPlanT(R) { const st = W.steps; return !st.length ? 0 : W.idx >= st.length ? (R.total || 0) : (R.t0 ? R.t0[W.idx] : 0) + W.stepT; }
@@ -1856,18 +1903,19 @@ function arcHud(R) {
   // overlay: combo, coins, boss bar, warning
   if (R.broke > 0) { R.broke -= 1 / 60; setT("aComboN", "Break!"); $("aCombo").classList.add("broke"); } else { $("aCombo").classList.remove("broke"); setT("aComboN", "x" + R.combo); }
   setT("aCoins", "x" + String(R.coins).padStart(2, "0"));
-  $("aBoss").hidden = !boss || arcadeGame === "fighter" || arcadeGame === "breakaway";
+  $("aBoss").hidden = !boss || arcadeGame === "fighter" || arcadeGame === "breakaway" || arcadeGame === "comets";
   if (boss) { setT("aBossName", "Boss · " + arcName(s)); const IB = arcadeGame === "invaders" && R.inv && R.inv.boss;   // Pedal Defense: the bar is the mothership's HP
     $("aBossHp").style.width = (IB ? IB.hp / IB.max * 100 : Math.max(0, rem / s.dur * 100)) + "%"; }
   let tb = 0, nb = -1; if (W.running && st.length) { tb = s.dur - W.stepT; for (let j = W.idx + 1; j < st.length; j++) { if (arcBoss(st[j])) { nb = j; break; } tb += st[j].dur; } }
   const warn = W.running && !boss && nb >= 0 && tb <= 8 && tb > 0 && arcadeGame !== "fighter"; $("aWarn").hidden = !warn;   // Watt Fighter announces its own challenger
   if (warn) setT("aWarnSub", arcName(st[nb]) + " in " + fmt(tb));
-  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx && arcadeGame !== "fighter" && arcadeGame !== "breakaway") { if (!(arcadeGame === "invaders" && arcBoss(st[R.lastIdx]))) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true); }
+  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx && arcadeGame !== "fighter" && arcadeGame !== "breakaway" && arcadeGame !== "comets") { if (!(arcadeGame === "invaders" && arcBoss(st[R.lastIdx]))) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true); }
   R.lastIdx = W.running ? W.idx : -1;
   // gamepad mirrors the real buttons
   const m = (aid, id) => { const a = $(aid), b = $(id); a.disabled = b.disabled; a.hidden = b.style.display === "none"; };
   m("aDn", "btnDn"); m("aUp", "btnUp"); m("aSkip", "btnSkip"); m("aErg", "btnErg"); m("aPlus1", "btnPlus1"); m("aEnd", "btnEnd"); m("aChange", "btnChange");
   $("aErg").classList.toggle("on", $("btnErg").classList.contains("on"));
+  $("aGames").hidden = W.running || W.t > 0;                     // before Start: go back and pick a different game, same workout
   const go = $("aGo"); if (!W.running) { go.disabled = $("btnStart").disabled; setT("aGo", "Start"); go.className = "a-go"; }
   else { go.disabled = $("btnPause").disabled; setT("aGo", W.paused ? "Resume" : "Pause"); go.className = "a-go" + (W.paused ? " res" : ""); }
   drawArcMap(R);
@@ -2435,6 +2483,135 @@ function drawBrIcon(now) {                                          // the Break
   brRider(c, 88 + 6 * Math.sin(now / 900), 72, .9, "#ffd700", now, false);
   brRider(c, 70 + 8 * Math.sin(now / 1300), 108, 1.9, "#2f5fc4", now, true);
 }
+/* ---- arcade game 5: Comets (an Asteroids-style vector shooter driven by the ride) ----
+   Your ship auto-aims at the nearest rock; holding target gives rapid fire, off target it sputters. Big rocks split into
+   medium and small ones, and harder targets bring more rock into the field. Hard intervals (85%+ FTP) bring a Planet Killer
+   that a held interval breaks apart at about 85%, plus saucers that take shots at your shield. Easy stretches are a drift
+   that recharges the shield. Nothing can destroy you. */
+const CM_RAD = { 3: 20, 2: 11, 1: 6 }, CM_PTS = { 3: 20, 2: 50, 1: 100 };
+function cmState(R) { return R.cm || (R.cm = { idx: -2, rocks: [], shots: [], parts: [], boss: null, ufo: null, ufoShots: [], ship: { x: 0, y: 0, a: -Math.PI / 2, cd: 0, shield: 1, hit: 0 },
+  wave: 0, banner: "", sub: "", bannerT: 0, kills: 0, spawnT: 0, w: 0, h: 0 }); }
+function cmShape(n, j) { return Array.from({ length: n }, () => 1 - j / 2 + Math.random() * j); }
+function cmRock(C, sz, x, y, vx, vy) { C.rocks.push({ sz, x, y, vx, vy, r: CM_RAD[sz], rot: Math.random() * 6.3, vr: (Math.random() - .5) * 1.4, pts: cmShape(sz === 3 ? 11 : 9, .45) }); }
+function cmEdgeRock(C, sz) {                                       // drifts in from just off screen
+  const w = C.w, h = C.h, side = Math.floor(Math.random() * 4), sp = 12 + Math.random() * 16 + (3 - sz) * 8;
+  const x = side === 0 ? -25 : side === 1 ? w + 25 : Math.random() * w, y = side === 2 ? -25 : side === 3 ? h + 25 : Math.random() * h;
+  const a = Math.atan2(h / 2 - y, w / 2 - x) + (Math.random() - .5) * 1.1; cmRock(C, sz, x, y, Math.cos(a) * sp, Math.sin(a) * sp); }
+function cmSay(C, t, sub, sec) { C.banner = t; C.sub = sub || ""; C.bannerT = sec || 1.4; }
+function cmBurst(C, x, y, n, col, sp) { for (let k = 0; k < n; k++) { const a = Math.random() * 6.3, v = (sp || 40) * (.3 + Math.random()); C.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, a: Math.random() * 6.3, l: 2 + Math.random() * 4, t: .5 + Math.random() * .6, col }); } }
+function cmWrap(C, o) { const m = 30; if (o.x < -m) o.x += C.w + 2 * m; if (o.x > C.w + m) o.x -= C.w + 2 * m; if (o.y < -m) o.y += C.h + 2 * m; if (o.y > C.h + m) o.y -= C.h + 2 * m; }
+function cmPoly(c, x, y, r, rot, pts, col, glow) { c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = glow || 0; c.beginPath();
+  pts.forEach((f, k) => { const a = rot + k / pts.length * 6.283; c[k ? "lineTo" : "moveTo"](x + Math.cos(a) * r * f, y + Math.sin(a) * r * f); }); c.closePath(); c.stroke(); }
+function drawComets(cv, R, now) {
+  if (!cv) return;
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const C = cmState(R), dt0 = Math.min(0.1, C.last ? (now - C.last) / 1000 : 0); C.last = now; C.w = w; C.h = h;
+  if (W.t === 0 && !W.running && C.kills > 0) Object.assign(C, { idx: -2, rocks: [], shots: [], parts: [], boss: null, ufo: null, ufoShots: [], wave: 0, kills: 0 });
+  const st = W.steps, i = Math.min(W.idx, st.length - 1), s = st[i], live2 = W.running && !W.paused && W.idx < st.length, dt = W.paused ? 0 : dt0;
+  const avg = q => q ? (q.a + q.b) / 2 : 0, boss = W.running && arcBoss(s);
+  const easy = W.running && (avg(s) < .56 || (!boss && i > 0 && arcBoss(st[i - 1]) && avg(s) < .7));
+  const p3 = power3s(), tg = W.running ? (sentTarget() ?? stepTarget()) : null, onT = live2 && (tg == null ? p3 > 20 : Math.abs((p3 || 0) - tg) <= Math.max(10, .08 * tg));
+  const rel = tg ? tg / (W.ftp || 250) : avg(s), sh = C.ship;
+  if (C.idx !== W.idx && W.running) { const was = C.boss; C.idx = W.idx;
+    if (boss) { C.boss = { prog: 0, x: w * 1.1, y: h * .5, rot: 0, pts: cmShape(16, .3), cracks: 0, dead: false }; cmSay(C, "Planet killer!", arcName(s) + " · break it apart", 1.9); }
+    else { if (was && !was.dead) cmSay(C, "It got away", "", 1.3); else { C.wave++; cmSay(C, easy ? "Drift" : "Wave " + C.wave, easy ? "Shield recharging" : arcName(s) + " field", 1.4); } C.boss = null; } }
+  // field density follows the target: recovery is almost empty, VO2 is packed
+  const mass = C.rocks.reduce((a, r) => a + (r.sz === 3 ? 4 : r.sz === 2 ? 2 : 1), 0);
+  const budget = !W.running ? 6 : easy ? 2 : Math.round(4 + Math.max(0, rel - .55) * 14) + (boss ? -2 : 0);
+  C.spawnT -= dt; if (C.spawnT <= 0 && mass < budget) { C.spawnT = easy ? 3 : .8; cmEdgeRock(C, budget - mass >= 4 && !easy ? 3 : 2); }
+  C.rocks.forEach(r => { r.x += r.vx * dt; r.y += r.vy * dt; r.rot += r.vr * dt; cmWrap(C, r); });
+  // the ship drifts slowly around the middle and swings to the nearest threat; the Planet Killer is the main target
+  const tt = now / 1000; sh.x = w * .42 + Math.sin(tt * .23) * w * .1; sh.y = h * .55 + Math.sin(tt * .31 + 1) * h * .12;
+  const near = C.rocks.map(r => ({ r, d: Math.hypot(r.x - sh.x, r.y - sh.y) })).filter(o => o.r.x > -5 && o.r.x < w + 5 && o.r.y > -5 && o.r.y < h + 5).sort((a, b) => a.d - b.d)[0];
+  const B = C.boss && !C.boss.dead ? C.boss : null;
+  let tgt = near && (!B || near.d < 70) ? near.r : B || (near && near.r);
+  if (C.ufo && (!near || near.d > 50)) tgt = C.ufo;
+  if (tgt && dt) { const d = Math.hypot(tgt.x - sh.x, tgt.y - sh.y), lt = d / 240, ax = tgt.x + (tgt.vx || 0) * lt, ay = tgt.y + (tgt.vy || 0) * lt;
+    let da = Math.atan2(ay - sh.y, ax - sh.x) - sh.a; da = Math.atan2(Math.sin(da), Math.cos(da)); sh.a += da * Math.min(1, dt * 7);
+    sh.cd -= dt; if (live2 && sh.cd <= 0 && Math.abs(da) < .25) { sh.cd = onT ? .2 : .75; C.shots.push({ x: sh.x + Math.cos(sh.a) * 9, y: sh.y + Math.sin(sh.a) * 9, vx: Math.cos(sh.a) * 240, vy: Math.sin(sh.a) * 240, t: .9 }); beep(1568, .02, .025, "square"); } }
+  C.shots.forEach(q => { q.x += q.vx * dt; q.y += q.vy * dt; q.t -= dt; cmWrap(C, q); });
+  C.shots = C.shots.filter(q => {
+    for (const r of C.rocks) if (Math.hypot(q.x - r.x, q.y - r.y) < r.r) { r.dead = true; arcPop("+" + CM_PTS[r.sz], Math.min(.85, r.x / w), Math.max(.1, (r.y - 6) / h)); return false; }
+    if (B && Math.hypot(q.x - B.x, q.y - B.y) < B.r) { cmBurst(C, q.x, q.y, 2, "#ff8c00", 30); return false; }
+    if (C.ufo && Math.hypot(q.x - C.ufo.x, q.y - C.ufo.y) < 9) { C.ufo.dead = true; return false; }
+    return q.t > 0; });
+  C.rocks.filter(r => r.dead).forEach(r => { cmBurst(C, r.x, r.y, r.sz * 4, "#e8ffe8", 50); C.kills++; beep(r.sz === 3 ? 110 : r.sz === 2 ? 165 : 247, .08, .07, "sawtooth");
+    if (r.sz > 1) for (let k = 0; k < 2; k++) { const a = Math.atan2(r.vy, r.vx) + (k ? .7 : -.7), sp = Math.hypot(r.vx, r.vy) * 1.3 + 10; cmRock(C, r.sz - 1, r.x, r.y, Math.cos(a) * sp, Math.sin(a) * sp); } });
+  C.rocks = C.rocks.filter(r => !r.dead);
+  // the Planet Killer: paced so a held interval cracks it apart at about 85%, even after a slow ramp-up
+  if (B && s) { const left = Math.max(.5, s.dur * .85 - (W.stepT || 0));
+    if (live2) B.prog = Math.max(0, B.prog + (onT ? dt * (1.02 - B.prog) / left : -dt / (s.dur * 6)));
+    B.rot += dt * .15; B.x += (w * .76 - B.x) * dt * .3; B.y = h * .5 + Math.sin(tt * .4) * h * .08; B.r = h * (.3 - .1 * B.prog);
+    const cr = Math.floor(B.prog * 5); while (B.cracks < Math.min(4, cr)) { B.cracks++; B.pts[Math.floor(Math.random() * 16)] *= .78; const a = Math.random() * 6.3;
+      cmRock(C, 2, B.x + Math.cos(a) * B.r, B.y + Math.sin(a) * B.r, Math.cos(a) * 30, Math.sin(a) * 30); cmBurst(C, B.x + Math.cos(a) * B.r, B.y + Math.sin(a) * B.r, 10, "#ff8c00", 60);
+      arcPop("Crack!", Math.max(.1, Math.min(.8, (B.x - 20) / w)), Math.max(.1, (B.y - B.r) / h)); beep(82, .2, .1, "sawtooth"); }
+    if (B.prog >= 1) { B.dead = true; cmBurst(C, B.x, B.y, 60, "#ffd700", 120); cmBurst(C, B.x, B.y, 30, "#ff3b3b", 80);
+      for (let k = 0; k < 4; k++) { const a = k * 1.57 + .4; cmRock(C, 1, B.x, B.y, Math.cos(a) * 45, Math.sin(a) * 45); }
+      cmSay(C, "Shattered!", "Planet killer destroyed", 1.7); arcPop("+500", .4, .45, true); [784, 988, 1319].forEach((f, j) => beep(f, .08, .1, "square", j * .08)); } }
+  // saucers cross during hard intervals and take pot shots at your shield
+  if (live2 && boss && !C.ufo && Math.random() < dt / 7) { const l = Math.random() < .5; C.ufo = { x: l ? -12 : w + 12, y: h * (.15 + Math.random() * .25), vx: l ? 38 : -38, vy: 0, cd: 1.2 }; }
+  if (C.ufo) { const u = C.ufo; u.x += u.vx * dt; u.y += Math.sin(tt * 3) * 12 * dt; u.cd -= dt;
+    if (u.cd <= 0) { u.cd = 1.4; const a = Math.atan2(sh.y - u.y, sh.x - u.x) + (Math.random() - .5) * .3; C.ufoShots.push({ x: u.x, y: u.y, vx: Math.cos(a) * 90, vy: Math.sin(a) * 90, t: 2 }); }
+    if (u.dead) { cmBurst(C, u.x, u.y, 20, "#ff3bff", 70); arcPop("+200", Math.min(.85, u.x / w), Math.max(.1, u.y / h)); beep(659, .06, .08, "square"); beep(880, .1, .08, "square", .06); C.ufo = null; }
+    else if (u.x < -20 || u.x > w + 20) C.ufo = null; }
+  // anything that reaches you bounces off the shield; it drains a little and refills on easy stretches
+  const hit = () => { sh.hit = .35; sh.shield = Math.max(.15, sh.shield - .12); beep(220, .06, .05, "triangle"); };
+  C.ufoShots.forEach(q => { q.x += q.vx * dt; q.y += q.vy * dt; q.t -= dt; if (Math.hypot(q.x - sh.x, q.y - sh.y) < 16) { q.t = 0; hit(); } });
+  C.ufoShots = C.ufoShots.filter(q => q.t > 0);
+  if (W.running) C.rocks.forEach(r => { const dx = r.x - sh.x, dy = r.y - sh.y, d = Math.hypot(dx, dy) || 1; if (d < r.r + 15) { const nx = dx / d, ny = dy / d, vn = r.vx * nx + r.vy * ny; if (vn < 0) { r.vx -= 2 * vn * nx; r.vy -= 2 * vn * ny; if (live2) hit(); } } });
+  if (easy && live2) sh.shield = Math.min(1, sh.shield + dt * .08); sh.hit = Math.max(0, sh.hit - dt0);
+  C.parts.forEach(q => { q.x += q.vx * dt; q.y += q.vy * dt; q.t -= dt; q.a += dt * 3; }); C.parts = C.parts.filter(q => q.t > 0);
+  if (C.bannerT > 0) C.bannerT -= dt;
+  // ---- drawing: glowing vector lines on black ----
+  c.shadowBlur = 0; c.lineWidth = 1.4; c.lineJoin = "round"; c.fillStyle = "#000"; c.fillRect(0, 0, w, h);
+  const ST = window.CM_STARS || (window.CM_STARS = Array.from({ length: 50 }, () => [Math.random(), Math.random(), Math.random()]));
+  ST.forEach(([x, y, b]) => { c.fillStyle = `rgba(200,220,255,${.2 + b * .5 * (.6 + .4 * Math.sin(now / 600 + b * 9))})`; c.fillRect(Math.round(x * w), Math.round(y * h), 1, 1); });
+  if (B) { c.lineWidth = 2; cmPoly(c, B.x, B.y, B.r, B.rot, B.pts, "#ff8c00", 12); c.lineWidth = 1;
+    for (let k = 0; k < B.cracks; k++) { const a = B.rot + k * 1.9; c.beginPath(); c.moveTo(B.x + Math.cos(a) * B.r * .9, B.y + Math.sin(a) * B.r * .9); c.lineTo(B.x + Math.cos(a + .3) * B.r * .4, B.y + Math.sin(a + .3) * B.r * .4); c.lineTo(B.x + Math.cos(a - .2) * B.r * .15, B.y + Math.sin(a - .2) * B.r * .15); c.stroke(); }
+    cmPoly(c, B.x - B.r * .3, B.y - B.r * .2, B.r * .18, 0, [1, .9, 1.1, .95, 1, .85, 1.05, 1], "#7a3d00", 0); cmPoly(c, B.x + B.r * .25, B.y + B.r * .3, B.r * .12, 1, [1, .9, 1.1, .95, 1, .9], "#7a3d00", 0); }
+  c.lineWidth = 1.4; C.rocks.forEach(r => cmPoly(c, r.x, r.y, r.r, r.rot, r.pts, "#e8ffe8", 6));
+  if (C.ufo) { const u = C.ufo; c.strokeStyle = "#ff3bff"; c.shadowColor = "#ff3bff"; c.shadowBlur = 8; c.beginPath();
+    c.moveTo(u.x - 10, u.y); c.lineTo(u.x + 10, u.y); c.lineTo(u.x + 5, u.y + 4); c.lineTo(u.x - 5, u.y + 4); c.closePath(); c.moveTo(u.x - 10, u.y); c.lineTo(u.x - 5, u.y - 3); c.lineTo(u.x + 5, u.y - 3); c.lineTo(u.x + 10, u.y);
+    c.moveTo(u.x - 3, u.y - 3); c.lineTo(u.x - 2, u.y - 6); c.lineTo(u.x + 2, u.y - 6); c.lineTo(u.x + 3, u.y - 3); c.stroke(); }
+  c.shadowBlur = 6; c.shadowColor = "#4ae0ff"; c.fillStyle = "#4ae0ff"; C.shots.forEach(q => c.fillRect(q.x - 1, q.y - 1, 2.5, 2.5));
+  c.shadowColor = "#ff3bff"; c.fillStyle = "#ff3bff"; C.ufoShots.forEach(q => c.fillRect(q.x - 1.5, q.y - 1.5, 3, 3));
+  C.parts.forEach(q => { c.strokeStyle = q.col; c.shadowColor = q.col; c.globalAlpha = Math.min(1, q.t * 2); c.beginPath(); c.moveTo(q.x - Math.cos(q.a) * q.l / 2, q.y - Math.sin(q.a) * q.l / 2); c.lineTo(q.x + Math.cos(q.a) * q.l / 2, q.y + Math.sin(q.a) * q.l / 2); c.stroke(); }); c.globalAlpha = 1;
+  // your ship: classic arrowhead, thrust flame grows with power, shield ring shows charge and flashes on a hit
+  const ca = Math.cos(sh.a), sa = Math.sin(sh.a), P = (fx, fy) => [sh.x + ca * fx - sa * fy, sh.y + sa * fx + ca * fy];
+  c.strokeStyle = "#e8ffe8"; c.shadowColor = "#4ae0ff"; c.shadowBlur = 8; c.lineWidth = 1.6; c.beginPath();
+  [[10, 0], [-7, -6], [-4, 0], [-7, 6]].forEach(([a, b], k) => c[k ? "lineTo" : "moveTo"](...P(a, b))); c.closePath(); c.stroke();
+  const fl = 4 + Math.min(1.4, (p3 || 0) / (W.ftp || 250)) * 8 * (.7 + .3 * Math.sin(now / 40));
+  c.strokeStyle = "#ff8c00"; c.shadowColor = "#ff8c00"; c.beginPath(); c.moveTo(...P(-5, -3)); c.lineTo(...P(-5 - fl, 0)); c.lineTo(...P(-5, 3)); c.stroke();
+  c.lineWidth = 1.2; c.shadowBlur = sh.hit > 0 ? 14 : 4; const scol = sh.hit > 0 ? "#ffffff" : sh.shield > .5 ? "#4ae0ff" : sh.shield > .3 ? "#ffd700" : "#ff3b3b";
+  c.strokeStyle = scol; c.shadowColor = scol; c.globalAlpha = sh.hit > 0 ? 1 : .55; c.beginPath(); c.arc(sh.x, sh.y, 15, -Math.PI / 2, -Math.PI / 2 + sh.shield * 6.283); c.stroke(); c.globalAlpha = 1;
+  c.shadowBlur = 0;
+  // in-window readouts: comets broken and shield on the right, Planet Killer strength across the top
+  const PF = "'Press Start 2P','Courier New',monospace";
+  c.textBaseline = "top"; c.textAlign = "right"; c.font = "8px " + PF; c.fillStyle = "#e8ffe8"; c.fillText("COMETS", w - 8, 6);
+  c.font = "14px " + PF; c.fillStyle = "#ffd700"; c.fillText(String(C.kills), w - 8, 17);
+  c.font = "7px " + PF; c.fillStyle = "#4ae0ff"; c.fillText("SHIELD " + Math.round(sh.shield * 100) + "%", w - 8, 37);
+  if (B) { c.textAlign = "center"; c.font = "8px " + PF; c.fillStyle = "#ff8c00"; c.fillText("PLANET KILLER", w / 2, 6);
+    c.fillStyle = "#3a1400"; c.fillRect(w / 2 - 50, 18, 100, 6); c.fillStyle = "#ff8c00"; c.fillRect(w / 2 - 50, 18, Math.max(0, 100 * (1 - B.prog)), 6); }
+  if (C.bannerT > 0) { c.textAlign = "center"; c.textBaseline = "alphabetic"; c.font = "16px " + PF;
+    c.fillStyle = "#5a0000"; c.fillText(C.banner.toUpperCase(), w / 2 + 3, h * .36 + 3); c.fillStyle = "#ffd700"; c.fillText(C.banner.toUpperCase(), w / 2, h * .36);
+    if (C.sub) { c.font = "7px " + PF; c.fillStyle = "#e8ffe8"; c.fillText(C.sub.toUpperCase(), w / 2, h * .36 + 14); } }
+  if (boss && Math.floor(now / 300) % 2) { c.fillStyle = "rgba(255,0,40,.05)"; c.fillRect(0, 0, w, h); }
+}
+function drawCmIcon(now) {                                          // the Comets card: the ship spinning in a field of vector rocks
+  const cv = $("gCmCv"), dpr = window.devicePixelRatio || 1, W2 = 150, H2 = 112;
+  if (cv.width !== W2 * dpr) { cv.width = W2 * dpr; cv.height = H2 * dpr; }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.fillStyle = "#000"; c.fillRect(0, 0, W2, H2);
+  const t = now / 1000, S = window.CM_ICON || (window.CM_ICON = [[20, 3, 1.7, .4], [11, 2, -.9, 2.1], [11, 2, 1.1, 4], [6, 1, -1.6, 5.2], [6, 1, 2, 1]].map(([r, sz, v, a]) => ({ r, v, a, pts: cmShape(sz === 3 ? 11 : 9, .45) })));
+  c.fillStyle = "#c8dcff"; [[12, 10], [40, 96], [70, 14], [118, 22], [140, 90], [96, 104], [30, 50]].forEach(([x, y], k) => { if (Math.sin(now / 400 + k * 2) > -.3) c.fillRect(x, y, 1, 1); });
+  c.lineWidth = 1.4; S.forEach((o, k) => { const x = ((o.a * 31 + t * 9 * o.v) % 190 + 190) % 190 - 20, y = 56 + Math.sin(o.a + t * .3 * o.v) * 40; cmPoly(c, x, y, o.r, t * o.v * .4, o.pts, "#e8ffe8", 5); });
+  cmPoly(c, 110, 60, 26, t * .1, [1, .9, 1.05, .95, 1, .85, 1.1, .95, 1, .9, 1.05, .92], "#ff8c00", 10);
+  const a = t * 1.6, P = (fx, fy) => [62 + Math.cos(a) * fx - Math.sin(a) * fy, 58 + Math.sin(a) * fx + Math.cos(a) * fy];
+  c.strokeStyle = "#e8ffe8"; c.shadowColor = "#4ae0ff"; c.shadowBlur = 8; c.lineWidth = 1.6; c.beginPath(); [[11, 0], [-8, -7], [-4, 0], [-8, 7]].forEach(([x, y], k) => c[k ? "lineTo" : "moveTo"](...P(x, y))); c.closePath(); c.stroke();
+  c.fillStyle = "#4ae0ff"; for (let k = 0; k < 3; k++) { const d = 16 + ((t * 120 + k * 22) % 60); c.fillRect(62 + Math.cos(a) * d - 1, 58 + Math.sin(a) * d - 1, 2.5, 2.5); }
+  c.shadowBlur = 0;
+}
 /* Rider sprite: Ryan's reference art (43 x 43 pixel map). Legs, cranks, wheels and the frame tubes behind the legs are redrawn live so they animate. */
 const RMAP = [".......................#####...............", "......................#RRrRR##.............", ".....................#rRRRRrRr#............", ".....................#rrRRRrrR#............", ".....................#rrrrrRRRR#...........", ".....................#r#########...........", "......................#R#s#oo#.............", "..................#####r#sSSS#.............", ".................#CCCBb#osSSS#.............", "................#CCYCBBs#sSS##.............", "...............#C#CCYBCbo####..............", "..............#CY#bCCYSCbb#................", ".............#CYY#bb#tYY#bC#...............", "............#tYYCb#bo#tCt#bC#..............", "............##Ytbb#boo#oS##oS##............", "............#K##bBbb###oSSS#rsS##..........", "............#KKK##b#...#osSS##sos##........", "............#KKKK##K#...####kk###Kk#.......", "............#KKKKK##K#.....#Kkkkk#K#.......", ".............#KKKKk#K#.....#K#######.......", "............#K#KKKKK#K#.....##T............", ".............#K#KK#SS#s#..##TCT#...........", "...............###sSS#s###TtKtCT#..........", "...............#t#sSs##TTt#tC##K##.........", "................#SSo#TCC#.#C##K#KK#........", "................#SS#C###.#Tt#wo##o#........", ".....#######....#SS###..#Tt#.#o#G######....", "...###kkkkk###..#S#T##.#Tt#...#Y#kkkkk##...", "..##k#KKKKKKk###s##t#.##T#...##o#KKKKKKk#..", ".##K#Kk.g.g#KKK#C#k#k.#T#....#KoY#o..#KKk#.", ".#K#k...g...#Tt#tt##k#Tt#...#KKKYKo.k..#K#.", "#KK#.g.ggkwTt####Kkk#Tt#....#K#ko##kw.g.Kk#", "#K#...g###C##.K#####Tt##...#KK..rGKKKg..#K#", "#K#.ggKk#k##kg######C##....#K#wk#Y#Kg#gwgK#", "#K#..gk#CCCCCCCC#t#K#......#K#..gYK#K#..#K#", "#K#..gk###########Ct.......#K#..w#o#KK..wK#", "#K#g..#k#g#..k#K####.......#K#kg.gkkgK.g#K#", "#KK..g.kkk.g.wKK#..........#KK..g.k#gg..#K#", ".#K#g...gw..g#K#............#K#w....g.ggK#k", ".#KK#.g.g...#K##............#KKk.k..k..#K#.", "..#KK##.g.##K##..............#KK#k..w#KK#..", "...##KKKKKKK##...............k#KKK##KKK##..", "....KK#KKK#KK.................K##KKKK#K...."];
 const RPAL = { "#": "#0f0f14", K: "#373741", k: "#5f5f69", g: "#a5a5aa", w: "#ebebeb", R: "#cd3237", r: "#96232d", S: "#f0af8c", s: "#cd6e50",
@@ -2513,6 +2690,7 @@ function refreshButtons() {
   $("btnEnd").style.display = (W.running && W.paused) ? "" : "none";     // End only appears while paused
   $("btnChange").style.display = (W.running && W.paused) ? "" : "none";  // Change workout also only while paused
   $("btnEdit").style.visibility = W.running ? "hidden" : "visible";       // back to the builder only while not riding
+  syncTopBtns();
 }
 
 /* ---------------- wire up ---------------- */
@@ -2520,7 +2698,9 @@ if (!navigator.bluetooth) { setStatus("stTrainer", "Web Bluetooth not available.
 $("btnTrainer").onclick = () => connectTrainer(); $("btnHR").onclick = () => connectHR();
 $("btnLaunch").onclick = () => { if (switching) { applySwitch(); return; } if (loadWorkout()) showScreen("run"); };
 let switching = false;                                       // true while picking a replacement for the paused workout
+let arcSwitch = false;                                       // the change came from the arcade stage select: resume the ride afterwards
 function changeWorkout() {
+  if (arcadeOn) { openArcLib(); return; }
   switching = true; showTab("plan");
   $("switchBanner").style.display = ""; $("btnLaunch").textContent = "Switch to this workout";
   showScreen("landing");
@@ -2529,10 +2709,13 @@ function endSwitch() { switching = false; $("switchBanner").style.display = "non
 function applySwitch() {                                     // the new workout replaces the rest of the plan; the ride clock and what was already ridden carry on
   const p = updateWoInfo(); if (!p) return false;
   W.steps = p.steps; W.ftp = p.ftp; W.idx = 0; W.stepT = 0; W.iSum = 0; W.iN = 0; W.ramp = null; W.name = $("woName").value.trim();
-  endSwitch(); showScreen("run"); render(); return true;
+  endSwitch(); showScreen("run"); render();
+  if (arcSwitch) { arcSwitch = false; if (W.paused) togglePause(); }           // arcade: the new workout starts playing straight away
+  return true;
 }
 $("btnChange").onclick = changeWorkout; $("btnSwitchCancel").onclick = () => { endSwitch(); showScreen("run"); };
-$("btnEdit").onclick = () => { if (!W.running) showScreen("landing"); };
+$("btnEdit").onclick = () => { if (W.running) return; if (arcadeOn) openArcLib("pre"); else showScreen("landing"); };   // arcade: the arcade library, no trip to the Plan screen
+$("btnGames").onclick = () => { if (!W.running) return; if (!W.paused) togglePause(); gameFromRun = true; openGameSelect(); };     // swap games mid-ride; the ride waits
 $("wo").addEventListener("input", updateWoInfo); $("ftp").addEventListener("input", updateWoInfo); $("ftp").addEventListener("change", renderLibrary);
 $("woFolder").onchange = () => { const nw = $("woFolder").value === "__new__"; $("woFolderNew").style.display = nw ? "" : "none"; if (nw) $("woFolderNew").focus(); };
 $("btnSaveLib").onclick = saveToLibrary;
@@ -3100,7 +3283,7 @@ function askHard(item) {
 }
 $("btnHardPct").onclick = () => setHardMode("pct"); $("btnHardW").onclick = () => setHardMode("w");
 $("hardVal").oninput = hardPreview;
-$("btnHardNo").onclick = () => { $("hardModal").style.display = "none"; pendingHard = null; };
+$("btnHardNo").onclick = () => { $("hardModal").style.display = "none"; pendingHard = null; if (arcSwitch) { arcSwitch = false; endSwitch(); if (W.paused) togglePause(); } };
 $("btnHardYes").onclick = () => {
   const it = pendingHard, v = +$("hardVal").value;
   if (!it || !(v > 0)) { toast("Enter a target above 0.", true); return; }
@@ -3172,7 +3355,7 @@ function drawGameStars(now) {                                    // drifting sta
   const cols = ["#e8ffe8", "#4ae0ff", "#ff3bff", "#ffd700"];
   S2.forEach(([x, y, v, k]) => { c.fillStyle = cols[k]; const yy = ((y * h + now / 1000 * 30 * v) % h + h) % h; c.fillRect(Math.round(x * w), Math.round(yy), v > 1.2 ? 3 : 2, v > 1.2 ? 3 : 2); });
 }
-function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); drawInvIcon(now); drawFightIcon(now); drawBrIcon(now); requestAnimationFrame(gameLoop); }
+function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); drawInvIcon(now); drawFightIcon(now); drawBrIcon(now); drawCmIcon(now); requestAnimationFrame(gameLoop); }
 function openGameSelect() {
   $("launchModal").style.display = "none";
   const hs = arcadeScores(); $("gHi").textContent = "Hi-score " + pad6(hs.length ? hs[0].s : 0);
@@ -3182,19 +3365,62 @@ function openGameSelect() {
   $("gTbl").innerHTML = '<span class="h">High scores</span>' + ord.map((o, k) => { const e = hs[k]; return "<span>" + o + '</span><span class="s">' + (e ? pad6(e.s) : "------") + '</span><span class="d">' + (e ? dS(e.d) : "--/--/--") + "</span>"; }).join("");
   $("gameModal").classList.add("show"); requestAnimationFrame(gameLoop);
 }
+let gameFromRun = false;                                        // game select opened from the ride screen's Back button: the loaded workout stays
 function pickGame(btn) {
-  ensureAudio(); arcadeGame = btn.dataset.game; if (window.RIDER) { window.RIDER.inv = null; window.RIDER.fight = null; window.RIDER.br = null; }
+  ensureAudio(); arcadeGame = btn.dataset.game; if (window.RIDER) { window.RIDER.inv = null; window.RIDER.fight = null; window.RIDER.br = null; window.RIDER.cm = null; }
   document.querySelectorAll("#gameModal .g-card").forEach(b => b.disabled = true); btn.classList.add("picked");
   beep(988, 0.08, 0.15, "square"); beep(1319, 0.3, 0.15, "square", 0.08);                       // coin drop
   $("gCredit").textContent = "01"; $("gCoin").textContent = "Player 1 start"; $("gCoin").classList.add("go");
   setTimeout(() => {
     [523, 784, 1047].forEach((f, i) => beep(f, 0.09, 0.13, "square", i * 0.09));
     $("gameModal").classList.remove("show");
+    if (gameFromRun) { gameFromRun = false; $("arc").dataset.game = arcadeGame; applyArcade(); render(); if (W.running && W.paused) togglePause(); return; }   // same workout, new game; a ride in progress carries on
     arcadeOn = true; applyArcade(); $("btnLaunchYes").click();                                    // same as Load workout, in arcade mode
   }, 900);
 }
 document.querySelectorAll("#gameModal .g-card").forEach(b => b.onclick = () => pickGame(b));
-$("gBack").onclick = () => { $("gameModal").classList.remove("show"); $("launchModal").style.display = "flex"; };
+$("gBack").onclick = () => { $("gameModal").classList.remove("show"); if (gameFromRun) { gameFromRun = false; if (W.running && W.paused) togglePause(); return; } $("launchModal").style.display = "flex"; };
+$("aGames").onclick = () => { if (W.running) return; gameFromRun = true; openGameSelect(); };
+let arcLibOpen = {}, arcPending = null, arcLibMode = "switch";
+function openArcLib(mode) {
+  arcLibMode = mode === "pre" ? "pre" : "switch"; $("arcLibSub").textContent = (arcLibMode === "pre" ? "Pick your workout" : "Pick a new workout \u00b7 your ride carries on");                                          // the library, arcade style, over the paused ride
+  const box = $("arcLibList"); box.innerHTML = "";
+  const all = LIBRARY.map(x => ({ ...x, built: true })).concat(userLib.map((x, i) => ({ ...x, idx: i }))), groups = new Map();
+  all.forEach(it => { const f = effFolder(it.folder); if (!groups.has(f)) groups.set(f, []); groups.get(f).push(it); });
+  const names = [...groups.keys()].sort((a, b) => a === "" ? 1 : b === "" ? -1 : a === "Test" ? -1 : b === "Test" ? 1 : cmpName(a, b));
+  const flat = names.length === 1 && names[0] === "", ftp = +$("ftp").value || 270;
+  names.forEach(f => {
+    const items = groups.get(f).sort((a, b) => { if (f !== "Endurance") return cmpName(a.name, b.name); const x = woStats(a), y = woStats(b); return (x.d - y.d) || (x.t - y.t) || cmpName(a.name, b.name); });
+    const open = flat || !!arcLibOpen[f];
+    if (!flat) { const h = document.createElement("button"); h.type = "button"; h.className = "l-fold"; const fc = folderColor(f); if (fc) h.style.boxShadow = "inset 5px 0 0 " + fc + ", 4px 4px 0 #4a004a";
+      h.innerHTML = "<span></span><span></span>"; h.firstChild.textContent = (open ? "\u25BE " : "\u25B8 ") + (f || "User"); h.lastChild.textContent = items.length;
+      h.onclick = () => { arcLibOpen[f] = !open; const y = $("arcLib").scrollTop; openArcLib(arcLibMode); $("arcLib").scrollTop = y; }; box.appendChild(h); }
+    if (open) items.forEach(it => {
+      let steps = null, dur = "", tss = ""; try { steps = parseText(it.text, ftp); dur = fmt(steps.reduce((a, q) => a + q.dur, 0)); tss = "TSS " + Math.round(planStats(steps).tss); } catch (e) {}
+      const b = document.createElement("button"); b.type = "button"; b.className = "l-wo" + (it.name === W.name ? " cur" : "");
+      const n = document.createElement("span"), d = document.createElement("span"), g = document.createElement("canvas"); n.className = "n"; d.className = "d";
+      n.textContent = it.name; d.textContent = dur; if (steps && steps.length) drawMini(g, steps, { h: 44 }); b.append(n, d, g);
+      b.onclick = () => { arcPending = it; $("arcAskName").textContent = it.name; $("arcAskInfo").textContent = [dur, tss, effFolder(it.folder)].filter(Boolean).join(" \u00b7 "); $("arcAsk").classList.add("show"); };
+      box.appendChild(b); });
+  });
+  $("arcLib").classList.add("show");
+}
+function closeArcLib() { $("arcAsk").classList.remove("show"); $("arcLib").classList.remove("show"); arcPending = null; }
+$("arcLibBack").onclick = closeArcLib;                                                      // back to the paused ride
+$("arcAskNo").onclick = () => { const pre = arcLibMode === "pre"; closeArcLib(); if (!pre && W.running && W.paused) togglePause(); };   // keep the current workout and carry on
+$("arcAskYes").onclick = () => {
+  const it = arcPending; closeArcLib(); if (!it) return;
+  if (arcLibMode === "pre") {                                                                // before the ride: load it into the player and wait for Start
+    if (window.RIDER) { window.RIDER.inv = null; window.RIDER.fight = null; window.RIDER.br = null; window.RIDER.cm = null; }
+    if (it.custom === "hard") { askHard(it); return; }
+    $("wo").value = it.text; $("woName").value = it.name; refreshFolderSelect(it.folder || ""); updateWoInfo();
+    if (loadWorkout()) showScreen("run"); return;
+  }
+  switching = true; arcSwitch = true;
+  if (it.custom === "hard") { askHard(it); return; }
+  $("wo").value = it.text; $("woName").value = it.name; refreshFolderSelect(it.folder || ""); updateWoInfo();
+  if (!applySwitch()) { arcSwitch = false; endSwitch(); toast("Couldn't load that workout.", true); }
+};
 $("btnArcade").onclick = openGameSelect;
 $("btnLaunchYes").onclick = () => {
   const it = pendingLaunch; $("launchModal").style.display = "none"; pendingLaunch = null; if (!it) return;
