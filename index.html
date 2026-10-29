@@ -55,7 +55,7 @@
   input[type=checkbox] { width:22px; height:22px; }
   #btnDn, #btnUp { font-size:32px; }
   .p3tile { position:relative; overflow:hidden; }
-  #p3strip { position:absolute; left:0; right:0; bottom:0; height:6px; background:#333b47; transition:background .35s; }
+  #p3strip { position:absolute; left:0; right:0; bottom:0; height:0; opacity:.55; background:#7a8594; transition:height .3s, background .35s; }
   .hrt { display:flex; justify-content:space-between; gap:8px; }
   .hrt .avg { text-align:right; }
   .hrt .avg .a { font-size:calc(var(--u)*3.3); font-weight:600; color:#c3cad6; line-height:1.1; font-variant-numeric:tabular-nums; }
@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.57</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.65</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -181,6 +181,12 @@ Cooldown
   </details>
 
   <details class="card">
+    <summary>Audio cues</summary>
+    <div class="row"><label><input type="checkbox" id="cueOn" checked> On</label></div>
+    <div class="hint">A bell with 10 s left in an interval, a tick each second for the last 5 s, and a higher tick when the next interval starts. Needs sound on and the ringer switch up.</div>
+  </details>
+
+  <details class="card">
     <summary>Distance model</summary>
     <div class="row">
       <span class="status">Average speed at 150 w</span>
@@ -248,7 +254,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.57</span>
+  <span class="ver">v1.0.65</span>
 </div>
 
 <div class="ctrl">
@@ -266,6 +272,7 @@ Cooldown
 </div>
 
 <div class="grid">
+  <div class="tile wide slim" id="timerRow"><div class="l">Timer</div><div class="v" id="elapsed">0:00</div><div class="s" id="remain">--</div></div>
   <div class="tile wide split">
     <div style="position:relative">
       <span id="adjLbl"></span>
@@ -298,7 +305,6 @@ Cooldown
   <div class="tile"><div class="two"><div><div class="l">TSS</div><div class="v" id="tss">--</div></div><div><div class="l">IF</div><div class="v" id="ifv">--</div></div></div></div>
   <div class="tile"><div class="l">Energy</div><div class="v" id="kj">0</div><div class="s">kJ</div></div>
   <div class="tile"><div class="l">Norm. power</div><div class="v"><span id="np">--</span><small id="npu" style="display:none">w</small></div></div>
-  <div class="tile wide slim" id="timerRow"><div class="l">Timer</div><div class="v" id="elapsed">0:00</div><div class="s" id="remain">--</div></div>
 </div>
 
 </div>
@@ -631,11 +637,21 @@ const stepTarget = () => {
 // Power at time t (seconds) inside step i, scaled by the +/- adjustment.
 const baseW = (i, t) => { const s = W.steps[i]; const f = s.a + (s.b - s.a) * Math.min(1, t / s.dur); return f * W.ftp * W.adj; };
 // Smooth transitions need both steps to be at least 4 s long and not freeride.
-// Ramp length scales with the power change: 1 s per 10% of FTP, between 2 and 10 s. It starts 1 s before the boundary,
-// so the rest (D-1 s) runs into the next interval. Returns 0 when the two intervals are too short to hold it.
+// Ramp length. Stepping down is always 2 s (lowering resistance needs no time). Stepping up scales with the power
+// change (1 s per 10% of FTP, 2 to 10 s), then with cadence: spinning at 85+ rpm needs half as long, while 60 rpm or
+// below doubles it, so a rider who has drifted from the plan gets more time before the resistance arrives. Capped at 15 s.
+// It starts 1 s before the boundary, so the rest (D-1 s) runs into the next interval. Returns 0 when the intervals are too short.
 const rampLen = (i, j) => {
   const a = W.steps[i], b = W.steps[j]; if (!a || !b || a.free || b.free || a.dur < 2) return 0;
-  const D = Math.min(10, Math.max(2, Math.round(Math.abs(baseW(j, 0) - baseW(i, a.dur)) / (W.ftp * 0.1))));
+  const dW = baseW(j, 0) - baseW(i, a.dur);
+  let D;
+  if (dW <= 0) D = 2;
+  else {
+    const base = Math.min(10, Math.max(2, Math.round(dW / (W.ftp * 0.1))));
+    const c = cad3s();
+    const f = c == null ? 1 : c >= 85 ? 0.5 : c <= 60 ? 2 : 2 - 1.5 * (c - 60) / 25;
+    D = Math.min(15, Math.max(2, Math.round(base * f)));
+  }
   return b.dur >= D ? D : 0;
 };
 const rampOK = (i, j) => rampLen(i, j) > 0;
@@ -666,8 +682,9 @@ function govStep(dt) {
 function sentTarget() { const t = commandedTarget(); return t == null ? null : Math.round(t * W.gov); }
 
 async function startWorkout() {
+  ensureAudio();
   if (!cp) return;
-  resetWorkout(); W.running = true; W.startMs = Date.now(); W.name = $("woName").value.trim();
+  resetWorkout(); cueIdx = -1; W.running = true; W.startMs = Date.now(); W.name = $("woName").value.trim();
   await cpWrite([0x07]);                           // start / resume
   await pushTarget(true);
   W.timer = setInterval(tick, 1000);
@@ -686,6 +703,33 @@ function pushTarget(force) {
     if (!force && cpPending > 0) return;              // don't queue commands faster than the trainer answers; retried next cycle
     W.lastTarget = t; return setTargetPower(t);
   }
+}
+/* ---------------- audio cues (Web Audio; the context is created on the Start tap) ---------------- */
+let AC = null, cueIdx = -1;
+try { $("cueOn").checked = localStorage.getItem("kickrCues") !== "0"; } catch (e) {}
+$("cueOn").onchange = () => { try { localStorage.setItem("kickrCues", $("cueOn").checked ? "1" : "0"); } catch (e) {} };
+function ensureAudio() {                                 // must run inside the Start tap, before any await
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === "suspended") AC.resume();
+  } catch (e) { AC = null; }
+}
+function beep(freq, dur, vol, type) {
+  if (!AC || !$("cueOn").checked) return;
+  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || "sine"; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + 0.02);
+}
+const cueBell = () => { beep(1320, 1.2, 0.22, "sine"); beep(2640, 0.7, 0.06, "sine"); };   // 10 s left
+const cueTick = () => beep(1000, 0.05, 0.25, "triangle");                                   // last 5 s
+const cueStart = () => beep(1500, 0.08, 0.3, "triangle");                                   // new interval
+function cues() {                                        // called once a second, and after a skip
+  if (!W.running || W.paused || W.idx >= W.steps.length) return;
+  if (cueIdx !== W.idx) { cueIdx = W.idx; cueStart(); return; }   // the new interval has started
+  const rem = W.steps[W.idx].dur - W.stepT;
+  if (W.stepT > 0 && rem === 10) cueBell();
+  else if (W.stepT > 0 && rem >= 1 && rem <= 5) cueTick();
 }
 function tick() {
   if (!W.running || W.paused) return;
@@ -708,6 +752,7 @@ function tick() {
     W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0;
     if (W.idx >= W.steps.length) { finishWorkout(); return; }
   }
+  cues();
   pushTarget(false); render();
 }
 function finishWorkout(reason) {
@@ -723,6 +768,7 @@ function skipStep() {
   W.idx++; W.stepT = 0; W.iSum = 0; W.iN = 0; W.ramp = null;
   if (W.idx >= W.steps.length) return finishWorkout();
   if (A != null && rampOK(W.idx - 1, W.idx)) W.ramp = { A, t0: Date.now() - 1000, to: W.idx, D: rampLen(W.idx - 1, W.idx) };
+  cues();
   pushTarget(true); render();
 }
 function togglePause() {
@@ -1163,7 +1209,12 @@ function toggleErg() {
 function render() {
   const p3 = power3s(); $("p3").textContent = p3 == null ? "--" : Math.round(p3);
   const pct = p3 == null ? null : Math.round(p3 / W.ftp * 100);
-  $("p3strip").style.background = pct == null || pct <= 55 ? "" : pct <= 75 ? "#1F77B4" : pct <= 90 ? "#2CA02C" : pct <= 105 ? "#FFCB0E" : pct <= 120 ? "#FF2A0E" : "#9467BD";
+  { // fill from the tile bottom up to 120% FTP, but never into the text above it
+    const tile = $("p3strip").parentElement, val = $("p3").parentElement;
+    const room = Math.max(0, tile.clientHeight - (val.offsetTop + val.offsetHeight) - 6);
+    $("p3strip").style.height = (pct == null ? 0 : Math.min(120, Math.max(0, pct)) / 120 * room) + "px";
+  }
+  $("p3strip").style.background = pct == null || pct <= 55 ? "#7a8594" : pct <= 75 ? "#1F77B4" : pct <= 90 ? "#2CA02C" : pct <= 105 ? "#FFCB0E" : pct <= 120 ? "#FF2A0E" : "#9467BD";
   $("p3u").style.display = p3 == null ? "none" : "";
   $("hr").textContent = live.hr ?? "--";
   const hv = W.hrHist.filter(v => v != null); $("hravg").textContent = hv.length ? Math.round(hv.reduce((a, b) => a + b, 0) / hv.length) : "--";
