@@ -296,7 +296,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.88</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.89</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -444,7 +444,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.88</span>
+  <span class="ver">v1.0.89</span>
 </div>
 
 <div class="ctrl">
@@ -2006,6 +2006,105 @@ function drawInvIcon(now) {                                      // the Pedal De
   c.fillStyle = "#e8ffe8"; const sy = 92 - (now / 3) % 80; c.fillRect(sx, Math.round(sy), 1.5, 6);
   c.fillStyle = "#00ff41"; c.fillRect(0, 108, W2, 2);
 }
+/* Watt Fighter bodies: the "Heavy Hitter" build drawn on a 52 x 62 pixel grid from a skeleton, one layer at a time with
+   a black outline per layer (back limbs, torso, head, back forearm, front leg, front arm), then scaled up crisp. */
+const WF_GW = 52, WF_GH = 62;
+const WF_POSES = {                                               // joints facing right, feet on y = 59
+  stance:  { hip: [22, 35], neck: [25, 19], head: [26, 12], eb: [22, 29], fb: [31, 19], ef: [35, 26], ff: [38, 18], kb: [15, 46], footb: [10, 59], kf: [31, 46], footf: [36, 59] },
+  punch:   { hip: [24, 35], neck: [28, 19], head: [30, 12], eb: [19, 28], fb: [24, 32], ef: [38, 20], ff: [47, 19], kb: [15, 46], footb: [10, 59], kf: [33, 46], footf: [37, 59] },
+  kick:    { hip: [22, 35], neck: [20, 19], head: [19, 12], eb: [15, 27], fb: [21, 21], ef: [26, 26], ff: [29, 19], kb: [19, 47], footb: [17, 59], kf: [33, 33], footf: [45, 30] },
+  special: { hip: [23, 35], neck: [27, 19], head: [29, 12], eb: [32, 26], fb: [41, 25], ef: [36, 22], ff: [44, 21], kb: [14, 46], footb: [9, 59], kf: [33, 46], footf: [38, 59] },
+  hit:     { hip: [21, 35], neck: [20, 19], head: [19, 13], eb: [17, 28], fb: [25, 21], ef: [27, 27], ff: [31, 21], kb: [14, 46], footb: [9, 59], kf: [29, 46], footf: [33, 59] },
+  reach:   { hip: [23, 35], neck: [23, 19], head: [23, 12], eb: [19, 10], fb: [21, 3], ef: [27, 10], ff: [26, 3], kb: [20, 47], footb: [18, 59], kf: [27, 47], footf: [29, 59] },
+  bend:    { hip: [22, 35], neck: [34, 33], head: [39, 36], eb: [32, 43], fb: [33, 52], ef: [35, 44], ff: [35, 54], kb: [21, 47], footb: [20, 59], kf: [25, 47], footf: [26, 59] },
+  sit:     { hip: [20, 55], neck: [21, 38], head: [22, 31], eb: [17, 47], fb: [24, 51], ef: [26, 46], ff: [31, 50], kb: [30, 57], footb: [40, 59], kf: [30, 56], footf: [41, 58] },
+  down:    { hip: [28, 56], neck: [13, 55], head: [7, 54], eb: [12, 50], fb: [17, 47], ef: [18, 51], ff: [22, 49], kb: [37, 57], footb: [46, 58], kf: [37, 56], footf: [47, 57] }
+};
+const wfShade = (hex, k) => { const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(k < 0 ? v * (1 + k) : v + (255 - v) * k))); return "#" + [n >> 16, n >> 8 & 255, n & 255].map(v => f(v).toString(16).padStart(2, "0")).join(""); };
+function wfPal(gi, sk, band, hair, belt) { return { gi, giS: wfShade(gi, -.38), giH: wfShade(gi, .3), sk, skS: wfShade(sk, -.25), skH: wfShade(sk, .25), band, hair, belt }; }
+const WF_ME2 = wfPal("#2f5fc4", "#f0b48a", "#e2362b", "#3a2414", "#f2c230");
+function wfRandomPal() {                                         // a new look for every opponent
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const gi = pick(["#c8282e", "#2fbf71", "#e0b020", "#9b4dff", "#ff8c00", "#1aa5a5", "#e6e6e6", "#3a3a44", "#ff3bff", "#7a4a1a", "#b0e000"]);
+  return wfPal(gi, pick(["#f0b48a", "#e8c0a0", "#c98a62", "#a8704c", "#8d5a3a", "#6a4028"]), pick(["#ffffff", "#ffd700", "#00ff41", "#ff3b3b", "#111111", "#4ae0ff"]),
+    pick(["#111111", "#3a2414", "#5a2a0a", "#d8d8d8", "#b8860b", "#7a1010"]), pick(["#111111", "#2a0000", "#ffffff", "#7a3d00"]));
+}
+const WF_CACHE = new Map();
+function wfSprite(poseName, pal, bob, flap) {
+  const key = poseName + bob + flap + pal.gi + pal.sk + pal.band + pal.hair; if (WF_CACHE.has(key)) return WF_CACHE.get(key);
+  const GW = WF_GW, GH = WF_GH, N = GW * GH, buf = new Uint32Array(N), cc = {};
+  const col = hex => cc[hex] ?? (cc[hex] = (() => { const n = parseInt(hex.slice(1), 16); return (0xff << 24 | (n & 0xff) << 16 | (n >> 8 & 0xff) << 8 | n >> 16) >>> 0; })());
+  let L = new Uint32Array(N);
+  const set = (x, y, c) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < GW && y < GH) L[y * GW + x] = col(c); };
+  const disc = (cx, cy, r, c) => { for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r); y++) for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r + .3) set(x, y, c); };
+  const line = (a, b, c, th) => { const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) * 2)); for (let i = 0; i <= n; i++) { const x = a.x + (b.x - a.x) * i / n, y = a.y + (b.y - a.y) * i / n; if (th <= 1) set(x, y, c); else disc(x, y, (th - 1) / 2, c); } };
+  const poly = (pts, c) => { const ys = pts.map(p => p.y); for (let y = Math.floor(Math.min(...ys)); y <= Math.ceil(Math.max(...ys)); y++) for (let x = 0; x < GW; x++) { let ins = false; const px = x + .5, py = y + .5;
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const a = pts[i], b = pts[j]; if ((a.y > py) !== (b.y > py) && px < (b.x - a.x) * (py - a.y) / (b.y - a.y) + a.x) ins = !ins; } if (ins) set(x, y, c); } };
+  const commit = () => { const o = col("#000000");
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { const i = y * GW + x; if (L[i]) continue; if ((x > 0 && L[i - 1]) || (x < GW - 1 && L[i + 1]) || (y > 0 && L[i - GW]) || (y < GH - 1 && L[i + GW])) buf[i] = o; }
+    for (let i = 0; i < N; i++) if (L[i]) buf[i] = L[i]; L = new Uint32Array(N); };
+  const limb = (a, b, th, base, sh, hi) => { line(a, b, base, th); if (th >= 3) { line({ x: a.x, y: a.y + th / 3 }, { x: b.x, y: b.y + th / 3 }, sh, Math.max(1, th - 3)); line({ x: a.x, y: a.y - th / 3 }, { x: b.x, y: b.y - th / 3 }, hi, 1); } };
+  const mid = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
+  const P0 = WF_POSES[poseName] || WF_POSES.stance, J = {}; for (const k in P0) J[k] = { x: P0[k][0], y: P0[k][1] };
+  const upright = poseName !== "bend" && poseName !== "down" && poseName !== "sit";
+  if (upright && bob) for (const k of ["hip", "neck", "head", "eb", "fb", "ef", "ff"]) J[k].y += 1;
+  // shoulders and hips sit across the spine, so every pose (upright, bent, lying) gets a proper torso
+  const dx = J.neck.x - J.hip.x, dy = J.neck.y - J.hip.y, dl = Math.hypot(dx, dy) || 1, nx = -dy / dl, ny = dx / dl, side = nx < 0 ? -1 : 1;
+  const sB = { x: J.neck.x - side * nx * 7, y: J.neck.y + 2 - side * ny * 7 }, sF = { x: J.neck.x + side * nx * 6, y: J.neck.y + 2 + side * ny * 6 };
+  const hB = { x: J.hip.x - side * nx * 5, y: J.hip.y - side * ny * 5 }, hF = { x: J.hip.x + side * nx * 5, y: J.hip.y + side * ny * 5 };
+  // back leg and back upper arm (behind the body)
+  limb(J.hip, J.kb, 9, pal.giS, pal.giS, pal.gi); limb(J.kb, J.footb, 7, pal.giS, pal.giS, pal.gi); disc(mid(J.kb, J.footb, .35).x, mid(J.kb, J.footb, .35).y, 4, pal.giS);
+  line({ x: J.footb.x - 3, y: J.footb.y }, { x: J.footb.x + 3, y: J.footb.y }, pal.skS, 3); commit();
+  limb(sB, J.eb, 6, pal.skS, pal.skS, pal.sk); commit();
+  // torso: V-shaped, open gi showing pecs and abs when upright, heavy shoulders
+  disc(sB.x, sB.y - 1, 3.4, pal.gi); disc(sF.x, sF.y - 1, 3.4, pal.gi);
+  poly([{ x: sB.x - side * nx * 1, y: sB.y - 2 }, { x: sF.x + side * nx * 1, y: sF.y - 2 }, hF, hB], pal.gi);
+  if (upright) {
+    const top = J.neck.y + 1, cx = (J.neck.x + J.hip.x) / 2 + 1, m = (J.neck.y + J.hip.y) / 2;
+    poly([{ x: J.neck.x - 4, y: top }, { x: J.neck.x + 5, y: top }, { x: cx + 4, y: m + 2 }, { x: cx + 2, y: J.hip.y - 2 }, { x: cx - 3, y: J.hip.y - 2 }, { x: cx - 4, y: m + 2 }], pal.sk);
+    disc(cx - 1.5, top + 4, 3, pal.sk); disc(cx + 2.5, top + 4, 3, pal.sk);
+    line({ x: cx - 4, y: top + 7 }, { x: cx + 5, y: top + 7 }, pal.skS, 1); line({ x: cx + .5, y: top + 2 }, { x: cx + .5, y: J.hip.y - 3 }, pal.skS, 1);
+    for (let k = 0; k < 3; k++) line({ x: cx - 2, y: top + 10 + k * 3 }, { x: cx + 3, y: top + 10 + k * 3 }, pal.skS, 1);
+    line({ x: cx - 2, y: top + 2 }, { x: cx, y: top + 1 }, pal.skH, 1); line({ x: cx + 2, y: top + 2 }, { x: cx + 4, y: top + 1 }, pal.skH, 1);
+    line({ x: J.neck.x - 4, y: top }, { x: cx - 4, y: m + 2 }, pal.giH, 1); line({ x: J.neck.x + 5, y: top }, { x: cx + 4, y: m + 2 }, pal.giS, 1);
+  }
+  line(hB, hF, pal.belt, 2); line(J.hip, { x: J.hip.x - 3, y: J.hip.y + 5 + (flap ? 0 : -1) }, pal.belt, 1); commit();
+  // head: thick neck and traps, hair, headband with fluttering tails, eye and brow
+  const hr = 4.2, hx = J.head.x, hy = J.head.y, face = J.head.x >= J.neck.x - 2 ? 1 : -1;
+  line(J.neck, { x: hx - face, y: hy + hr - 1 }, pal.skS, 5);
+  if (upright) { line({ x: J.neck.x - 4, y: J.neck.y + 1 }, { x: J.neck.x - 1, y: J.neck.y - 2 }, pal.skS, 2); line({ x: J.neck.x + 5, y: J.neck.y + 1 }, { x: J.neck.x + 2, y: J.neck.y - 2 }, pal.sk, 2); }
+  disc(hx, hy, hr, pal.sk); disc(hx - face * hr * .25, hy - hr * .35, hr * .85, pal.hair); disc(hx + face * hr * .25, hy + hr * .2, hr * .78, pal.sk);
+  line({ x: hx - hr, y: hy - hr * .25 }, { x: hx + hr, y: hy - hr * .25 }, pal.band, 2);
+  line({ x: hx - face * hr, y: hy - hr * .2 }, { x: hx - face * (hr + 5), y: hy - hr * .2 + 2 + flap }, pal.band, 1); line({ x: hx - face * hr, y: hy }, { x: hx - face * (hr + 4), y: hy + 3 - flap }, pal.band, 1);
+  if (poseName === "down") { line({ x: hx + .5, y: hy - .5 }, { x: hx + 1.5, y: hy + .5 }, "#000000", 1); line({ x: hx + 1.5, y: hy - .5 }, { x: hx + .5, y: hy + .5 }, "#000000", 1); }   // knocked-out eye
+  else { set(hx + face * hr * .45, hy + hr * .1, "#000000"); line({ x: hx + face * hr * .2, y: hy - hr * .05 }, { x: hx + face * hr * .7, y: hy - hr * .05 }, pal.hair, 1); }
+  commit();
+  // back forearm and glove come across in front of the chest
+  limb(J.eb, J.fb, 6, pal.skS, pal.skS, pal.sk); disc(mid(J.eb, J.fb, .3).x, mid(J.eb, J.fb, .3).y, 3, pal.skS);
+  disc(J.fb.x, J.fb.y, 3.6, pal.band); line({ x: J.fb.x - 2, y: J.fb.y - 1 }, { x: J.fb.x, y: J.fb.y - 2 }, "#ffffff", 1); commit();
+  // front leg: big quad and calf
+  limb(J.hip, J.kf, 9, pal.gi, pal.giS, pal.giH); limb(J.kf, J.footf, 7, pal.gi, pal.giS, pal.giH);
+  disc(mid(J.hip, J.kf, .45).x, mid(J.hip, J.kf, .45).y, 5, pal.gi); line({ x: J.hip.x + 2, y: J.hip.y + 2 }, { x: J.kf.x - 1, y: J.kf.y - 2 }, pal.giH, 1); disc(mid(J.kf, J.footf, .35).x, mid(J.kf, J.footf, .35).y, 4, pal.gi);
+  line({ x: J.footf.x - 2, y: J.footf.y }, { x: J.footf.x + 4, y: J.footf.y }, pal.sk, 3); commit();
+  // front arm: biceps and padded glove
+  limb(sF, J.ef, 6, pal.sk, pal.skS, pal.skH); limb(J.ef, J.ff, 6, pal.sk, pal.skS, pal.skH);
+  disc(mid(sF, J.ef, .5).x, mid(sF, J.ef, .5).y - 1, 3.6, pal.sk); line({ x: sF.x + 1, y: sF.y - 1 }, { x: J.ef.x - 1, y: J.ef.y - 2 }, pal.skH, 1);
+  disc(J.ff.x, J.ff.y, 3.6, pal.band); line({ x: J.ff.x - 2, y: J.ff.y - 1 }, { x: J.ff.x + 1, y: J.ff.y - 2 }, "#ffffff", 1); commit();
+  if (WF_CACHE.size > 300) WF_CACHE.clear(); WF_CACHE.set(key, buf); return buf;
+}
+function wfBlit(c, poseName, pal, now, x, gy, cell, flip, flash) {   // draw a fighter with feet at (x, gy)
+  const bob = poseName === "stance" ? Math.floor(now / 280) % 2 : 0, flap = Math.floor(now / 180) % 2;
+  const off = window.WF_OFF || (window.WF_OFF = Object.assign(document.createElement("canvas"), { width: WF_GW, height: WF_GH }));
+  const oc = off.getContext("2d"), img = oc.createImageData(WF_GW, WF_GH); new Uint32Array(img.data.buffer).set(wfSprite(poseName, pal, bob, flap)); oc.putImageData(img, 0, 0);
+  c.save(); c.imageSmoothingEnabled = false; c.translate(Math.round(x), Math.round(gy - 60 * cell)); if (flip) c.scale(-1, 1);
+  c.drawImage(off, -WF_GW * cell / 2, 0, WF_GW * cell, WF_GH * cell);
+  if (flash) { c.globalCompositeOperation = "source-atop"; } c.restore();
+  if (flash) { c.save(); c.globalAlpha = .55; c.fillStyle = "#ffffff"; c.translate(Math.round(x), Math.round(gy - 60 * cell)); if (flip) c.scale(-1, 1);
+    const tmp = window.WF_FLASH || (window.WF_FLASH = Object.assign(document.createElement("canvas"), { width: WF_GW, height: WF_GH })), tc = tmp.getContext("2d");
+    tc.clearRect(0, 0, WF_GW, WF_GH); tc.drawImage(off, 0, 0); tc.globalCompositeOperation = "source-in"; tc.fillStyle = "#ffffff"; tc.fillRect(0, 0, WF_GW, WF_GH); tc.globalCompositeOperation = "source-over";
+    c.drawImage(tmp, -WF_GW * cell / 2, 0, WF_GW * cell, WF_GH * cell); c.restore(); }
+}
+const wfPoseOf = st => st.down ? "down" : st.hit > 0 ? "hit" : st.act === "idle" ? "stance" : st.act;
 /* ---- arcade game 3: Watt Fighter (a one-on-one fighting game driven by the ride) ----
    Fights happen only on hard intervals (85%+ FTP, Sweet Spot and up): a zone opponent lands scheduled hits that drain
    your HP by a planned amount (never below 8%), and you always win by K.O. at the end. Easier intervals are breaks:
@@ -2021,7 +2120,7 @@ const WF_FOES = {
   medic2: { skin: "#a8704c", gi: "#f2f2f2", belt: "#d0d0d0", hair: "#ffffff", band: "#ffffff", cross: true }
 };
 const WF_ME = { skin: "#f0b48a", gi: "#2f5fc4", belt: "#f2c230", hair: "#3a2414", band: "#e2362b" };
-function wfState(R) { return R.fight || (R.fight = { php: 1, idx: -2, p1: { x: .37, act: "idle", at: 0, hit: 0, kb: 0 }, p2: { x: 1.15, act: "idle", at: 0, hit: 0, kb: 0, down: 0 }, foeHp: 1, dmg: 0, units: 1, hits: 0, taken: 0, ko: false, balls: [], fx: [], surge: 0, call: "", callT: 0, callKo: false, sub: "" }); }
+function wfState(R) { return R.fight || (R.fight = { php: 1, idx: -2, p1: { x: .41, act: "idle", at: 0, hit: 0, kb: 0 }, p2: { x: 1.15, act: "idle", at: 0, hit: 0, kb: 0, down: 0 }, foeHp: 1, dmg: 0, units: 1, hits: 0, taken: 0, ko: false, balls: [], fx: [], surge: 0, call: "", callT: 0, callKo: false, sub: "" }); }
 function wfDraw(c, x, gy, u, pal, dir, st, now, down) {          // fighters are built from pixel blocks so they can punch and kick
   const rects = [], R = (px, py, w, h, col) => rects.push([px, py, w, h, col]);
   const bob = st.act === "idle" ? (Math.floor(now / 260) % 2) : 0, lean = st.hit > 0 ? -2 : 0;
@@ -2063,12 +2162,14 @@ function wfRound(F) {
   F.fightNo = W.steps.slice(0, i + 1).filter(arcBoss).length;       // rounds count fights only
   const nb = W.steps.slice(i + 1).find(arcBoss); F.nextFoe = nb ? arcName(nb) : "";
   F.mode = boss ? "fight" : wasFight && F.php < .999 ? "medic" : "warm"; F.medDur = s ? Math.max(3, Math.min(20, s.dur * .6)) : 6; F.medIn = F.mode === "medic" ? 0 : (F.medIn || 0); F.ready = false;
-  Object.assign(F, { idx: W.idx, foeHp: 1, dmg: 0, hits: 0, taken: 0, ko: false, balls: [], surge: 0, barr: false, boss, foeDealt: 0, hp0: F.php, floor: 0.08 });
+  Object.assign(F, { idx: W.idx, foeHp: 1, dmg: 0, hits: 0, taken: 0, ko: false, balls: [], surge: 0, barr: false, boss, foeDealt: 0, hp0: F.php, floor: 0.03 });
   F.units = Math.min(120, boss ? Math.max(10, Math.round(s.dur * rel * W.ftp / 900)) : Math.max(6, Math.round(s.dur * rel * W.ftp / 1500)));
-  F.drain = boss ? Math.max(0, Math.min(F.php - F.floor, 0.12 + 0.28 * Math.min(1, s.dur / 300) + 0.6 * Math.max(0, rel - 0.85))) : 0;   // planned HP cost of the round
+  F.drain = boss ? Math.max(0, F.php - 0.04) : 0;                   // every fight takes you to the edge: about 4% HP left at the K.O.   // planned HP cost of the round
   F.foeHits = boss ? Math.min(60, Math.max(4, Math.round(s.dur / 7))) : 0;
   F.foe = boss ? (WF_FOES[arcName(s)] || WF_FOES["VO2 Max"]) : WF_FOES.sparring; F.foeName = boss ? arcName(s) : "Sparring";
-  Object.assign(F.p2, { x: 1.15, act: "idle", hit: 0, kb: 0, down: 0 }); Object.assign(F.p1, { x: .37, act: "idle", hit: 0, kb: 0 });
+  F.foePal = wfRandomPal();                                          // a new opponent look every round
+  F.scale = boss ? 0.95 + 0.6 * Math.max(0, Math.min(1, (rel - 0.85) / 0.45)) : 1;   // harder targets bring bigger opponents (up to 1.55x at 130% FTP)
+  Object.assign(F.p2, { x: 1.15, act: "idle", hit: 0, kb: 0, down: 0 }); Object.assign(F.p1, { x: .41, act: "idle", hit: 0, kb: 0 });
   if (W.running && boss) { wfCall(F, "Round " + F.fightNo, F.foeName + " enters", false, 1); F.fightAt = 1; beep(523, .08, .1, "square"); beep(784, .2, .1, "square", .08); }
   else if (W.running && F.mode === "medic") { wfCall(F, "Medic!", "Patching you up", false, 1.4); beep(988, .08, .08, "square"); beep(988, .08, .08, "square", .16); }
 }
@@ -2090,10 +2191,10 @@ function drawFighter(cv, R, now) {
   const k = s && W.running ? W.stepT / s.dur : 0, ramp = s && W.stepT < Math.min(8, s.dur * .2) && (p3 || 0) > .6 * (tg || 0), hh = ramp ? 1 : hold;
   if (F.fightAt > 0) { F.fightAt -= dt; if (F.fightAt <= 0) wfCall(F, "Fight!", "", false, .7); }
   if (live2 && F.boss) {
-    F.p2.x += (.63 - F.p2.x) * Math.min(1, dt * 3);                              // the opponent walks in
+    F.p2.x += (.6 - F.p2.x) * Math.min(1, dt * 3);                              // the opponent walks in
     if (!F.ko) F.dmg += (0.55 + 0.45 * hh) * dt * F.units / (s.dur * .85);   // slipping slows your attacks but never stops them
     if (s.dur - W.stepT <= Math.max(3, s.dur * .1) && !F.ko) { if (!F.barr) { F.barr = true; wfCall(F, "K.O. combo!", "", false, .8); } F.dmg = F.units; }   // you always win the round
-    if (F.boss && !F.ko) { const due = Math.min(F.foeHits, Math.floor(Math.min(1, k / .9) * F.foeHits));   // their scheduled hits, spread over the first 90%
+    if (F.boss && !F.ko) { const due = Math.min(F.foeHits, Math.floor(Math.min(1, k / .86) * F.foeHits));   // their scheduled hits, spread over the first 90%
       if (due > F.foeDealt && F.p2.act === "idle" && F.p2.at > .35) { F.foeDealt++; wfFoeHit(F, F.drain / F.foeHits); } }
     if (F.boss && hold < .4 && !ramp && !F.ko && F.p2.act === "idle" && F.p2.at > .9) wfFoeHit(F, .02);   // slipping lets in extra hits (still floored)
     F.surge = ratio > 1.05 ? F.surge + dt : Math.max(0, F.surge - dt * 2);       // the Watt Wave special
@@ -2126,10 +2227,10 @@ function drawFighter(cv, R, now) {
   if (F.mode === "fight" && F.p1.act !== "idle" && F.p1.at > .28) F.p1.act = "idle"; if (F.p2.act !== "idle" && F.p2.at > .3) F.p2.act = "idle";
   F.balls = F.balls.filter(b => { b.x += dt * .55; if (b.x >= F.p2.x - .05) { F.hits += Math.min(3, Math.max(0, Math.floor(F.dmg) - F.hits)); F.p2.hit = .3; F.p2.kb = .05; wfSpark(F, F.p2.x - .04, .55); beep(110, .2, .1, "square"); return false; } return true; });
   F.foeHp = Math.max(0, 1 - F.hits / F.units);
-  if (F.boss && F.foeHp === 0 && !F.ko && W.running) { F.ko = true; F.p2.down = 1; wfCall(F, "K.O.!", F.php >= F.hp0 - F.drain + .005 ? "Perfect!" : "", true, 1.8); [784, 988, 1319, 1568].forEach((f, j) => beep(f, .09, .1, "square", j * .08)); }
+  if (F.boss && F.foeHp === 0 && !F.ko && W.running) { F.ko = true; F.php = Math.max(F.floor, Math.min(F.php, F.hp0 - F.drain)); /* you win with only a sliver of HP left */ F.p2.down = 1; wfCall(F, "K.O.!", F.php >= F.hp0 - F.drain + .005 ? "Perfect!" : "", true, 1.8); [784, 988, 1319, 1568].forEach((f, j) => beep(f, .09, .1, "square", j * .08)); }
   if (F.p2.hit > 0) F.p2.hit -= dt; if (F.p1.hit > 0) F.p1.hit -= dt;
   F.p2.x += F.p2.kb; F.p2.kb *= .6; F.p1.x += F.p1.kb; F.p1.kb *= .6;
-  F.p1.x += (.37 - F.p1.x) * .05; F.p1.x = Math.max(.25, Math.min(.42, F.p1.x)); if (F.boss && !F.ko) F.p2.x = Math.min(F.p2.x, .8); if (!W.running && F.boss) F.p2.x = .63;
+  F.p1.x += (.41 - F.p1.x) * .05; F.p1.x = Math.max(.3, Math.min(.45, F.p1.x)); if (F.boss && !F.ko) F.p2.x = Math.min(F.p2.x, .8); if (!W.running && F.boss) F.p2.x = .6;
   // arena: a night velodrome with a crowd on the banking and wooden boards
   const boss = W.running && F.boss, gy = Math.round(h * .88), u = Math.max(1, Math.floor(h / 70 * dpr)) / dpr;
   c.fillStyle = boss ? "#12000a" : "#05000f"; c.fillRect(0, 0, w, h);
@@ -2139,12 +2240,13 @@ function drawFighter(cv, R, now) {
   c.fillStyle = "#ff3b3b"; c.fillRect(0, h * .62, w, 3); c.fillStyle = "#e8ffe8"; c.fillRect(0, h * .62 + 3, w, 2); c.fillStyle = "#3b9cff"; c.fillRect(0, h * .62 + 5, w, 3);
   for (let j = 0; j < 6; j++) { c.fillStyle = Math.floor(now / 400 + j) % 3 ? "#ffd700" : "#7a6000"; c.fillRect(Math.round(w * (j + .5) / 6) - 3, Math.round(h * .27), 6, 4); }
   const bd = ["#6b3d14", "#7a4818", "#5e3410"]; for (let y = Math.round(h * .66); y < h; y += 6) { c.fillStyle = bd[(y / 6 | 0) % 3]; c.fillRect(0, y, w, 6); }
-  F.balls.forEach(b => { const x = w * b.x, y = gy - 24 * u, r = (Math.floor(now / 60) % 2) ? 5 : 6; c.fillStyle = "#4ae0ff"; c.fillRect(Math.round(x - r * u), Math.round(y - r * u / 1.4), r * 2 * u, r * 1.4 * u); c.fillStyle = "#ffffff"; c.fillRect(Math.round(x - 2 * u), Math.round(y - 2 * u), 4 * u, 4 * u); });
-  if (F.p2.x < 1.1) wfDraw(c, w * F.p2.x, gy, u, F.foe || WF_FOES.sparring, -1, F.p2, now, F.p2.down);
+  const cell = Math.max(1, Math.floor(h * .5 / WF_GH * dpr)) / dpr, cellO = Math.min(Math.max(cell, Math.round(cell * (F.scale || 1) * dpr) / dpr), Math.floor((gy - 34) / 60 * dpr) / dpr), blink = Math.floor(now / 50) % 2;
+  F.balls.forEach(b => { const x = w * b.x, y = gy - 38 * cell, r = (Math.floor(now / 60) % 2) ? 5 : 6; c.fillStyle = "#4ae0ff"; c.fillRect(Math.round(x - r * u), Math.round(y - r * u / 1.4), r * 2 * u, r * 1.4 * u); c.fillStyle = "#ffffff"; c.fillRect(Math.round(x - 2 * u), Math.round(y - 2 * u), 4 * u, 4 * u); });
+  if (F.p2.x < 1.1 && F.foePal) wfBlit(c, wfPoseOf(F.p2), F.foePal, now, w * F.p2.x, gy, cellO, true, F.p2.hit > 0 && blink);
   if (F.medIn > 0) { const off = (1 - F.medIn) * .5, tend = { act: Math.floor(now / 600) % 2 ? "punch" : "idle", hit: 0 };   // medics walk in from both sides and tend the fighter
-    wfDraw(c, w * (F.p1.x - .14 - off), gy, u, WF_FOES.medic, 1, tend, now, false); wfDraw(c, w * (F.p1.x + .2 + off), gy, u, WF_FOES.medic2, -1, { act: tend.act === "punch" ? "idle" : "punch", hit: 0 }, now, false); }
-  wfDraw(c, w * F.p1.x, gy, u, WF_ME, 1, F.p1, now, false);
-  F.fx = F.fx.filter(f => { f.t -= dt; if (f.t <= 0) return false; f.dx += f.vx * dt; f.dy += f.vy * dt; c.fillStyle = f.col; const fx = Math.round(f.x * w + f.dx), fy = Math.round(gy - f.y * 34 * u + f.dy);
+    wfDraw(c, w * (F.p1.x - .17 - off), gy, u, WF_FOES.medic, 1, tend, now, false); wfDraw(c, w * (F.p1.x + .22 + off), gy, u, WF_FOES.medic2, -1, { act: tend.act === "punch" ? "idle" : "punch", hit: 0 }, now, false); }
+  wfBlit(c, wfPoseOf(F.p1), WF_ME2, now, w * F.p1.x, gy, cell, false, F.p1.hit > 0 && blink);
+  F.fx = F.fx.filter(f => { f.t -= dt; if (f.t <= 0) return false; f.dx += f.vx * dt; f.dy += f.vy * dt; c.fillStyle = f.col; const fx = Math.round(f.x * w + f.dx), fy = Math.round(gy - f.y * 52 * cell + f.dy);
     if (f.plus) { c.fillRect(fx - u, fy - 3 * u, 2 * u, 6 * u); c.fillRect(fx - 3 * u, fy - u, 6 * u, 2 * u); } else c.fillRect(fx, fy, 2 * u, 2 * u); return true; });
   if (boss && Math.floor(now / 300) % 2) { c.fillStyle = "rgba(255,0,40,.07)"; c.fillRect(0, 0, w, h); }
   // fighting-game bars: you on the left (your HP), the opponent on the right, round in the middle
@@ -2171,8 +2273,9 @@ function drawFightIcon(now) {                                      // the Watt F
   c.fillStyle = "#ff3b3b"; c.fillRect(0, 66, W2, 2); c.fillStyle = "#3b9cff"; c.fillRect(0, 68, W2, 2);
   const bd = ["#6b3d14", "#7a4818", "#5e3410"]; for (let y = 70; y < H2; y += 5) { c.fillStyle = bd[(y / 5 | 0) % 3]; c.fillRect(0, y, W2, 5); }
   const ph = Math.floor(now / 350) % 4;
-  wfDraw(c, 54, 102, 1.8, WF_ME, 1, { act: ph === 1 ? "punch" : ph === 3 ? "kick" : "idle", hit: 0 }, now, false);
-  wfDraw(c, 98, 102, 1.8, WF_FOES["VO2 Max"], -1, { act: ph === 2 ? "punch" : "idle", hit: ph === 1 || ph === 3 ? .1 : 0 }, now, false);
+  wfBlit(c, ph === 1 ? "punch" : ph === 3 ? "kick" : "stance", WF_ME2, now, 58, 104, 1.45, false, false);
+  const icoFoe = window.WF_ICON_FOE || (window.WF_ICON_FOE = wfPal("#c8282e", "#a8704c", "#ffffff", "#111111", "#2a0000"));
+  wfBlit(c, ph === 2 ? "punch" : ph === 1 || ph === 3 ? "hit" : "stance", icoFoe, now, 96, 104, 1.6, true, false);
   c.fillStyle = "#ffd700"; c.fillRect(8, 8, 52, 5); c.fillStyle = "#ffd700"; c.fillRect(90, 8, 40 - ph * 4, 5);
 }
 /* Rider sprite: Ryan's reference art (43 x 43 pixel map). Legs, cranks, wheels and the frame tubes behind the legs are redrawn live so they animate. */
