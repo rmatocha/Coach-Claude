@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Intervals Player</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
 <style>
   :root { --u:7px; --bg:#0b0d10; --card:#161a20; --fg:#f2f4f7; --dim:#8b94a3; --acc:#ffb020; --ok:#3ddc84; --bad:#ff5a5f; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -134,7 +135,149 @@
   body.arcade #profile { height:calc(var(--u)*7) !important; }
   body.arcade .tile { padding-top:3px !important; padding-bottom:3px !important; }
   body.arcade hr { border:0; height:4px; background:repeating-linear-gradient(90deg,#ff3b3b 0 12px,#ffd700 12px 24px,#00ff41 24px 36px,#4ae0ff 36px 48px); }
-  body.arcade::after { content:"1 PLAYER  \2022  HIGH SCORE 999999"; display:block; text-align:center; color:#ffd700; font-family:"Press Start 2P",monospace; font-size:8px; padding:10px 0 14px; }
+  #arcWin, #arcFx { display:none; }
+  body.arcade #arcWin { display:block; margin:4px 0 6px; padding:10px 10px 8px; background:#000; border:3px solid #ff3bff; box-shadow:4px 4px 0 #ff3bff; font-family:"Press Start 2P","Courier New",monospace; color:#e8ffe8; text-transform:uppercase; }
+  body.arcade #arcFx { display:block; position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:61; background:transparent !important; border:0 !important; }
+  .aw-banner { text-align:center; font-size:22px; font-weight:bold; letter-spacing:1px; color:#ffd700; text-shadow:3px 3px 0 #ff3b3b, 0 0 10px #ff8c00; animation:awPulse .5s steps(2) infinite; }
+  .aw-banner.over { color:#ff3b3b; text-shadow:3px 3px 0 #5a0000; animation:none; }
+  .aw-sub { text-align:center; font-size:10px; color:#4ae0ff; margin:4px 0 8px; }
+  .aw-row { display:flex; justify-content:space-between; font-size:12px; font-weight:bold; line-height:1.9; visibility:hidden; font-variant-numeric:tabular-nums; }
+  .aw-row.on { visibility:visible; } .aw-row span:first-child { color:#4ae0ff; } .aw-row span:last-child { color:#00ff41; }
+  .aw-total { display:flex; justify-content:space-between; align-items:center; border-top:3px dashed #ffd700; margin-top:6px; padding-top:6px; font-size:16px; font-weight:bold; color:#ffd700; visibility:hidden; font-variant-numeric:tabular-nums; }
+  .aw-total.on { visibility:visible; }
+  .aw-tbl { margin-top:10px; visibility:hidden; font-size:12px; font-weight:bold; font-variant-numeric:tabular-nums; }
+  .aw-tbl.on { visibility:visible; }
+  .aw-tbl .h { text-align:center; color:#ff3bff; font-size:13px; margin-bottom:4px; text-shadow:2px 2px 0 #4a004a; }
+  .aw-tbl .r { display:grid; grid-template-columns:3.2em 1fr auto; line-height:1.8; color:#e8ffe8; }
+  .aw-tbl .r span:nth-child(2) { text-align:center; color:#ffd700; } .aw-tbl .r span:last-child { color:#4ae0ff; }
+  .aw-tbl .r.me span { color:#ff3b3b !important; animation:awBlink .6s steps(2) infinite; }
+  .aw-hi { text-align:center; font-size:12px; font-weight:bold; color:#ff3b3b; margin-top:6px; visibility:hidden; animation:awBlink .6s steps(2) infinite; }
+  .aw-hi.on { visibility:visible; }
+  .aw-press { text-align:center; font-size:10px; color:#e8ffe8; margin-top:6px; animation:awBlink 1s steps(2) infinite; }
+  @keyframes awPulse { 50% { color:#fff; } }
+  @keyframes awBlink { 50% { opacity:0; } }
+/* Arcade ride screen: the game HUD replaces the tiles and control rows while arcade mode is on. */
+  #arc { display:none; }
+  body.arcade #run > .ctrl, body.arcade #run > .grid { display:none !important; }
+  body.arcade[data-screen="run"]::after { display:none; }
+  body.arcade #arc { display:flex; flex-direction:column; gap:5px; margin-top:6px; font-family:"VT323","Courier New",monospace; font-weight:normal; }
+  #arc [hidden] { display:none !important; }
+  #arc canvas { border:0 !important; background:transparent !important; }
+  #arc .lb { font-family:"Press Start 2P","Courier New",monospace; font-size:7px; letter-spacing:.06em; color:#7c6fa3; text-transform:uppercase; }
+  #arc .a-hud { display:grid; grid-template-columns:1fr auto 1fr; align-items:start; gap:6px; }
+  #arc .a-side { display:flex; flex-direction:column; gap:3px; } #arc .a-side.r { align-items:flex-end; }
+  #arc .a-sc { font-family:"Press Start 2P","Courier New",monospace; font-size:11px; color:#e8ffe8; font-variant-numeric:tabular-nums; } #arc .a-sc.hi { color:#ffd700; }
+  #arc .a-clock { display:flex; flex-direction:column; align-items:center; gap:3px; }
+  #aClock { font-family:"Press Start 2P","Courier New",monospace; font-size:24px; color:#ffd700; text-shadow:3px 3px 0 #7a3d00; line-height:1; font-variant-numeric:tabular-nums; }
+  #aClock.hot { color:#ff3b3b; text-shadow:3px 3px 0 #5a0000; animation:awBlink .5s steps(2) infinite; }
+  #aStage { font-family:"Press Start 2P","Courier New",monospace; font-size:7px; color:#4ae0ff; text-transform:uppercase; white-space:nowrap; }
+  #arc .a-vit { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
+  #arc .a-hp { display:flex; align-items:center; gap:6px; } #arc .a-hp .lb { color:#00ff41; font-size:8px; }
+  #aHp { flex:1; display:grid; grid-template-columns:repeat(20,1fr); gap:2px; height:12px; padding:2px; border:2px solid #e8ffe8; background:#000; }
+  #aHp i, #aBoost i, #aTach i { display:block; background:#1b1430; }
+  #aHeart { display:flex; align-items:center; gap:6px; font-family:"Press Start 2P","Courier New",monospace; font-size:12px; color:#ff3b3b; }
+  #aHeart svg { width:18px; height:16px; } #aHeart.beat svg { animation:aBeat .18s steps(2); }
+  #arc .a-scene { position:relative; flex:0 0 29%; min-height:140px; border:3px solid #ffd700; background:#000; }
+  #arcCv { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; }
+  #arcOv { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  #aCombo { position:absolute; left:7px; top:6px; font-family:"Press Start 2P","Courier New",monospace; font-size:8px; color:#00ff41; text-shadow:2px 2px 0 #003b10; text-transform:uppercase; }
+  #aComboN { display:block; font-size:13px; margin-top:3px; } #aCombo.broke { color:#ff3b3b; text-shadow:2px 2px 0 #4a0000; }
+  #arc .a-coins { position:absolute; right:7px; top:6px; font-family:"Press Start 2P","Courier New",monospace; font-size:9px; color:#ffd700; display:flex; align-items:center; gap:5px; }
+  #arc .a-coins i { width:9px; height:9px; background:#ffd700; box-shadow:inset -2px -2px 0 #b8860b; display:inline-block; }
+  #aBoss { position:absolute; left:50%; top:6px; transform:translateX(-50%); width:44%; display:flex; flex-direction:column; gap:4px; align-items:center; }
+  #aBossName { font-family:"Press Start 2P","Courier New",monospace; font-size:7px; color:#ff3b3b; text-transform:uppercase; white-space:nowrap; }
+  #aBoss .bb { width:100%; height:7px; border:2px solid #ff3b3b; background:#000; } #aBossHp { display:block; height:100%; background:#ff3b3b; }
+  #aWarn { position:absolute; left:0; right:0; top:26%; text-align:center; font-family:"Press Start 2P","Courier New",monospace; font-size:15px; color:#ff3b3b; text-shadow:3px 3px 0 #000; text-transform:uppercase; }
+  #aWarn b { animation:awBlink .4s steps(2) infinite; font-weight:normal; } #aWarnSub { display:block; font-size:8px; color:#e8ffe8; margin-top:7px; }
+  #arc .a-pop { position:absolute; font-family:"Press Start 2P","Courier New",monospace; font-size:8px; color:#ffd700; text-shadow:1px 1px 0 #000; text-transform:uppercase; white-space:nowrap; animation:aRise .9s steps(6) forwards; }
+  #arc .a-pop.big { font-size:11px; color:#4ae0ff; }
+  #arc .a-map { position:relative; height:24px; flex:none; border:2px solid #2b1650; background:#000; } #arcMap { position:absolute; inset:0; width:100%; height:100%; }
+  #arc .a-inst { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1.2fr 1fr; gap:5px; }
+  #arc .a-box { background:#0b0618; border:2px solid #2b1650; padding:5px 7px; display:flex; flex-direction:column; gap:3px; min-width:0; overflow:hidden; }
+  #arc .a-pw { grid-column:1 / -1; display:grid; grid-template-columns:1fr auto; grid-template-rows:auto 1fr auto; column-gap:10px; }
+  #aPw { font-size:clamp(48px, 9.5vh, 80px); line-height:.8; color:#e8ffe8; grid-row:2; align-self:center; font-variant-numeric:tabular-nums; }
+  #arc .a-pw .u { font-size:24px; color:#7c6fa3; margin-left:3px; }
+  #arc .a-pw .s2 { grid-row:1 / 3; grid-column:2; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; gap:3px; }
+  #aTgt { font-size:clamp(30px, 5.5vh, 44px); line-height:.85; color:#4ae0ff; font-variant-numeric:tabular-nums; }
+  #aBoost { grid-column:1 / -1; display:grid; grid-template-columns:repeat(12,1fr); gap:2px; height:11px; }
+  #arc .a-big { font-size:clamp(30px, 5.6vh, 46px); line-height:.85; color:#e8ffe8; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  #arc .a-big small { font-size:16px; color:#7c6fa3; margin-left:2px; }
+  #arc .a-sm { font-size:18px; line-height:1; color:#7c6fa3; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #arc #aNxs { white-space:normal; line-height:.95; text-overflow:clip; }
+  #aTach { display:flex; gap:2px; align-items:flex-end; height:14px; } #aTach i { flex:1; }
+  #arc .a-pad { display:flex; flex-direction:column; gap:6px; flex:none; }
+  #arc .a-row { display:flex; align-items:center; gap:6px; }
+  #arc .a-adj { flex:1; text-align:center; display:flex; flex-direction:column; gap:3px; }
+  #aAdj { font-family:"Press Start 2P","Courier New",monospace; font-size:12px; color:#e8ffe8; }
+  body.arcade #arc .a-pad button { height:46px !important; min-width:0; padding:0 !important; box-shadow:3px 3px 0 #000 !important; font-size:9px !important; }
+  body.arcade #arc .a-pad button:disabled { opacity:.35; }
+  body.arcade #arc .a-dp { width:50px; flex:none; background:#1b1430 !important; color:#e8ffe8 !important; border:2px solid #e8ffe8 !important; font-size:15px !important; }
+  body.arcade #arc .a-skip { width:68px; flex:none; border-radius:23px !important; background:#4ae0ff !important; color:#001018 !important; border:2px solid #000 !important; }
+  body.arcade #arc .a-go { width:84px; flex:none; border-radius:23px !important; background:#ff3b3b !important; color:#fff !important; border:2px solid #000 !important; }
+  body.arcade #arc .a-go.res { background:#00ff41 !important; color:#001018 !important; }
+  body.arcade #arc .a-row.sm button { height:34px !important; flex:1; background:#000 !important; color:#00ff41 !important; border:2px solid #00ff41 !important; font-size:8px !important; }
+  body.arcade #arc .a-row.sm #aErg.on { background:#00ff41 !important; color:#001018 !important; }
+  body.arcade #arc .a-row.sm #aEnd { color:#ff3b3b !important; border-color:#ff3b3b !important; }
+/* Arcade summary: the finale box keeps its size; everything below it shrinks so the whole screen fits without scrolling. */
+  body.arcade #summary .sumtitle { margin:6px 0 0; }
+  body.arcade #summary .sumdate { font-size:11px; margin-bottom:2px; }
+  body.arcade #summary #arcWin { margin:2px 0 4px; }
+  body.arcade #summary .sumgrid { grid-template-columns:repeat(4,1fr); gap:4px; margin:0 0 4px; }
+  body.arcade #summary .sumgrid .tile { padding:2px 6px !important; min-width:0; }
+  body.arcade #summary .sumgrid .tile .l { font-size:8px !important; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  body.arcade #summary .sumgrid .tile .v { font-size:19px !important; line-height:1.05; white-space:nowrap; }
+  body.arcade #summary .sumgrid .tile .v small { font-size:10px !important; }
+  body.arcade #summary #sumProfile { height:40px !important; }
+  body.arcade #summary #sumHR { height:28px !important; }
+  body.arcade #summary .tile.wide { margin-top:3px !important; }
+  body.arcade #summary #sumUp, body.arcade #summary #sumStrava { font-size:11px !important; min-height:13px !important; line-height:1.25 !important; margin:0 !important; }
+  body.arcade #summary .sumbtns { margin-top:4px; }
+  body.arcade #summary .sumbtns button { height:40px !important; }
+/* Arcade: compact device bar on the ride screen (about half the normal arcade size). */
+  body.arcade #run .top { border-width:2px !important; box-shadow:0 0 6px #ff3b3b !important; padding:3px 8px !important; min-height:0; gap:6px; }
+  body.arcade #run .top span { font-size:7px !important; text-shadow:0 0 4px #ffd700; }
+  body.arcade #run .top .ver { font-size:6px !important; }
+  body.arcade #run .top span:first-child::after { font-size:6px; }
+  body.arcade #run .top button { height:24px !important; padding:0 6px !important; font-size:7px !important; box-shadow:2px 2px 0 #00ff41 !important; border-width:2px !important; }
+/* Game select: an arcade title screen shown after the invader button. */
+  #gameModal { display:none; position:fixed; inset:0; z-index:55; background:#000; color:#e8ffe8; font-family:"Press Start 2P","Courier New",monospace; text-transform:uppercase; overflow-y:auto;
+    padding:calc(14px + env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); }
+  #gameModal.show { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  #gameModal::before { content:""; position:fixed; inset:0; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); }
+  #gameModal .g-top { width:100%; max-width:420px; display:flex; justify-content:space-between; font-size:9px; }
+  #gameModal .g-top b { color:#ff3b3b; font-weight:normal; } #gameModal .g-top span { color:#e8ffe8; }
+  #gameModal .g-hi { font-size:9px; color:#ffd700; text-align:center; margin-bottom:auto; }
+  #gameModal > *:not(canvas) { position:relative; z-index:1; }
+  #gStars { position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+  #gameModal .g-title { text-align:center; line-height:1.25; margin-top:4px; padding:14px 16px 12px; border:5px dotted #ffd700; animation:gChase .35s steps(2) infinite; background:rgba(0,0,0,.6); }
+  #gameModal .g-title .a { display:block; font-size:30px; color:#ffd700; text-shadow:4px 4px 0 #ff3b3b, 8px 8px 0 #5a0000; letter-spacing:2px; }
+  #gameModal .g-title .b { display:block; font-size:18px; color:#4ae0ff; text-shadow:3px 3px 0 #003a4a; margin-top:10px; letter-spacing:5px; animation:gFlash .6s steps(1) infinite; }
+  #gameModal .g-ask { animation:awBlink 1.6s steps(2) infinite; }
+  #gameModal .g-tbl { font-size:9px; display:grid; grid-template-columns:auto auto auto; gap:5px 18px; color:#e8ffe8; background:rgba(0,0,0,.6); padding:6px 10px; }
+  #gameModal .g-tbl .h { grid-column:1 / -1; text-align:center; color:#ff3bff; font-size:9px; margin-bottom:2px; }
+  #gameModal .g-tbl .s { color:#ffd700; } #gameModal .g-tbl .d { color:#4ae0ff; }
+  #gameModal .g-tick { width:100%; max-width:420px; overflow:hidden; white-space:nowrap; border-top:2px solid #2b1650; border-bottom:2px solid #2b1650; padding:6px 0; font-size:8px; color:#00ff41; background:rgba(0,0,0,.6); }
+  #gameModal .g-tick span { display:inline-block; animation:gTick 14s linear infinite; }
+  @keyframes gChase { 50% { border-color:#ff3b3b; } }
+  @keyframes gFlash { 0% { color:#4ae0ff; text-shadow:3px 3px 0 #003a4a; } 25% { color:#ffffff; text-shadow:0 0 10px #4ae0ff, 3px 3px 0 #003a4a; } 50% { color:#ff3bff; text-shadow:3px 3px 0 #4a004a; } 75% { color:#00ff41; text-shadow:3px 3px 0 #003b10; } }
+  @keyframes gTick { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { #gameModal .g-title, #gameModal .g-title .b, #gameModal .g-tick span { animation:none; } }
+  #gameModal .g-ask { font-size:10px; color:#ff3bff; margin-top:10px; text-align:center; }
+  #gameModal .g-list { display:flex; flex-wrap:wrap; justify-content:center; gap:14px; }
+  #gameModal .g-card { display:flex; flex-direction:column; align-items:center; padding:6px; width:auto; background:#0b0618; border:3px solid #ff3bff; box-shadow:5px 5px 0 #4a004a; color:#e8ffe8; cursor:pointer; font:inherit; text-transform:uppercase; border-radius:0; }
+  #gameModal .g-card:active { transform:translate(3px,3px); box-shadow:2px 2px 0 #4a004a; }
+  #gameModal .g-card:focus-visible { outline:3px solid #ffd700; outline-offset:3px; }
+  #gameModal .g-card canvas { width:150px; height:112px; image-rendering:pixelated; background:#05000f; border:2px solid #2b1650; display:block; }
+  #gameModal .g-card .n { font-size:10px; color:#ffd700; }
+  #gameModal .g-card .d { font-size:7px; color:#4ae0ff; line-height:1.4; text-align:center; }
+  #gameModal .g-card.picked { border-color:#00ff41; box-shadow:5px 5px 0 #003b10; }
+  #gameModal .g-coin { font-size:12px; color:#e8ffe8; animation:awBlink 1s steps(2) infinite; text-align:center; }
+  #gameModal .g-coin.go { color:#00ff41; animation:awBlink .25s steps(2) infinite; }
+  #gameModal .g-back { margin-top:auto; position:relative; z-index:1; background:#000; color:#7c6fa3; border:2px solid #7c6fa3; font:inherit; font-size:9px; padding:10px 16px; border-radius:0; cursor:pointer; }
+  #gameModal .g-copy { font-size:7px; color:#7c6fa3; }
+  @keyframes aBeat { 50% { transform:scale(1.25); } }
+  @keyframes aRise { to { transform:translateY(-30px); opacity:0; } }
+  body.arcade::after { content:var(--hiTxt, "1 PLAYER  \2022  HIGH SCORE 000000"); display:block; text-align:center; color:#ffd700; font-family:"Press Start 2P",monospace; font-size:8px; padding:10px 0 14px; }
 
 </style>
 </head>
@@ -142,7 +285,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.69</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.80</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -290,7 +433,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.69</span>
+  <span class="ver">v1.0.80</span>
 </div>
 
 <div class="ctrl">
@@ -343,6 +486,43 @@ Cooldown
   <div class="tile"><div class="l">Norm. power</div><div class="v"><span id="np">--</span><small id="npu" style="display:none">w</small></div></div>
 </div>
 
+<div id="arc">
+  <div class="a-hud">
+    <div class="a-side"><span class="lb">1UP</span><span class="a-sc" id="aScore">000000</span></div>
+    <div class="a-clock"><span id="aClock">0:00</span><span id="aStage">Load a workout</span></div>
+    <div class="a-side r"><span class="lb">Hi-score</span><span class="a-sc hi" id="aHi">000000</span></div>
+  </div>
+  <div class="a-vit">
+    <div class="a-hp"><span class="lb">HP</span><div id="aHp"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div id="aHeart"><svg viewBox="0 0 9 8" shape-rendering="crispEdges" aria-hidden="true"><path fill="#ff3b3b" d="M1 0h2v1H1zM6 0h2v1H6zM0 1h4v1H0zM5 1h4v1H5zM0 2h9v2H0zM1 4h7v1H1zM2 5h5v1H2zM3 6h3v1H3zM4 7h1v1H4z"/></svg><span id="aHr">--</span></div>
+  </div>
+  <div class="a-scene"><canvas id="arcCv"></canvas>
+    <div id="arcOv">
+      <div id="aCombo">Combo<span id="aComboN">x0</span></div>
+      <div class="a-coins"><i></i><span id="aCoins">x00</span></div>
+      <div id="aBoss" hidden><span id="aBossName">Boss</span><div class="bb"><i id="aBossHp"></i></div></div>
+      <div id="aWarn" hidden><b>Warning!</b><span id="aWarnSub"></span></div>
+    </div>
+  </div>
+  <div class="a-map"><canvas id="arcMap"></canvas></div>
+  <div class="a-inst">
+    <div class="a-box a-pw"><span class="lb">Power &middot; 3s</span><span><span id="aPw">--</span><span class="u">w</span></span><div class="s2"><span class="lb">Target</span><span id="aTgt">--</span><span class="a-sm" id="aTgtPct">-- % FTP</span></div><div id="aBoost"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="a-box"><span class="lb">Cadence</span><span class="a-big"><span id="aCad">--</span><small>rpm</small></span><div id="aTach"><i style="height:30%"></i><i style="height:37%"></i><i style="height:44%"></i><i style="height:51%"></i><i style="height:58%"></i><i style="height:65%"></i><i style="height:72%"></i><i style="height:79%"></i><i style="height:86%"></i><i style="height:93%"></i></div></div>
+    <div class="a-box"><span class="lb">Next up</span><span class="a-big" id="aNx" style="color:#ff3bff">--</span><span class="a-sm" id="aNxs">--</span></div>
+    <div class="a-box"><span class="lb">Ride</span><span class="a-sm" id="aEl" style="color:#e8ffe8;font-size:24px">0:00</span><span class="a-sm" id="aTot">of 0:00</span><span class="a-sm" id="aKj" style="color:#ffd700">0 kJ</span><span class="a-sm" id="aNp">NP --</span></div>
+  </div>
+  <div class="a-pad">
+    <div class="a-row">
+      <button class="a-dp" id="aDn" type="button" data-for="btnDn" aria-label="Lower intensity">&#9664;</button><button class="a-dp" id="aUp" type="button" data-for="btnUp" aria-label="Raise intensity">&#9654;</button>
+      <div class="a-adj"><span class="lb">Intensity</span><span id="aAdj">100%</span></div>
+      <button class="a-skip" id="aSkip" type="button" data-for="btnSkip">Skip</button><button class="a-go" id="aGo" type="button">Start</button>
+    </div>
+    <div class="a-row sm">
+      <button id="aErg" type="button" data-for="btnErg">ERG</button><button id="aPlus1" type="button" data-for="btnPlus1">+1 min</button><button id="aChange" type="button" data-for="btnChange" hidden>Change</button><button id="aEnd" type="button" data-for="btnEnd" hidden>End</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <div id="log" class="hint" style="margin-top:10px;white-space:pre-wrap"></div>
@@ -352,7 +532,7 @@ Cooldown
     <div style="font-size:18px;font-weight:600;margin-bottom:6px">Load this workout?</div>
     <div id="launchName" style="font-size:20px;font-weight:700;margin-bottom:4px;overflow-wrap:anywhere"></div>
     <div id="launchInfo" class="hint" style="font-size:14px;margin-bottom:16px"></div>
-    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px">Cancel</button><button id="btnArcade" title="Load in arcade mode" style="width:58px;height:48px;padding:0;flex:none;background:#000;border:2px solid #00ff41;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 11 8" width="30" height="22" shape-rendering="crispEdges" aria-hidden="true"><path fill="#00ff41" d="M2 0h1v1H2zM8 0h1v1H8zM3 1h1v1H3zM7 1h1v1H7zM2 2h7v1H2zM1 3h2v1H1zM4 3h3v1H4zM8 3h2v1H8zM0 4h11v1H0zM0 5h1v1H0zM2 5h7v1H2zM10 5h1v1h-1zM0 6h1v1H0zM2 6h1v1H2zM8 6h1v1H8zM10 6h1v1h-1zM3 7h2v1H3zM6 7h2v1H6z"/></svg></button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px">Load workout</button></div>
+    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px">Cancel</button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px">Load workout</button><button id="btnArcade" title="Load in arcade mode" style="width:58px;height:48px;padding:0;flex:none;background:#000;border:2px solid #00ff41;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 11 8" width="30" height="22" shape-rendering="crispEdges" aria-hidden="true"><path fill="#00ff41" d="M2 0h1v1H2zM8 0h1v1H8zM3 1h1v1H3zM7 1h1v1H7zM2 2h7v1H2zM1 3h2v1H1zM4 3h3v1H4zM8 3h2v1H8zM0 4h11v1H0zM0 5h1v1H0zM2 5h7v1H2zM10 5h1v1h-1zM0 6h1v1H0zM2 6h1v1H2zM8 6h1v1H8zM10 6h1v1h-1zM3 7h2v1H3zM6 7h2v1H6z"/></svg></button></div>
   </div>
 </div>
 
@@ -406,9 +586,26 @@ Cooldown
   </div>
 </div>
 
+<div id="gameModal" role="dialog" aria-label="Choose your challenge">
+  <div class="g-top"><span><b>1UP</b> 00</span><span>Credit <b id="gCredit">00</b></span></div>
+  <canvas id="gStars"></canvas>
+  <div class="g-hi" id="gHi">Hi-score 000000</div>
+  <div class="g-title"><span class="a">Intervals</span><span class="b">Arcade</span></div>
+  <div class="g-ask">Choose your challenge</div>
+  <div class="g-list">
+    <button class="g-card" id="gTrail" type="button" data-game="trail" aria-label="Trail Rider"><canvas id="gTrailCv" width="150" height="112"></canvas></button>
+  </div>
+  <div class="g-coin" id="gCoin">Insert coin</div>
+  <div class="g-tbl" id="gTbl"></div>
+  <div class="g-tick"><span>&#9733; Beat the bosses &#9733; Collect the coins &#9733; Keep your combo &#9733; Guard your HP &#9733; Beat the bosses &#9733; Collect the coins &#9733; Keep your combo &#9733; Guard your HP &#9733;</span></div>
+  <button class="g-back" id="gBack" type="button">&#9664; Back</button>
+  <div class="g-copy">&copy; 2026 Intervals Player</div>
+</div>
+<canvas id="arcFx"></canvas>
 <div id="summary">
   <div class="sumtitle">Workout Summary</div>
   <div class="sumdate" id="sumDate"></div>
+  <div id="arcWin"></div>
   <div class="sumgrid" id="sumGrid"></div>
   <div class="tile wide" style="padding:4px"><canvas id="sumProfile" style="width:100%;height:76px;display:block"></canvas></div>
   <div class="tile wide" style="padding:4px;margin-top:6px"><canvas id="sumHR" style="width:100%;height:54px;display:block"></canvas></div>
@@ -796,6 +993,7 @@ function tick() {
   pushTarget(false); render();
 }
 function finishWorkout(reason) {
+  W.endedEarly = reason === "Workout ended by user.";
   W.running = false; W.paused = false; clearInterval(W.timer); clearInterval(W.fast); W.ramp = null; W.idx = W.steps.length; $("btnPause").textContent = "Pause";
   cpWrite([0x05, 0, 0]); cpWrite([0x08, 0x01]);     // 0 W target, then stop
   try { window._wl && window._wl.release(); } catch (e) {}
@@ -822,10 +1020,11 @@ function collapseAllFolders() {                          // home page always sta
   saveFoldState(); renderLibrary();
 }
 let arcadeOn = false;
+setTimeout(() => arcadeHi(), 0);                   // footer shows the stored high score
 function applyArcade() {                                 // arcade look only on the ride screen and the summary
   const on = arcadeOn && (document.body.dataset.screen === "run" || $("summary").classList.contains("show"));
   document.body.classList.toggle("arcade", on);
-  if (on) startRider();
+  if (on) { startRider(); requestAnimationFrame(fitArc); }
 }
 function showScreen(name) { if (name === "landing") arcadeOn = false; document.body.dataset.screen = name; applyArcade(); if (name === "landing") collapseAllFolders(); if (name === "run") autoReconnect(); fitH(); render(); window.scrollTo(0, 0); }
 
@@ -874,7 +1073,88 @@ function showSummary(save = true) {
     if (save) { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); } uploadRide(); stravaUpload(); }
     else { $("sumUp").textContent = "Discarded. Not uploaded."; $("sumUp").style.color = ""; $("sumStrava").textContent = ""; }
     drawProfile($("sumProfile"), { noCursor: true, actual: true }); drawHR($("sumHR"), { noCursor: true }); prepareSummaryImage(d);
+    if (arcadeOn) arcadeFinale(save);
   }, 40);
+}
+
+/* ---------------- arcade finale: stage clear, score tally, top-5 high scores, fireworks ---------------- */
+function arcadeScore() {
+  const n = Math.min(W.pw.length, W.tgtHist.length); let on = 0, tot = 0, run = 0, combo = 0;
+  for (let i = 0; i < n; i++) { const t = W.tgtHist[i], p = W.pw[i]; if (!(t > 0)) continue; tot++;
+    if (Math.abs(p - t) <= Math.max(10, 0.08 * t)) { on++; run++; combo = Math.max(combo, run); } else run = 0; }
+  const acc = tot ? on / tot : 0, kj = Math.round(W.kj || 0);
+  const np = W.n4 > 0 ? (W.sum4 / W.n4) ** 0.25 : 0, tss = np ? Math.round((W.t * np * (np / W.ftp)) / (W.ftp * 3600) * 100) : 0;
+  const rows = [
+    { l: "Energy " + kj + " kJ", p: kj * 25 },                                          // energy carries most of the score (~70% on a typical ride)
+    { l: "Stress " + tss + " TSS", p: tss * 50 },
+    { l: "Accuracy " + Math.round(acc * 100) + "%", p: Math.round(acc * kj * 5) },    // up to +20% of the energy score
+    { l: "Max combo " + combo + "s", p: combo * 2 }
+  ];
+  return { rows, total: rows.reduce((a, r) => a + r.p, 0) };
+}
+const pad6 = v => String(Math.min(999999, Math.round(v))).padStart(6, "0");
+function arcadeScores() { try { const l = JSON.parse(localStorage.getItem("arcadeScores") || "[]"); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
+function arcadeHi(entry) {                               // top-5 table (score + date); returns { list, pos } where pos is the new entry's place or -1
+  let list = arcadeScores(), pos = -1;
+  if (entry) { list.push(entry); list.sort((x, y) => y.s - x.s || (x.d < y.d ? -1 : 1)); list = list.slice(0, 5); pos = list.indexOf(entry);
+    try { localStorage.setItem("arcadeScores", JSON.stringify(list)); } catch (e) {} }
+  document.body.style.setProperty("--hiTxt", '"1 PLAYER  \\2022  HIGH SCORE ' + pad6(list.length ? list[0].s : 0) + '"');
+  return { list, pos };
+}
+function arcadeFinale(saved) {
+  const box = $("arcWin"), clear = !W.endedEarly, S = arcadeScore();
+  const now = new Date(), iso = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+  const dShow = d => d.slice(5, 7) + "/" + d.slice(8, 10) + "/" + d.slice(2, 4);              // stored as yyyy-mm-dd, shown mm/dd/yy
+  const HS = saved && S.total > 0 ? arcadeHi({ s: S.total, d: iso }) : arcadeHi(), newHi = HS.pos === 0;
+  const ord = ["1st", "2nd", "3rd", "4th", "5th"];
+  const tbl = '<div class="h">High scores</div>' + ord.map((o, i) => { const e = HS.list[i];
+    return '<div class="r' + (i === HS.pos ? " me" : "") + '"><span>' + o + "</span><span>" + (e ? pad6(e.s) : "------") + "</span><span>" + (e ? dShow(e.d) : "--/--/--") + "</span></div>"; }).join("");
+  box.innerHTML = '<div class="aw-banner' + (clear ? "" : " over") + '">' + (clear ? "Stage clear!" : "Game over") + "</div>" +
+    '<div class="aw-sub">' + (clear ? "Workout complete" : "Thanks for playing") + "</div>" +
+    S.rows.map(r => '<div class="aw-row"><span>' + r.l + "</span><span>0</span></div>").join("") +
+    '<div class="aw-total"><span>Score</span><b id="awScore">000000</b></div>' +
+    '<div class="aw-hi">' + (newHi ? "New high score!" : HS.pos > 0 ? "You made the top 5!" : "") + "</div>" +
+    '<div class="aw-tbl">' + tbl + "</div>" +
+    '<div class="aw-press">Press home to continue</div>';
+  const rows = [...box.querySelectorAll(".aw-row")], tot = box.querySelector(".aw-total"), T = window.ARC_T = (window.ARC_T || []);
+  T.forEach(clearTimeout); T.length = 0;
+  const at = (ms, f) => T.push(setTimeout(f, ms));
+  const countUp = (el, to, ms, fmtV) => { const t0 = performance.now(); let last = -1;
+    const step = () => { const k = Math.min(1, (performance.now() - t0) / ms), v = Math.round(to * k); el.textContent = fmtV(v);
+      const tick = Math.floor(k * 12); if (tick !== last) { last = tick; beep(1400 + tick * 40, 0.025, 0.08, "square"); }
+      if (k < 1) requestAnimationFrame(step); };
+    step(); };
+  if (clear) { [523, 659, 784, 1047].forEach((f, i) => beep(f, 0.12, 0.14, "square", i * 0.11)); beep(784, 0.12, 0.14, "square", 0.5); beep(1047, 0.5, 0.14, "square", 0.62); }
+  else [392, 330, 262, 196].forEach((f, i) => beep(f, i === 3 ? 0.6 : 0.2, 0.14, "square", i * 0.22));
+  rows.forEach((r, i) => at(1300 + i * 650, () => { r.classList.add("on"); countUp(r.lastElementChild, S.rows[i].p, 450, v => v.toLocaleString()); }));
+  const tEnd = 1300 + rows.length * 650;
+  at(tEnd, () => { tot.classList.add("on"); countUp($("awScore"), S.total, 900, pad6); });
+  at(tEnd + 1100, () => {
+    box.querySelector(".aw-tbl").classList.add("on"); beep(196, 0.08, 0.2, "square"); beep(98, 0.25, 0.2, "square", 0.05);
+    if (HS.pos >= 0) { box.querySelector(".aw-hi").classList.add("on"); [1047, 1319, 1568, 2093].forEach((f, i) => beep(f, 0.08, 0.12, "square", 0.2 + i * 0.08)); }
+    if (clear) arcadeFireworks(newHi ? 6000 : 3500);
+  });
+}
+function arcadeFireworks(ms) {
+  const cv = $("arcFx"), dpr = window.devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const c = cv.getContext("2d"), cols = ["#ff3b3b", "#ffd700", "#00ff41", "#4ae0ff", "#ff3bff", "#ff8c00"], P = [], px = 4, t0 = performance.now();
+  let next = 0;
+  const burst = () => { const x = w * (0.15 + Math.random() * 0.7), y = h * (0.12 + Math.random() * 0.35), col = cols[Math.floor(Math.random() * cols.length)];
+    for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, v = 90 + Math.random() * 70; P.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1.1 + Math.random() * 0.5, col }); }
+    beep(120 + Math.random() * 80, 0.18, 0.08, "square"); };
+  let last = t0;
+  const frame = now => {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!document.body.classList.contains("arcade")) { c.clearRect(0, 0, cv.width, cv.height); return; }
+    if (now - t0 < ms && now >= next) { burst(); next = now + 380 + Math.random() * 380; }
+    c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+    for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; p.life -= dt; if (p.life <= 0) { P.splice(i, 1); continue; }
+      p.vy += 120 * dt; p.vx *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.life > 0.25 || Math.floor(now / 80) % 2) { c.fillStyle = p.col; c.fillRect(Math.round(p.x / px) * px, Math.round(p.y / px) * px, px, px); } }
+    if (P.length || now - t0 < ms) requestAnimationFrame(frame); else c.clearRect(0, 0, w, h);
+  };
+  requestAnimationFrame(frame);
 }
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function drawBarsLogo(c, x, y, k) {                          // the five bars from the app icon, no text; (x, y) = top-left of the 1024 frame
@@ -1022,6 +1302,7 @@ async function stravaUpload() {
   }
 }
 function closeSummary() {                               // back to the start screen, everything cleared
+  (window.ARC_T || []).forEach(clearTimeout); $("arcWin").innerHTML = "";
   arcadeOn = false; $("summary").classList.remove("show"); applyArcade(); $("imgModal").style.display = "none"; $("log").textContent = "";
   loadWorkout(); showScreen("landing");
 }
@@ -1104,7 +1385,8 @@ const LIBRARY = [
   {"name": "VO2 6x3", "folder": "VO2", "custom": "hard", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-6m 55%\n-4m 60%\n-4m 55%\n-3m ramp 55%-40%\n"},
   {"name": "VO2 7x3", "folder": "VO2", "custom": "hard", "text": "-2m ramp 40%-50%\n-3m 55%\n-5m 72%\n-45s 85%\n-15s 120%\n-40s 85%\n-20s 120%\n-35s 85%\n-25s 120%\n-30s 85%\n-30s 120%\n-20m 55%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-3m 120%\n-3m 40%\n-9m 55%\n-2m ramp 55%-40%\n"},
   {"name": "XCO VO2 HIDIT", "folder": "VO2", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-8m 55%\n-5m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-3m 115%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"},
-  {"name": "XCO VO2 HIDIT+", "folder": "VO2", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-4m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"}
+  {"name": "XCO VO2 HIDIT+", "folder": "VO2", "text": "-2m ramp 40%-50%\n-3m 55%\n-30s 110%\n-30s 50%\n-30s 115%\n-30s 50%\n-40s 120%\n-30s 50%\n-3m 85%\n-4m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n-4m 110%\n-3m 40%\n-3m 112%\n-2m 40%\n-2m 115%\n-80s 40%\n-1m 118%\n-40s 40%\n-40s 118%\n-30s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-20s 40%\n-30s 120%\n-8m 40%\n"},
+  {"name": "Test Workout", "folder": "Test", "text": "-15s ramp 50%-75%\n-15s 88%\n-15s 50%\n-15s 120%\n"}
 ];
 let userLib = [];
 try { userLib = JSON.parse(localStorage.getItem("kickrLib") || "[]").filter(x => x && x.name && x.text); } catch (e) { userLib = []; }
@@ -1197,7 +1479,7 @@ function renderLibrary() {
   if (!all.length) { box.innerHTML = '<div class="hint" style="font-size:14px">No workouts yet. Build one below and tap Save to library.</div>'; return; }
   const groups = new Map();
   all.forEach(it => { const f = effFolder(it.folder); if (!groups.has(f)) groups.set(f, []); groups.get(f).push(it); });
-  const names = [...groups.keys()].sort((a, b) => a === "" ? 1 : b === "" ? -1 : cmpName(a, b));
+  const names = [...groups.keys()].sort((a, b) => a === "" ? 1 : b === "" ? -1 : a === "Test" ? -1 : b === "Test" ? 1 : cmpName(a, b));   // Test pinned to the top
   const flat = names.length === 1 && names[0] === "";                       // no folders in use: plain list
   names.forEach(f => {
     const items = groups.get(f).sort((a, b) => {
@@ -1397,117 +1679,215 @@ function drawHR(cv, o) {
   }
   if (!o.noCursor && (W.running || W.t > 0)) { c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(X(W.t), 0); c.lineTo(X(W.t), h); c.stroke(); }
 }
-/* ---- arcade rider: a pixel-style mountain biker on a scrolling trail (arcade mode only) ---- */
-function rstate() { return window.RIDER || (window.RIDER = { on: false, last: 0, scroll: 0, crank: 0 }); }
-function startRider() { const R = rstate(); if (R.on) return; R.on = true; R.last = 0; requestAnimationFrame(riderFrame); }
+/* ---- arcade ride screen: trail scene built from the workout, game HUD around it (arcade mode only) ---- */
+const ARC = { W0: 20000 };                                       // W' (J): the HP bar is W' balance with FTP as the threshold
+function rstate() { return window.RIDER || (window.RIDER = { on: false, last: 0, scroll: 0, crank: 0, tS: 0, pi: 0, w: ARC.W0, combo: 0, best: 0, broke: 0, coins: 0, lastIdx: -1, key: "", prof: [], coinT: [], got: 0, hrBeat: -1 }); }
+function startRider() { const R = rstate(); fitArc(); if (R.on) return; R.on = true; R.last = 0; requestAnimationFrame(riderFrame); }
+function fitArc() {                                              // the game screen fills the phone below the status bar
+  const a = $("arc"); if (!a || !document.body.classList.contains("arcade") || document.body.dataset.screen !== "run") return;
+  a.style.height = Math.max(420, window.innerHeight - a.getBoundingClientRect().top - window.scrollY - 6) + "px";
+}
+const arcRel = s => !s || s.free ? null : (s.a + s.b) / 2;          // average % FTP of a step (ramps use their mean)
+const arcBoss = s => { const r = arcRel(s); return r != null && r >= 0.85; };
+function arcName(s) {
+  const r = arcRel(s); if (r == null) return "Free ride";
+  const p = Math.round(r * 100);
+  return p >= 121 ? "Anaerobic" : p >= 104 ? "VO2 Max" : p >= 95 ? "Threshold" : p >= 85 ? "Sweet Spot" : p >= 76 ? "Tempo" : p >= 56 ? "Endurance" : "Recovery";
+}
+const ZCOL = r => r == null || r <= .55 ? "#7a8594" : r <= .75 ? "#3b9cff" : r <= .9 ? "#3ddc84" : r <= 1.05 ? "#ffd23f" : r <= 1.2 ? "#ff4d5e" : "#b36bff";
+function arcPlan(R) {                                            // cached per workout shape: start times, smoothed terrain, coin positions
+  const st = W.steps, key = st.length + ":" + st.reduce((a, s) => a + s.dur, 0) + ":" + (st[0] ? st[0].a : 0);
+  if (R.key === key) return; R.key = key;
+  R.t0 = []; let t = 0; st.forEach(s => { R.t0.push(t); t += s.dur; }); R.total = t;
+  const relAt = x => { if (!st.length) return .5; x = Math.max(0, Math.min(t - .001, x)); let i = 0; while (i < st.length - 1 && x >= R.t0[i + 1]) i++;
+    const s = st[i]; if (s.free) return .6; return s.a + (s.b - s.a) * (x - R.t0[i]) / s.dur; };
+  R.relAt = relAt; R.prof = [];
+  for (let x = 0; x <= t + 60; x += 0.5) { let v = 0, n = 0; for (let o = -4; o <= 4; o += 1) { v += relAt(x + o); n++; } R.prof.push(v / n); }
+  R.coinT = []; let k = 0; for (let x = 0; x < t; x += 0.5) { k += relAt(x) * W.ftp * 0.5 / 1000; if (k >= 1) { k -= 1; R.coinT.push(x); } }   // one coin per planned kJ
+}
 function riderFrame(ts) {
   const R = rstate();
   if (!document.body.classList.contains("arcade")) { R.on = false; return; }
   const dt = R.last ? Math.min(0.1, (ts - R.last) / 1000) : 0; R.last = ts;
-  const live = W.running && !W.paused;
-  const rel = live ? Math.min(1.6, Math.max(0, (W.pw || 0) / (W.ftp || 200))) : 0;   // power sets trail speed
+  const live2 = W.running && !W.paused;
+  const p3 = power3s(), rel = live2 && Number.isFinite(p3) ? Math.min(1.6, Math.max(0, p3 / (W.ftp || 200))) : 0;
   R.scroll += rel * 110 * dt;
-  R.crank += (live ? (cad3s() || 0) : 0) / 60 * Math.PI * 2 * dt;                    // cadence sets pedal speed
-  drawRider($("hrgraph"));
+  R.crank += (live2 ? (cad3s() || 0) : 0) / 60 * Math.PI * 2 * dt;
+  if (!Number.isFinite(R.scroll)) R.scroll = 0; if (!Number.isFinite(R.crank)) R.crank = 0;
+  R.tS = live2 ? Math.min(W.t + 1, R.tS + dt) : W.t; if (Math.abs(R.tS - W.t) > 1.5) R.tS = W.t;   // smooth workout clock for the scrolling trail
+  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { arcPlan(R); arcTally(R); drawArcScene($("arcCv"), R, ts); arcHud(R); }
   requestAnimationFrame(riderFrame);
 }
-function ridgeLine(c, w, h, gy, off, col, hf) {
-  const P = w * 0.9, pts = [[0, 0], [0.14, 0.55], [0.3, 0.28], [0.5, 0.92], [0.68, 0.4], [0.82, 0.66], [1, 0]];
-  const o = off % P;
-  c.fillStyle = col; c.beginPath(); c.moveTo(-P, gy);
-  for (let k = -1; k <= Math.ceil(w / P) + 1; k++) for (const [fx, fy] of pts) c.lineTo(k * P + fx * P - o, gy - fy * h * hf);
-  c.lineTo(w + P, gy); c.closePath(); c.fill();
+function arcTally(R) {                                           // per-second bookkeeping: W' balance, combo, coins
+  if (W.pw.length < R.pi || W.t === 0 && R.pi > 0) Object.assign(R, { pi: 0, w: ARC.W0, combo: 0, best: 0, broke: 0, coins: 0, got: 0, lastIdx: -1 });
+  for (; R.pi < W.pw.length; R.pi++) {
+    const p = W.pw[R.pi], t = W.tgtHist[R.pi], cp = W.ftp || 200;
+    R.w += p > cp ? -(p - cp) : (cp - p) * (ARC.W0 - R.w) / ARC.W0; R.w = Math.max(0, Math.min(ARC.W0, R.w));
+    if (t > 0 && Math.abs(p - t) <= Math.max(10, 0.08 * t)) { R.combo++; R.best = Math.max(R.best, R.combo); }
+    else { if (R.combo > 3) R.broke = 1.2; R.combo = 0; }
+  }
+  while (R.got < R.coinT.length && R.coinT[R.got] <= R.tS) { R.got++; if (W.running) { R.coins++; arcPop("+25", 0.32, 0.35); } }
 }
-function drawRider(cv) {
-  const dpr = window.devicePixelRatio || 1;
-  const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+function arcPop(text, fx, fy, big) {
+  const ov = $("arcOv"); if (!ov) return; const el = document.createElement("div");
+  el.className = "a-pop" + (big ? " big" : ""); el.textContent = text; el.style.left = (fx * 100) + "%"; el.style.top = (fy * 100) + "%";
+  ov.appendChild(el); setTimeout(() => el.remove(), 950);
+}
+function arcRidge(c, W2, H, off, col, amp, base, period) {
+  c.fillStyle = col; const B = 4;
+  for (let x = 0; x < W2; x += B) { const u = (x + off) / period;
+    const y = base - amp * (0.55 + 0.3 * Math.sin(u * 2.1) + 0.25 * Math.sin(u * 5.3 + 1) + 0.12 * Math.sin(u * 11.7)); c.fillRect(x, Math.round(y / B) * B, B, H); }
+}
+function drawArcScene(cv, R, now) {
+  if (!cv) return;
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
-  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const R = rstate();
-  const wR = Math.min(h * 0.3, w * 0.09), s = wR / 29.4, gy = h - 4, axleY = gy - wR;
-  const base = 3.1 * wR, rearX = (w - base) / 2, frontX = rearX + base;
-  const ln = (p, q, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.lineCap = "round"; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(q.x, q.y); c.stroke(); };
-  const dot = (p, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(p.x, p.y, r, 0, Math.PI * 2); c.fill(); };
-  const ring = (cx, cy, r, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.stroke(); };
-
-  // backdrop: sky, two parallax mountain ranges, dirt ground with scrolling marks and rocks
-  c.fillStyle = "#05000f"; c.fillRect(0, 0, w, h);
-  ridgeLine(c, w, h, gy, R.scroll * 0.12, "#2a0a4a", 0.6);
-  ridgeLine(c, w, h, gy, R.scroll * 0.35, "#0c3a48", 0.38);
-  c.fillStyle = "#1a0d00"; c.fillRect(0, gy, w, h - gy);
-  c.fillStyle = "#ffd700"; c.fillRect(0, gy, w, 1.5);
-  c.fillStyle = "#ff8c00"; const P = 14, po = R.scroll % P;
-  for (let x = -po; x < w; x += P) c.fillRect(x, gy + 4, 6, 2);
-  c.fillStyle = "#8b5a2b"; const RP = w + 60;
-  for (let k = 0; k < 4; k++) { const x = ((((k * 97 - R.scroll) % RP) + RP) % RP) - 30; c.fillRect(x, gy - 3 * s, 4 * s, 3 * s); }
-
-  // bike geometry (scaled to the wheel size)
-  const A = { x: rearX, y: axleY }, F = { x: frontX, y: axleY };
-  const BB = { x: rearX + base * 0.34, y: axleY + 5 * s };
-  const S = { x: BB.x - 4 * s, y: BB.y - 30 * s };          // seat tube top
-  const H = { x: F.x - 4 * s, y: F.y - 38 * s };             // head tube top (MTB bars)
-  const hip = { x: S.x + 4 * s, y: S.y - 3 * s };
-  const sh = { x: H.x - 14 * s, y: H.y + 6 * s };            // crouched, arms bent
-  const head = { x: sh.x + 6 * s, y: sh.y - 9 * s }, hr = 8.5 * s;
-  const hand = { x: H.x + 5 * s, y: H.y - 1 * s };
-  const ang = R.crank, cr = 13 * s;
-  const pd1 = { x: BB.x + cr * Math.cos(ang), y: BB.y + cr * Math.sin(ang) };
-  const pd2 = { x: BB.x - cr * Math.cos(ang), y: BB.y - cr * Math.sin(ang) };
-
-  // rear wheel, frame, front wheel
-  const spin = (cx, cy, a) => {
-    ring(cx, cy, wR - 1.6 * s, "#3a3a3a", 3.2 * s);
-    for (let k = 0; k < 14; k++) {                                       // knobby MTB tread
-      const q = a + k * Math.PI / 7;
-      ln({ x: cx + Math.cos(q) * (wR - 2.4 * s), y: cy + Math.sin(q) * (wR - 2.4 * s) }, { x: cx + Math.cos(q) * (wR + 0.6 * s), y: cy + Math.sin(q) * (wR + 0.6 * s) }, "#6b6b6b", 2.4 * s);
-    }
-    ring(cx, cy, wR - 3.6 * s, "#4ae0ff", 1);
-    for (let k = 0; k < 6; k++) { const q = a + k * Math.PI / 3; ln({ x: cx, y: cy }, { x: cx + Math.cos(q) * (wR - 4 * s), y: cy + Math.sin(q) * (wR - 4 * s) }, "#8b94a3", 0.8); }
-    c.fillStyle = "#ffd700"; c.beginPath(); c.arc(cx, cy, 1.8 * s, 0, Math.PI * 2); c.fill();
-  };
-  spin(A.x, A.y, R.scroll / wR);
-  spin(F.x, F.y, R.scroll / wR);
-  ln(A, BB, "#ff3bff", 3 * s); ln(BB, S, "#ff3bff", 3 * s); ln(A, S, "#ff3bff", 2 * s);
-  ln(BB, H, "#ff3bff", 3 * s); ln(S, H, "#ff3bff", 2.6 * s); ln(H, F, "#ff3bff", 3.2 * s);
-  ln({ x: H.x - 2 * s, y: H.y - 4 * s }, { x: H.x + 7 * s, y: H.y - 6 * s }, "#ffd700", 2 * s);   // flat bar
-  // chainring and cranks
-  ring(BB.x, BB.y, 5 * s, "#ffd700", 1.2);
-  ln(BB, pd1, "#e8ffe8", 2 * s); ln(BB, pd2, "#e8ffe8", 2 * s);
-  c.fillStyle = "#e8ffe8"; c.fillRect(pd1.x - 2.5 * s, pd1.y - 1 * s, 5 * s, 2 * s); c.fillRect(pd2.x - 2.5 * s, pd2.y - 1 * s, 5 * s, 2 * s);
-
-  // legs: two-bone IK from hip to pedal, knee pointing forward
-  const leg = (hp, foot, col, lw) => {
-    const L = 34 * s; let dx = foot.x - hp.x, dy = foot.y - hp.y; let d = Math.hypot(dx, dy);
-    d = Math.min(d, 2 * L - 0.5);
-    const a = d / 2, hh = Math.sqrt(Math.max(0, L * L - a * a));
-    const mid = { x: hp.x + dx / 2, y: hp.y + dy / 2 }; const ux = dx / (Math.hypot(dx, dy) || 1), uy = dy / (Math.hypot(dx, dy) || 1);
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  const i = Math.min(W.idx, W.steps.length - 1), s = W.steps[i], boss = W.running && arcBoss(s);
+  const pps = w / 22, rx = w * 0.3, base = h * 0.9, k = h * 0.2;
+  const gY = t => { const j = Math.max(0, Math.min(R.prof.length - 1, Math.round(t * 2))); return base - Math.max(0, (R.prof[j] ?? .5) - 0.45) * k; };
+  // sky, stars, moon, parallax ridges
+  const bands = boss ? ["#14000a", "#1e000e", "#280012", "#330016", "#3e001a", "#4a001e"] : ["#05000f", "#09021a", "#0e0426", "#140632", "#1a083e", "#220c4a"];
+  bands.forEach((b, j) => { c.fillStyle = b; c.fillRect(0, Math.round(h * j * 0.1), w, Math.ceil(h * 0.1) + 1); }); c.fillStyle = bands[5]; c.fillRect(0, Math.round(h * .5), w, h);
+  const ST = window.ARC_STARS || (window.ARC_STARS = Array.from({ length: 36 }, () => [Math.random(), Math.random() * 0.45, Math.random()]));
+  c.fillStyle = "#e8ffe8"; ST.forEach(([x, y, ph]) => { if (Math.sin(now / 400 + ph * 9) > -0.3) c.fillRect(Math.round(((x * w - R.scroll * .03) % w + w) % w), Math.round(y * h), 2, 2); });
+  c.fillStyle = boss ? "#ff3b3b" : "#ffd700"; c.fillRect(Math.round(w * .82), Math.round(h * .12), 12, 12); c.fillStyle = bands[0]; c.fillRect(Math.round(w * .82) + 8, Math.round(h * .12), 5, 5);
+  arcRidge(c, w, h, R.scroll * .15, "#2a0a4a", h * .32, h * .74, 120);
+  arcRidge(c, w, h, R.scroll * .35, "#0c3a48", h * .2, h * .82, 70);
+  // terrain: each column is a slice of workout time; hard intervals are hills, the edge is coloured by zone
+  const B = 4;
+  for (let x = 0; x < w; x += B) {
+    const t = R.tS + (x - rx) / pps, gy = Math.round(gY(t) / B) * B;
+    c.fillStyle = "#2b1600"; c.fillRect(x, gy, B, h - gy);
+    if (((x + Math.round(R.scroll)) / B | 0) % 5 === 0) { c.fillStyle = "#4a2a08"; c.fillRect(x, gy + 8, B, B); }
+    c.fillStyle = t < 0 || t > R.total ? "#5a4a6a" : ZCOL(R.relAt(t)); c.fillRect(x, gy, B, B);
+  }
+  // checkpoint flags (red before a boss, gold at the finish) and coins
+  (R.t0 || []).slice(1).concat([R.total]).forEach((tb, j) => { const x = rx + (tb - R.tS) * pps; if (x < -12 || x > w + 12) return; const gy = gY(tb);
+    c.fillStyle = "#e8ffe8"; c.fillRect(Math.round(x), Math.round(gy - 24), 2, 24);
+    c.fillStyle = tb === R.total ? "#ffd700" : arcBoss(W.steps[j + 1]) ? "#ff3b3b" : "#00ff41"; c.fillRect(Math.round(x) + 2, Math.round(gy - 24), 10, 7); });
+  for (let j = R.got; j < R.coinT.length; j++) { const ct = R.coinT[j], x = rx + (ct - R.tS) * pps; if (x > w + 10) break; if (x < -10) continue;
+    const y = gY(ct) - 28 + Math.round(Math.sin(now / 200 + ct) * 2), sp = Math.abs(Math.sin(now / 250 + ct));
+    c.fillStyle = "#ffd700"; c.fillRect(Math.round(x - 4 * sp), y, Math.max(2, Math.round(8 * sp)), 8); c.fillStyle = "#b8860b"; c.fillRect(Math.round(x), y + 2, 1, 4); }
+  // rider: sprite tilts with the slope; legs follow cadence, wheels follow trail speed
+  const cell = Math.max(1, Math.floor(Math.min(h * 0.5, w * 0.3) * dpr / RG.h)) / dpr, gy = gY(R.tS);
+  const off = window.RIDER_CV || (window.RIDER_CV = Object.assign(document.createElement("canvas"), { width: RG.w, height: RG.h }));
+  const oc = off.getContext("2d"), img = oc.createImageData(RG.w, RG.h);
+  new Uint32Array(img.data.buffer).set(riderSprite(R.crank, R.scroll / (RG.r * cell))); oc.putImageData(img, 0, 0);
+  const tilt = Math.max(-0.3, Math.min(0.3, Math.atan2(gY(R.tS + 1.2) - gY(R.tS - 1.2), 2.4 * pps)));
+  c.save(); c.translate(Math.round(rx), Math.round(gy)); c.rotate(tilt); c.drawImage(off, -RG.w * cell / 2, -(RG.h - 1) * cell, RG.w * cell, RG.h * cell); c.restore();
+  const p3 = power3s();
+  if (W.running && !W.paused && p3 > W.ftp * 1.05) { c.fillStyle = "rgba(232,255,232,.6)"; for (let j = 0; j < 5; j++) c.fillRect(Math.round(rx - RG.w * cell * .6 - (now / 3 + j * 23) % 40), Math.round(gy - 10 - ((j * 17 + now / 30) % (cell * 38))), 12, 2); }
+  if (boss && Math.floor(now / 300) % 2) { c.fillStyle = "rgba(255,0,40,.08)"; c.fillRect(0, 0, w, h); }
+}
+function drawArcMap(R) {
+  const cv = $("arcMap"); if (!cv || !R.total) return; const dpr = window.devicePixelRatio || 1, w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr); if (!w || !h) return;
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  const c = cv.getContext("2d"); c.clearRect(0, 0, w, h);
+  for (let x = 0; x < w; x += 2) { const t = x / w * R.total, r = R.relAt(t); c.fillStyle = ZCOL(r); c.globalAlpha = t < W.t ? 1 : .45; const bh = Math.round(Math.min(1.3, r) / 1.3 * (h - 4)); c.fillRect(x, h - bh, 2, bh); }
+  c.globalAlpha = 1; c.fillStyle = "#fff"; c.fillRect(Math.round(W.t / R.total * w) - dpr, 0, 2 * dpr, h);
+  c.fillStyle = "#ffd700"; c.fillRect(w - 3 * dpr, 2 * dpr, 2 * dpr, h - 4 * dpr); c.fillRect(w - 9 * dpr, 2 * dpr, 6 * dpr, 4 * dpr);
+}
+function arcHud(R) {
+  const setT = (id, v) => { const e = $(id); if (e && e.textContent !== String(v)) e.textContent = v; };
+  const st = W.steps, i = Math.min(W.idx, st.length - 1), s = st[i], done = W.loaded && W.idx >= st.length, started = W.running || W.t > 0;
+  const rem = s ? s.dur - (started ? W.stepT : 0) : 0, boss = W.running && arcBoss(s);
+  setT("aClock", s && !done ? fmt(rem) : "0:00"); $("aClock").classList.toggle("hot", W.running && !W.paused && rem <= 5);
+  setT("aStage", !W.loaded ? "Load a workout" : done ? "Stage clear!" : "Stage " + (i + 1) + "/" + st.length + " · " + arcName(s));
+  setT("aScore", pad6(Math.round(W.kj * 25 + R.best * 2)));
+  const hs = arcadeScores(); setT("aHi", pad6(hs.length ? hs[0].s : 0));
+  setT("aHr", live.hr ?? "--");
+  const sec = Math.floor(W.t); if (live.hr != null && sec !== R.hrBeat) { R.hrBeat = sec; const hb = $("aHeart"); hb.classList.remove("beat"); void hb.offsetWidth; hb.classList.add("beat"); }
+  const hp = R.w / ARC.W0, hc = hp > .6 ? "#00ff41" : hp > .3 ? "#ffd700" : "#ff3b3b", nOn = Math.ceil(hp * 20);
+  [...$("aHp").children].forEach((e, k) => { const col = k < nOn ? hc : ""; if (e.style.background !== col) e.style.background = col; });
+  // power panel
+  const p3 = power3s(), tg = W.running ? stepTarget() : null;
+  setT("aPw", p3 == null ? "--" : Math.round(p3)); setT("aTgt", !W.running ? "--" : tg ?? "FREE");
+  setT("aTgtPct", !W.running || !tg ? "-- % FTP" : Math.round(tg / W.ftp * 100) + "% FTP");
+  const r3 = p3 == null ? 0 : p3 / W.ftp, nB = Math.round(Math.min(1.2, r3) / 1.2 * 12);
+  [...$("aBoost").children].forEach((e, k) => { const col = k < nB ? ZCOL((k + 1) / 12 * 1.2) : ""; if (e.style.background !== col) e.style.background = col; });
+  const c3 = cad3s(); setT("aCad", c3 == null ? "--" : Math.round(c3));
+  const thr = Math.max(30, +$("govCad").value || 55), nT = c3 == null ? 0 : Math.round((c3 - 50) / 60 * 10);
+  [...$("aTach").children].forEach((e, k) => { const col = k < nT ? (c3 >= Math.max(85, thr) ? "#4ae0ff" : "#ffd700") : ""; if (e.style.background !== col) e.style.background = col; });
+  const nx = st[W.idx + 1];
+  setT("aNx", !W.loaded || done ? "--" : !nx ? "Fin" : nx.free ? "Free" : Math.round(arcRel(nx) * W.ftp * W.adj));
+  setT("aNxs", !W.loaded || done ? "--" : !nx ? "Last stage" : fmt(nx.dur) + " · " + arcName(nx));
+  $("aNx").style.color = nx && arcBoss(nx) ? "#ff3b3b" : "";
+  setT("aEl", fmt(W.t)); setT("aTot", "of " + fmt(R.total || 0)); setT("aKj", Math.round(W.kj) + " kJ");
+  setT("aNp", "NP " + (W.n4 > 30 ? Math.round((W.sum4 / W.n4) ** 0.25) : "--"));
+  setT("aAdj", W.adjPct + "%");
+  // overlay: combo, coins, boss bar, warning
+  if (R.broke > 0) { R.broke -= 1 / 60; setT("aComboN", "Break!"); $("aCombo").classList.add("broke"); } else { $("aCombo").classList.remove("broke"); setT("aComboN", "x" + R.combo); }
+  setT("aCoins", "x" + String(R.coins).padStart(2, "0"));
+  $("aBoss").hidden = !boss;
+  if (boss) { setT("aBossName", "Boss · " + arcName(s)); $("aBossHp").style.width = Math.max(0, rem / s.dur * 100) + "%"; }
+  let tb = 0, nb = -1; if (W.running && st.length) { tb = s.dur - W.stepT; for (let j = W.idx + 1; j < st.length; j++) { if (arcBoss(st[j])) { nb = j; break; } tb += st[j].dur; } }
+  const warn = W.running && !boss && nb >= 0 && tb <= 8 && tb > 0; $("aWarn").hidden = !warn;
+  if (warn) setT("aWarnSub", arcName(st[nb]) + " in " + fmt(tb));
+  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true);
+  R.lastIdx = W.running ? W.idx : -1;
+  // gamepad mirrors the real buttons
+  const m = (aid, id) => { const a = $(aid), b = $(id); a.disabled = b.disabled; a.hidden = b.style.display === "none"; };
+  m("aDn", "btnDn"); m("aUp", "btnUp"); m("aSkip", "btnSkip"); m("aErg", "btnErg"); m("aPlus1", "btnPlus1"); m("aEnd", "btnEnd"); m("aChange", "btnChange");
+  $("aErg").classList.toggle("on", $("btnErg").classList.contains("on"));
+  const go = $("aGo"); if (!W.running) { go.disabled = $("btnStart").disabled; setT("aGo", "Start"); go.className = "a-go"; }
+  else { go.disabled = $("btnPause").disabled; setT("aGo", W.paused ? "Resume" : "Pause"); go.className = "a-go" + (W.paused ? " res" : ""); }
+  drawArcMap(R);
+}
+/* Rider sprite: Ryan's reference art (43 x 43 pixel map). Legs, cranks, wheels and the frame tubes behind the legs are redrawn live so they animate. */
+const RMAP = [".......................#####...............", "......................#RRrRR##.............", ".....................#rRRRRrRr#............", ".....................#rrRRRrrR#............", ".....................#rrrrrRRRR#...........", ".....................#r#########...........", "......................#R#s#oo#.............", "..................#####r#sSSS#.............", ".................#CCCBb#osSSS#.............", "................#CCYCBBs#sSS##.............", "...............#C#CCYBCbo####..............", "..............#CY#bCCYSCbb#................", ".............#CYY#bb#tYY#bC#...............", "............#tYYCb#bo#tCt#bC#..............", "............##Ytbb#boo#oS##oS##............", "............#K##bBbb###oSSS#rsS##..........", "............#KKK##b#...#osSS##sos##........", "............#KKKK##K#...####kk###Kk#.......", "............#KKKKK##K#.....#Kkkkk#K#.......", ".............#KKKKk#K#.....#K#######.......", "............#K#KKKKK#K#.....##T............", ".............#K#KK#SS#s#..##TCT#...........", "...............###sSS#s###TtKtCT#..........", "...............#t#sSs##TTt#tC##K##.........", "................#SSo#TCC#.#C##K#KK#........", "................#SS#C###.#Tt#wo##o#........", ".....#######....#SS###..#Tt#.#o#G######....", "...###kkkkk###..#S#T##.#Tt#...#Y#kkkkk##...", "..##k#KKKKKKk###s##t#.##T#...##o#KKKKKKk#..", ".##K#Kk.g.g#KKK#C#k#k.#T#....#KoY#o..#KKk#.", ".#K#k...g...#Tt#tt##k#Tt#...#KKKYKo.k..#K#.", "#KK#.g.ggkwTt####Kkk#Tt#....#K#ko##kw.g.Kk#", "#K#...g###C##.K#####Tt##...#KK..rGKKKg..#K#", "#K#.ggKk#k##kg######C##....#K#wk#Y#Kg#gwgK#", "#K#..gk#CCCCCCCC#t#K#......#K#..gYK#K#..#K#", "#K#..gk###########Ct.......#K#..w#o#KK..wK#", "#K#g..#k#g#..k#K####.......#K#kg.gkkgK.g#K#", "#KK..g.kkk.g.wKK#..........#KK..g.k#gg..#K#", ".#K#g...gw..g#K#............#K#w....g.ggK#k", ".#KK#.g.g...#K##............#KKk.k..k..#K#.", "..#KK##.g.##K##..............#KK#k..w#KK#..", "...##KKKKKKK##...............k#KKK##KKK##..", "....KK#KKK#KK.................K##KKKK#K...."];
+const RPAL = { "#": "#0f0f14", K: "#373741", k: "#5f5f69", g: "#a5a5aa", w: "#ebebeb", R: "#cd3237", r: "#96232d", S: "#f0af8c", s: "#cd6e50",
+  B: "#2850aa", b: "#1e326e", C: "#378caf", Y: "#ebc346", T: "#5abec3", t: "#286e78", G: "#e1aa3c", o: "#a06e28" };
+const RG = { w: 43, h: 43, ax: 34, rx: 8.2, fx: 34.6, r: 7.9, bb: { x: 18, y: 33 }, hip: { x: 14.5, y: 17.5 } };
+function riderSprite(crank, spin) {
+  const G = RG, N = G.w * G.h, buf = new Uint32Array(N), P = (x, y) => ({ x, y });
+  const pk = {}, col = hex => pk[hex] ?? (pk[hex] = (() => { const n = parseInt(hex.slice(1), 16); return (0xff << 24 | (n & 0xff) << 16 | (n >> 8 & 0xff) << 8 | n >> 16) >>> 0; })());
+  let L = new Uint32Array(N);
+  const set = (x, y, c) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < G.w && y < G.h) L[y * G.w + x] = col(c); };
+  const disc = (cx, cy, r, c, r0 = null) => { for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r); y++) for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) { const d = (x - cx) ** 2 + (y - cy) ** 2; if (d <= r * r + 0.3 && (r0 == null || d > r0 * r0 + 0.3)) set(x, y, c); } };
+  const line = (a, b, c, t = 1) => { const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) * 2));
+    for (let i = 0; i <= n; i++) { const x = a.x + (b.x - a.x) * i / n, y = a.y + (b.y - a.y) * i / n;
+      if (t <= 1) set(x, y, c); else if (t === 2) { set(x, y, c); set(x + 1, y, c); set(x, y + 1, c); set(x + 1, y + 1, c); } else disc(x, y, (t - 1) / 2, c); } };
+  const commit = (outline = true) => { if (outline) { const o = col(RPAL["#"]);
+      for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) { const i = y * G.w + x; if (L[i]) continue;
+        if ((x > 0 && L[i - 1]) || (x < G.w - 1 && L[i + 1]) || (y > 0 && L[i - G.w]) || (y < G.h - 1 && L[i + G.w])) buf[i] = o; } }
+    for (let i = 0; i < N; i++) if (L[i]) buf[i] = L[i]; L = new Uint32Array(N); };
+  const inWheel = (x, y) => Math.hypot(x - G.rx, y - G.ax) <= G.r + 0.6 || Math.hypot(x - G.fx, y - G.ax) <= G.r + 0.6;
+  const inLegs = (x, y) => y >= 19 && y <= 35 && x >= 12 && x <= 23 && !(y <= 21 && x >= 22);
+  const BB = G.bb, hip = G.hip, cr = 3, pd = s => P(BB.x + s * cr * Math.cos(crank), BB.y + s * cr * Math.sin(crank));
+  const leg = (pedal, near) => {
+    const ank = P(pedal.x - 0.5, pedal.y - 1.5), L1 = 8, L2 = 9.5;
+    const dx = ank.x - hip.x, dy = ank.y - hip.y, dd = Math.hypot(dx, dy) || 1, d = Math.min(dd, L1 + L2 - 0.2);
+    const a = (L1 * L1 - L2 * L2 + d * d) / (2 * d), hh = Math.sqrt(Math.max(0, L1 * L1 - a * a)), ux = dx / dd, uy = dy / dd;
     let px = -uy, py = ux; if (px < 0) { px = -px; py = -py; }
-    const knee = { x: mid.x + px * hh, y: mid.y + py * hh };
-    ln(hp, knee, col, lw); ln(knee, foot, col, lw * 0.9);
-    c.fillStyle = "#111"; c.fillRect(foot.x - 3 * s, foot.y - 1.5 * s, 6 * s, 3 * s);
+    const knee = P(hip.x + ux * a + px * hh, hip.y + uy * a + py * hh), A2 = P(hip.x + ux * d, hip.y + uy * d);
+    line(knee, A2, near ? RPAL.S : RPAL.s, 2);
+    line(hip, P(hip.x + (knee.x - hip.x) * 0.85, hip.y + (knee.y - hip.y) * 0.85), near ? RPAL.K : "#1c1c24", 3);
+    set(A2.x, A2.y, near ? RPAL.B : RPAL.b); set(A2.x + 1, A2.y, near ? RPAL.B : RPAL.b);
+    line(P(pedal.x - 1.5, pedal.y - 0.5), P(pedal.x + 1.5, pedal.y - 0.5), RPAL["#"], 2);
+    commit();
   };
-  leg(hip, pd2, "#7a3d00", 3.2 * s);                       // far leg (dimmer)
-
-  // torso, arm, helmet
-  ln(hip, sh, "#ffd700", 6 * s);
-  ln(sh, hand, "#ffd700", 2.6 * s); dot(hand, 2 * s, "#111");
-  c.fillStyle = "#ff3b3b"; c.beginPath(); c.arc(head.x, head.y, hr, 0, Math.PI * 2); c.fill();          // full-face shell
-  c.fillStyle = "#ff3b3b"; c.beginPath(); c.moveTo(head.x - 3 * s, head.y + 1 * s); c.lineTo(head.x + 8 * s, head.y + 2 * s);
-  c.lineTo(head.x + 7 * s, head.y + 7 * s); c.lineTo(head.x - 2 * s, head.y + 8 * s); c.closePath(); c.fill();   // chin bar
-  c.fillStyle = "#ffffff"; c.fillRect(head.x - 6 * s, head.y - 6 * s, 5 * s, 1.4 * s);                          // helmet stripe
-  c.fillStyle = "#0a0a14"; c.beginPath(); c.moveTo(head.x + 1 * s, head.y - 3.5 * s); c.lineTo(head.x + 9 * s, head.y - 2 * s);
-  c.lineTo(head.x + 8.5 * s, head.y + 1.5 * s); c.lineTo(head.x + 1 * s, head.y + 0.5 * s); c.closePath(); c.fill();   // visor
-  c.strokeStyle = "#4ae0ff"; c.lineWidth = 0.8; c.stroke();
-  leg(hip, pd1, "#ff8c00", 3.4 * s);                       // near leg
-
-  // HUD on the tile: live HR, avg and max
-  const hv = W.hrHist.filter(v => v != null);
-  const hrNow = hv.length ? hv[hv.length - 1] : "--";
-  const hrAvg = hv.length ? Math.round(hv.reduce((a, b) => a + b, 0) / hv.length) : "--";
-  const hrMax = hv.length ? Math.max(...hv) : "--";
-  c.font = `bold ${Math.round(Math.max(9, 10 * s))}px "Courier New", monospace`; c.textBaseline = "top";
-  c.textAlign = "left"; c.fillStyle = "#ff3b3b"; c.fillText("♥ " + hrNow, 6, 4);
-  c.textAlign = "right"; c.fillStyle = "#4ae0ff"; c.fillText("AVG " + hrAvg + "  MAX " + hrMax, w - 6, 4);
+  const wheel = c => {
+    disc(c.x, c.y, G.r, RPAL.K, G.r - 1.5); commit();
+    disc(c.x, c.y, G.r - 2.4, RPAL.k, G.r - 3.1); commit(false);
+    for (let k = 0; k < 6; k++) { const q = spin + k * Math.PI / 3; line(c, P(c.x + Math.cos(q) * (G.r - 2.6), c.y + Math.sin(q) * (G.r - 2.6)), RPAL.g); }
+    commit(false); disc(c.x, c.y, 1.2, RPAL.k); commit();
+  };
+  leg(pd(-1), false);
+  wheel(P(G.rx, G.ax)); wheel(P(G.fx, G.ax));
+  disc(G.fx - 1, G.ax - 1, 1.6, RPAL.o); commit();                        // front rotor
+  const S = P(16.5, 22), H = P(30, 21);
+  line(BB, P(G.rx, G.ax), RPAL.T); line(S, P(G.rx, G.ax), RPAL.T); line(BB, S, RPAL.T); line(S, H, RPAL.T); line(BB, H, RPAL.T, 2); line(P(BB.x + 1, BB.y), P(H.x + 1, H.y), RPAL.t); commit();
+  line(P(30.5, 23), P(G.fx, G.ax), RPAL.G, 2); line(P(31.5, 25), P(G.fx + 0.5, G.ax - 1), RPAL.o); commit();
+  for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) {           // the reference art, minus the parts that move
+    const ch = RMAP[y][x]; if (ch === "." || inWheel(x, y) || inLegs(x, y)) continue; buf[y * G.w + x] = col(RPAL[ch]); }
+  disc(BB.x, BB.y, 1.8, RPAL.k); commit();
+  const p1 = pd(1); line(BB, p1, RPAL.g); commit();
+  leg(p1, true);
+  const halo = (0x55 << 24 | 0xffffff) >>> 0, src = buf.slice();             // faint light rim so the black outline reads on the dark sky
+  for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) { const i = y * G.w + x; if (src[i]) continue;
+    if ((x > 0 && src[i - 1]) || (x < G.w - 1 && src[i + 1]) || (y > 0 && src[i - G.w]) || (y < G.h - 1 && src[i + G.w])) buf[i] = halo; }
+  return buf;
 }
 window.addEventListener("resize", () => { drawProfile(); drawHR(); });
 function refreshDevBtns() {                                  // red Connect buttons in the ride header while a device is missing
@@ -2164,7 +2544,57 @@ $("woGraph").onclick = e => {
   clearTimeout(woPickT); woPickT = setTimeout(() => { $("woPick").textContent = ""; drawWoGraph(null); }, 6000);
 };
 $("btnLaunchNo").onclick = () => { $("launchModal").style.display = "none"; pendingLaunch = null; };
-$("btnArcade").onclick = () => { arcadeOn = true; applyArcade(); $("btnLaunchYes").click(); };   // same as Load workout, in arcade mode
+/* ---------------- arcade title screen: pick a game after the invader button ---------------- */
+let arcadeGame = "trail";
+function drawGameIcon(now) {                                    // the Trail Rider card: the rider pedalling along a night trail
+  const cv = $("gTrailCv"), dpr = window.devicePixelRatio || 1, W2 = 150, H2 = 112;
+  if (cv.width !== W2 * dpr) { cv.width = W2 * dpr; cv.height = H2 * dpr; }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  const sc = now / 25, gy = 96;
+  c.fillStyle = "#05000f"; c.fillRect(0, 0, W2, H2); c.fillStyle = "#140632"; c.fillRect(0, 36, W2, 30); c.fillStyle = "#220c4a"; c.fillRect(0, 66, W2, 46);
+  c.fillStyle = "#e8ffe8"; [[10, 8], [34, 22], [70, 6], [96, 18], [140, 30], [52, 34], [124, 10]].forEach(([x, y], k) => { if (Math.sin(now / 300 + k * 2) > -0.4) c.fillRect(x, y, 2, 2); });
+  c.fillStyle = "#ffd700"; c.fillRect(118, 8, 12, 12); c.fillStyle = "#05000f"; c.fillRect(126, 8, 5, 5);
+  c.fillStyle = "#2a0a4a"; for (let x = 0; x < W2; x += 4) c.fillRect(x, 58 - Math.round(16 * Math.abs(Math.sin((x + sc * .3) / 23))), 4, 60);
+  c.fillStyle = "#0c3a48"; for (let x = 0; x < W2; x += 4) c.fillRect(x, 74 - Math.round(10 * Math.abs(Math.sin((x + sc * .7) / 15))), 4, 40);
+  c.fillStyle = "#2b1600"; c.fillRect(0, gy, W2, H2 - gy); c.fillStyle = "#3ddc84"; c.fillRect(0, gy, W2, 3);
+  c.fillStyle = "#4a2a08"; for (let x = -((sc * 1.5) % 16); x < W2; x += 16) c.fillRect(Math.round(x), gy + 8, 4, 3);
+  c.fillStyle = "#ffd700"; for (let x = 120 - ((sc * 1.5) % 40); x < W2; x += 40) { const sp = Math.abs(Math.sin(now / 200 + x)); c.fillRect(Math.round(x - 3 * sp), gy - 26, Math.max(2, Math.round(6 * sp)), 6); }
+  const off = window.RIDER_CV2 || (window.RIDER_CV2 = Object.assign(document.createElement("canvas"), { width: RG.w, height: RG.h })), oc = off.getContext("2d"), img = oc.createImageData(RG.w, RG.h);
+  new Uint32Array(img.data.buffer).set(riderSprite(now / 1000 * Math.PI * 2 * 1.4, now / 160)); oc.putImageData(img, 0, 0);
+  c.drawImage(off, 66 - RG.w * 1, gy + 1 - RG.h * 2, RG.w * 2, RG.h * 2);
+}
+function drawGameStars(now) {                                    // drifting starfield behind the title screen
+  const cv = $("gStars"), dpr = window.devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  const S2 = window.G_STARS || (window.G_STARS = Array.from({ length: 70 }, () => [Math.random(), Math.random(), 0.3 + Math.random() * 1.5, Math.floor(Math.random() * 4)]));
+  const cols = ["#e8ffe8", "#4ae0ff", "#ff3bff", "#ffd700"];
+  S2.forEach(([x, y, v, k]) => { c.fillStyle = cols[k]; const yy = ((y * h + now / 1000 * 30 * v) % h + h) % h; c.fillRect(Math.round(x * w), Math.round(yy), v > 1.2 ? 3 : 2, v > 1.2 ? 3 : 2); });
+}
+function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); requestAnimationFrame(gameLoop); }
+function openGameSelect() {
+  $("launchModal").style.display = "none";
+  const hs = arcadeScores(); $("gHi").textContent = "Hi-score " + pad6(hs.length ? hs[0].s : 0);
+  $("gCredit").textContent = "00"; $("gCoin").textContent = "Insert coin"; $("gCoin").classList.remove("go");
+  document.querySelectorAll("#gameModal .g-card").forEach(b => { b.classList.remove("picked"); b.disabled = false; });
+  const ord = ["1st", "2nd", "3rd", "4th", "5th"], dS = d => d.slice(5, 7) + "/" + d.slice(8, 10) + "/" + d.slice(2, 4);
+  $("gTbl").innerHTML = '<span class="h">High scores</span>' + ord.map((o, k) => { const e = hs[k]; return "<span>" + o + '</span><span class="s">' + (e ? pad6(e.s) : "------") + '</span><span class="d">' + (e ? dS(e.d) : "--/--/--") + "</span>"; }).join("");
+  $("gameModal").classList.add("show"); requestAnimationFrame(gameLoop);
+}
+function pickGame(btn) {
+  ensureAudio(); arcadeGame = btn.dataset.game;
+  document.querySelectorAll("#gameModal .g-card").forEach(b => b.disabled = true); btn.classList.add("picked");
+  beep(988, 0.08, 0.15, "square"); beep(1319, 0.3, 0.15, "square", 0.08);                       // coin drop
+  $("gCredit").textContent = "01"; $("gCoin").textContent = "Player 1 start"; $("gCoin").classList.add("go");
+  setTimeout(() => {
+    [523, 784, 1047].forEach((f, i) => beep(f, 0.09, 0.13, "square", i * 0.09));
+    $("gameModal").classList.remove("show");
+    arcadeOn = true; applyArcade(); $("btnLaunchYes").click();                                    // same as Load workout, in arcade mode
+  }, 900);
+}
+document.querySelectorAll("#gameModal .g-card").forEach(b => b.onclick = () => pickGame(b));
+$("gBack").onclick = () => { $("gameModal").classList.remove("show"); $("launchModal").style.display = "flex"; };
+$("btnArcade").onclick = openGameSelect;
 $("btnLaunchYes").onclick = () => {
   const it = pendingLaunch; $("launchModal").style.display = "none"; pendingLaunch = null; if (!it) return;
   if (it.custom === "hard") { askHard(it); return; }
@@ -2172,6 +2602,9 @@ $("btnLaunchYes").onclick = () => {
   if (switching) { applySwitch(); return; }
   if (loadWorkout()) showScreen("run");
 };
+document.querySelectorAll("#arc [data-for]").forEach(b => b.onclick = () => { const t = $(b.dataset.for); if (t && !t.disabled) t.click(); });
+$("aGo").onclick = () => { const t = W.running ? $("btnPause") : $("btnStart"); if (!t.disabled) t.click(); };
+window.addEventListener("resize", fitArc);
 $("btnPause").onclick = togglePause; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
 $("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
 $("btnEndYes").onclick = () => { $("endModal").style.display = "none"; finishWorkout("Workout ended by user."); }; $("btnSkip").onclick = skipStep;
