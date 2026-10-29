@@ -277,6 +277,9 @@
   #gameModal .g-card canvas { width:150px; height:112px; image-rendering:pixelated; background:#05000f; border:2px solid #2b1650; display:block; }
   #gameModal .g-card .n { font-size:10px; color:#ffd700; }
   #gameModal .g-card .d { font-size:7px; color:#4ae0ff; line-height:1.4; text-align:center; }
+  #gameModal .g-item { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  #gameModal .g-name { font-size:9px; color:#ffd700; text-shadow:2px 2px 0 #7a3d00; letter-spacing:1px; }
+  #gameModal .g-card.picked + .g-name { color:#00ff41; text-shadow:2px 2px 0 #003b10; animation:awBlink .25s steps(2) infinite; }
   #gameModal .g-card.picked { border-color:#00ff41; box-shadow:5px 5px 0 #003b10; }
   #gameModal .g-coin { font-size:12px; color:#e8ffe8; animation:awBlink 1s steps(2) infinite; text-align:center; }
   #gameModal .g-coin.go { color:#00ff41; animation:awBlink .25s steps(2) infinite; }
@@ -292,7 +295,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.85</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.86</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -440,7 +443,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.85</span>
+  <span class="ver">v1.0.86</span>
 </div>
 
 <div class="ctrl">
@@ -605,8 +608,8 @@ Cooldown
   <div class="g-title"><span class="a">Intervals</span><span class="b">Arcade</span></div>
   <div class="g-ask">Choose your challenge</div>
   <div class="g-list">
-    <button class="g-card" id="gTrail" type="button" data-game="trail" aria-label="Trail Rider"><canvas id="gTrailCv" width="150" height="112"></canvas></button>
-    <button class="g-card" id="gInv" type="button" data-game="invaders" aria-label="Pedal Defense"><canvas id="gInvCv" width="150" height="112"></canvas></button>
+    <div class="g-item"><button class="g-card" id="gTrail" type="button" data-game="trail" aria-labelledby="gTrailN"><canvas id="gTrailCv" width="150" height="112"></canvas></button><span class="g-name" id="gTrailN">Trail Rider</span></div>
+    <div class="g-item"><button class="g-card" id="gInv" type="button" data-game="invaders" aria-labelledby="gInvN"><canvas id="gInvCv" width="150" height="112"></canvas></button><span class="g-name" id="gInvN">Pedal Defense</span></div>
   </div>
   <div class="g-coin" id="gCoin">Insert coin</div>
   <div class="g-tbl" id="gTbl"></div>
