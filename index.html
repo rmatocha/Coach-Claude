@@ -184,6 +184,7 @@
   #aComboN { display:block; font-size:13px; margin-top:3px; } #aCombo.broke { color:#ff3b3b; text-shadow:2px 2px 0 #4a0000; }
   #arc .a-coins { position:absolute; right:7px; top:6px; font-family:"Press Start 2P","Courier New",monospace; font-size:9px; color:#ffd700; display:flex; align-items:center; gap:5px; }
   #arc[data-game="fighter"] #aCombo, #arc[data-game="fighter"] .a-coins { top:34px; }
+  #arc[data-game="breakaway"] .a-coins { top:40px; }
   #arc .a-coins i { width:9px; height:9px; background:#ffd700; box-shadow:inset -2px -2px 0 #b8860b; display:inline-block; }
   #aBoss { position:absolute; left:50%; top:6px; transform:translateX(-50%); width:44%; display:flex; flex-direction:column; gap:4px; align-items:center; }
   #aBossName { font-family:"Press Start 2P","Courier New",monospace; font-size:7px; color:#ff3b3b; text-transform:uppercase; white-space:nowrap; }
@@ -268,7 +269,7 @@
   @keyframes gFlash { 0% { color:#4ae0ff; text-shadow:3px 3px 0 #003a4a; } 25% { color:#ffffff; text-shadow:0 0 10px #4ae0ff, 3px 3px 0 #003a4a; } 50% { color:#ff3bff; text-shadow:3px 3px 0 #4a004a; } 75% { color:#00ff41; text-shadow:3px 3px 0 #003b10; } }
   @media (prefers-reduced-motion: reduce) { #gameModal .g-title, #gameModal .g-title .b { animation:none; } }
   #gameModal .g-ask { font-size:10px; color:#ff3bff; margin-top:10px; text-align:center; }
-  #gameModal .g-list { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+  #gameModal .g-list { display:grid; grid-template-columns:repeat(3, auto); justify-content:center; gap:14px 8px; }   /* three games per row */
   #gameModal .g-card { display:flex; flex-direction:column; align-items:center; padding:6px; width:auto; background:#0b0618; border:3px solid #ff3bff; box-shadow:5px 5px 0 #4a004a; color:#e8ffe8; cursor:pointer; font:inherit; text-transform:uppercase; border-radius:0; }
   #gameModal .g-card:active { transform:translate(3px,3px); box-shadow:2px 2px 0 #4a004a; }
   #gameModal .g-card:focus-visible { outline:3px solid #ffd700; outline-offset:3px; }
@@ -293,7 +294,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.98</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.99</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -441,7 +442,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.98</span>
+  <span class="ver">v1.0.99</span>
 </div>
 
 <div class="ctrl">
@@ -609,6 +610,7 @@ Cooldown
     <div class="g-item"><button class="g-card" id="gTrail" type="button" data-game="trail" aria-labelledby="gTrailN"><canvas id="gTrailCv" width="150" height="112"></canvas></button><span class="g-name" id="gTrailN">Trail Rider</span></div>
     <div class="g-item"><button class="g-card" id="gInv" type="button" data-game="invaders" aria-labelledby="gInvN"><canvas id="gInvCv" width="150" height="112"></canvas></button><span class="g-name" id="gInvN">Pedal Defense</span></div>
     <div class="g-item"><button class="g-card" id="gFight" type="button" data-game="fighter" aria-labelledby="gFightN"><canvas id="gFightCv" width="150" height="112"></canvas></button><span class="g-name" id="gFightN">Watt Fighter</span></div>
+    <div class="g-item"><button class="g-card" id="gBr" type="button" data-game="breakaway" aria-labelledby="gBrN"><canvas id="gBrCv" width="150" height="112"></canvas></button><span class="g-name" id="gBrN">Breakaway</span></div>
   </div>
   <div class="g-coin" id="gCoin">Insert coin</div>
   <div class="g-tbl" id="gTbl"></div>
@@ -1731,7 +1733,7 @@ function riderFrame(ts) {
   arcPlan(R); const pT = arcPlanT(R);                                  // position in the plan (the ride clock keeps running across a workout switch)
   R.tS = live2 ? Math.min(pT + 1, R.tS + dt) : pT; if (Math.abs(R.tS - pT) > 1.5) R.tS = pT;
   if (R.got < 0) R.got = R.coinT.filter(t => t <= pT).length;           // coins already passed in a rebuilt plan stay collected   // smooth workout clock for the scrolling trail
-  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : arcadeGame === "fighter" ? drawFighter : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
+  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : arcadeGame === "fighter" ? drawFighter : arcadeGame === "breakaway" ? drawBreakaway : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
   requestAnimationFrame(riderFrame);
 }
 function arcPlanT(R) { const st = W.steps; return !st.length ? 0 : W.idx >= st.length ? (R.total || 0) : (R.t0 ? R.t0[W.idx] : 0) + W.stepT; }
@@ -1854,13 +1856,13 @@ function arcHud(R) {
   // overlay: combo, coins, boss bar, warning
   if (R.broke > 0) { R.broke -= 1 / 60; setT("aComboN", "Break!"); $("aCombo").classList.add("broke"); } else { $("aCombo").classList.remove("broke"); setT("aComboN", "x" + R.combo); }
   setT("aCoins", "x" + String(R.coins).padStart(2, "0"));
-  $("aBoss").hidden = !boss || arcadeGame === "fighter";
+  $("aBoss").hidden = !boss || arcadeGame === "fighter" || arcadeGame === "breakaway";
   if (boss) { setT("aBossName", "Boss · " + arcName(s)); const IB = arcadeGame === "invaders" && R.inv && R.inv.boss;   // Pedal Defense: the bar is the mothership's HP
     $("aBossHp").style.width = (IB ? IB.hp / IB.max * 100 : Math.max(0, rem / s.dur * 100)) + "%"; }
   let tb = 0, nb = -1; if (W.running && st.length) { tb = s.dur - W.stepT; for (let j = W.idx + 1; j < st.length; j++) { if (arcBoss(st[j])) { nb = j; break; } tb += st[j].dur; } }
   const warn = W.running && !boss && nb >= 0 && tb <= 8 && tb > 0 && arcadeGame !== "fighter"; $("aWarn").hidden = !warn;   // Watt Fighter announces its own challenger
   if (warn) setT("aWarnSub", arcName(st[nb]) + " in " + fmt(tb));
-  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx && arcadeGame !== "fighter") { if (!(arcadeGame === "invaders" && arcBoss(st[R.lastIdx]))) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true); }
+  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx && arcadeGame !== "fighter" && arcadeGame !== "breakaway") { if (!(arcadeGame === "invaders" && arcBoss(st[R.lastIdx]))) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true); }
   R.lastIdx = W.running ? W.idx : -1;
   // gamepad mirrors the real buttons
   const m = (aid, id) => { const a = $(aid), b = $(id); a.disabled = b.disabled; a.hidden = b.style.display === "none"; };
@@ -2318,6 +2320,120 @@ function drawFightIcon(now) {                                      // the Watt F
   const icoFoe = window.WF_ICON_FOE || (window.WF_ICON_FOE = wfPal("#c8282e", "#a8704c", "#ffffff", "#111111", "#2a0000"));
   wfBlit(c, ph === 2 ? "punch" : ph === 1 || ph === 3 ? "hit" : "stance", icoFoe, now, 96, 104, 1.6, true, false);
   c.fillStyle = "#ffd700"; c.fillRect(8, 8, 52, 5); c.fillStyle = "#ffd700"; c.fillRect(90, 8, 40 - ph * 4, 5);
+}
+/* ---- arcade game 4: Breakaway (a Pole Position-style road race driven by the ride) ----
+   A pseudo-3D road with lots of bends; speed comes from the app's distance model. Only the next few riders up the road
+   exist: holding target closes on them and you swing out to pass ("+100 overtake", position up). On hard intervals
+   (85%+ FTP) a rival in yellow escapes up the road and a held interval reels him in at about 85%, even after a slow ramp-up. */
+const BR = { SEG: 6, RW: 3.4, CAMH: 1.6, DRAW: 140, ZP: 4.5 };      // slice length (m), half road width (m), camera height (m), slices drawn, bike ahead of the camera
+const BR_LAT = m => 55 * Math.sin(m / 160) + 28 * Math.sin(m / 63 + 1.3) + 12 * Math.sin(m / 29 + .4);   // the centreline sideways (m), smooth so nothing jumps
+const BR_LATd = m => 55 / 160 * Math.cos(m / 160) + 28 / 63 * Math.cos(m / 63 + 1.3) + 12 / 29 * Math.cos(m / 29 + .4);
+const BR_LATdd = m => -55 / 160 / 160 * Math.sin(m / 160) - 28 / 63 / 63 * Math.sin(m / 63 + 1.3) - 12 / 29 / 29 * Math.sin(m / 29 + .4);
+const BR_JERSEYS = ["#ff3b3b", "#00c853", "#ff8c00", "#9b4dff", "#e6e6e6", "#ff3bff", "#1aa5a5", "#2a2a2a", "#b0e000"];
+function brState(R) { return R.br || (R.br = { pos: 0, x: 0, place: 38, field: [], rival: null, idx: -2, banner: "", sub: "", bannerT: 0, nodes: [0] }); }
+function brHeight(B, m) {                                          // rolling hills: harder stretches of the plan climb (course mapped to the plan at ~9 m per second)
+  const k = Math.max(0, Math.floor(m / BR.SEG)), fr = m / BR.SEG - k, rel = j => { const r = window.RIDER && window.RIDER.relAt ? window.RIDER.relAt(j * BR.SEG / 9) : .6; return Number.isFinite(r) ? r : .6; };
+  while (B.nodes.length <= k + 1) { const j = B.nodes.length; B.nodes.push(B.nodes[j - 1] + Math.max(-.2, (rel(j) - .62) * .45)); }
+  return B.nodes[k] * (1 - fr) + B.nodes[k + 1] * fr;
+}
+function brSay(B, t, sub, sec) { B.banner = t; B.sub = sub || ""; B.bannerT = sec || 1.4; }
+function brRider(c, x, y, s, col, now, me) {                       // a pixel cyclist seen from behind; s = pixel size
+  const P = (px, py, w, h, cl) => { c.fillStyle = cl; c.fillRect(Math.round(x + px * s), Math.round(y + py * s), Math.ceil(w * s), Math.ceil(h * s)); };
+  const pedal = Math.floor(now / (me ? 140 : 180)) % 2, sk = me ? "#f0b48a" : "#c98a62";
+  P(-1, -6, 2, 6, "#111"); P(-1.5, -6, 3, 1, "#555");
+  P(-3, -14 + (pedal ? 1 : 0), 2, 6, "#1a1a22"); P(1, -14 + (pedal ? 0 : 1), 2, 6, "#1a1a22");
+  P(-3, -9 + (pedal ? 1 : 0), 2, 3, sk); P(1, -9 + (pedal ? 0 : 1), 2, 3, sk);
+  P(-4, -22, 8, 9, col); P(-4, -16, 8, 2, "#111"); P(-5, -21, 2, 5, sk); P(3, -21, 2, 5, sk);
+  P(-3, -26, 6, 4, me ? "#e2362b" : "#e6e6e6"); P(-2, -27, 4, 1, me ? "#ff6a55" : "#ffffff");
+  if (me) { P(-2, -20, 1, 6, "#f2c230"); P(1, -20, 1, 6, "#f2c230"); }
+}
+function drawBreakaway(cv, R, now) {
+  if (!cv) return;
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  const B = brState(R), dt = Math.min(0.1, B.last ? (now - B.last) / 1000 : 0); B.last = now;
+  if (W.t === 0 && !W.running && B.pos > 0) Object.assign(B, { pos: 0, x: 0, place: 38, field: [], rival: null, idx: -2 });
+  if (B.key !== R.key) { B.key = R.key; B.nodes = [0]; }               // a changed plan reshapes the hills
+  const st = W.steps, i = Math.min(W.idx, st.length - 1), s = st[i], live2 = W.running && !W.paused && W.idx < st.length;
+  const sp = arcSpeed(R), v = live2 ? sp.mph * 0.44704 : 0;
+  const p3 = power3s(), tg = W.running ? (sentTarget() ?? stepTarget()) : null, onT = live2 && (tg == null ? p3 > 20 : Math.abs((p3 || 0) - tg) <= Math.max(10, .08 * tg));
+  // intervals: hard ones put a rival up the road
+  if (B.idx !== W.idx) { const was = B.rival; B.idx = W.idx;
+    if (W.running && arcBoss(s)) { B.rival = { gap0: 160, prog: 0, caught: false }; brSay(B, "Breakaway!", arcName(s) + " rival up the road", 1.8); }
+    else { if (W.running && was && !was.caught) brSay(B, "Rival escaped", "", 1.2); else if (W.running && W.idx === 0) brSay(B, "Roll out", "", 1.2); B.rival = null; } }
+  if (live2) {
+    B.pos += v * dt; const me = B.pos + BR.ZP;
+    while (B.field.length < Math.min(4, B.place - 1)) B.field.push({ z: (B.field.length ? Math.max(...B.field.map(r => r.z)) : me) + 45 + Math.random() * 35, x: (Math.random() - .5) * 4.4, col: BR_JERSEYS[Math.floor(Math.random() * BR_JERSEYS.length)] });
+    B.field.forEach(r => { r.z += v * (onT ? .72 : 1.04) * dt; r.z = Math.min(r.z, me + 260); });
+    B.field = B.field.filter(r => { if (r.z < me - 1.5) { B.place = Math.max(1, B.place - 1); arcPop("+100 overtake", .14, .4); beep(1047, .05, .06, "square"); beep(1319, .08, .06, "square", .05); return false; } return true; });
+    const next = B.field.filter(r => r.z > me - 1).sort((a, b) => a.z - b.z)[0];
+    let tx = Math.max(-1.6, Math.min(1.6, -BR_LATdd(me) * 900));     // hold the inside of the bend...
+    if (next && next.z - me < 45) tx = next.x > 0 ? Math.max(-2.7, next.x - 1.9) : Math.min(2.7, next.x + 1.9);   // ...or swing out to pass
+    B.x += (tx - B.x) * Math.min(1, dt * 1.8);
+    if (B.rival && !B.rival.caught && s) { const left = Math.max(.5, s.dur * .85 - (W.stepT || 0)); B.rival.prog = Math.max(0, B.rival.prog + (onT ? dt * (1.02 - B.rival.prog) / left : -dt / (s.dur * 6)));
+      if (B.rival.prog >= 1) { B.rival.caught = true; brSay(B, "Caught!", "Rival reeled in", 1.6); arcPop("+500", .4, .45, true); [784, 988, 1319].forEach((f, j) => beep(f, .08, .1, "square", j * .08)); } }
+  }
+  if (B.rival) B.rival.z = B.pos + BR.ZP + Math.max(2, B.rival.gap0 * (1 - B.rival.prog));
+  if (B.bannerT > 0) B.bannerT -= dt;
+  // sky, sun and ranges that slide as the road turns
+  const boss = W.running && arcBoss(s), horizon = Math.round(h * .42), PF = "'Press Start 2P','Courier New',monospace";
+  const sky = boss ? ["#2a0010", "#4a0018", "#7a1a20"] : ["#0d0426", "#2a0a4a", "#5a1a6a"];
+  sky.forEach((col, k) => { c.fillStyle = col; c.fillRect(0, Math.round(horizon * k / 3), w, Math.ceil(horizon / 3) + 1); });
+  c.fillStyle = boss ? "#ff3b3b" : "#ff8c00"; c.beginPath(); c.arc(w * .72, horizon - 6, 18, Math.PI, 0); c.fill();
+  for (let k = 0; k < 4; k++) { c.fillStyle = sky[2]; c.fillRect(w * .72 - 20, horizon - 18 + k * 4, 40, 1); }
+  const sh = BR_LATd(B.pos) * 260;
+  [["#2a0a4a", .5, 34, 140], ["#0c3a48", 1, 20, 80]].forEach(([col, par, amp, per]) => { c.fillStyle = col;
+    for (let x = 0; x < w; x += 4) { const u = (x + sh * par) / per; const y = horizon - amp * (.5 + .35 * Math.sin(u * 2.1) + .2 * Math.sin(u * 5.3)); c.fillRect(x, Math.round(y), 4, horizon - Math.round(y) + 1); } });
+  // road: slices anchored to the course, projected relative to the bike's heading, drawn near to far
+  const camZ = B.pos, camY = brHeight(B, camZ) + BR.CAMH, f = 4 * (h - horizon) / BR.CAMH, pT = arcPlanT(R);
+  const lat = z => BR_LAT(camZ + z) - BR_LAT(camZ) - BR_LATd(camZ) * z;
+  const proj = (z, L, wy) => ({ x: w / 2 + (lat(z) + L) * f / z, y: horizon + (camY - wy) * f / z, s: f / z });
+  const relAhead = z => { const r = R.relAt ? R.relAt(pT + z / Math.max(4, v || 7)) : .6; return Number.isFinite(r) ? r : .6; };   // kerbs show the zone you'll be in when you get there
+  const pts = [], z0 = 1.2, P0 = proj(z0, 0, brHeight(B, camZ + z0)); pts.push({ ...P0, w: BR.RW * P0.s, n: Math.floor((camZ + z0) / BR.SEG), rel: relAhead(0), z: z0 });
+  for (let n = Math.floor((camZ + z0) / BR.SEG) + 1; pts.length < BR.DRAW; n++) { const z = n * BR.SEG - camZ, P = proj(z, 0, brHeight(B, n * BR.SEG)); pts.push({ ...P, w: BR.RW * P.s, n, rel: relAhead(z), z }); }
+  c.fillStyle = "#0e2e14"; c.fillRect(0, horizon, w, h - horizon);
+  const quad = (x1, y1, w1, x2, y2, w2, col) => { c.fillStyle = col; c.beginPath(); c.moveTo(x1 - w1, y1); c.lineTo(x2 - w2, y2); c.lineTo(x2 + w2, y2); c.lineTo(x1 + w1, y1); c.closePath(); c.fill(); };
+  let clip = h;
+  for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1]; if (b.y >= clip) continue;
+    const alt = Math.floor(a.n / 3) % 2, cut = a.y > clip ? (a.y - clip) / Math.max(.01, a.y - b.y) : 0, ya = Math.min(a.y, clip), xa = a.x + (b.x - a.x) * cut, wa = a.w + (b.w - a.w) * cut;
+    c.fillStyle = alt ? "#123a1a" : "#0e2e14"; c.fillRect(0, Math.floor(b.y), w, Math.ceil(ya - b.y) + 1);
+    quad(xa, ya, wa * 1.15, b.x, b.y, b.w * 1.15, alt ? "#e8ffe8" : ZCOL(a.rel)); quad(xa, ya, wa, b.x, b.y, b.w, alt ? "#3a3a46" : "#34343f");
+    if (alt) quad(xa, ya, wa * .015, b.x, b.y, b.w * .015, "#ffd700");
+    clip = b.y; }
+  // the next riders up the road (far first), the rival in yellow, then you
+  const spr = B.field.map(r => ({ z: r.z - camZ, x: r.x, col: r.col })).concat(B.rival && !B.rival.caught ? [{ z: B.rival.z - camZ, x: .8, col: "#ffd700", rival: true }] : []);
+  spr.filter(o => o.z > BR.ZP - 1 && o.z < (o.rival ? 200 : 110)).sort((a, b) => b.z - a.z).forEach(o => {
+    const P = proj(o.z, o.x, brHeight(B, camZ + o.z)), sz = Math.max(.35, Math.min(3, P.s * .07)); brRider(c, P.x, P.y, sz, o.col, now, false);
+    if (o.rival && sz > .45) { c.fillStyle = "#ffd700"; c.font = "7px " + PF; c.textAlign = "center"; c.textBaseline = "alphabetic"; c.fillText("RIVAL", P.x, P.y - 30 * sz); } });
+  { const P = proj(BR.ZP, B.x, brHeight(B, camZ + BR.ZP)), sz = Math.max(2, Math.min(3.4, h / 70)); brRider(c, P.x, Math.min(h - 6, P.y), sz, "#2f5fc4", now, true); }
+  if (v > 11) { c.fillStyle = "rgba(232,255,232,.5)"; for (let k = 0; k < 6; k++) c.fillRect(k % 2 ? 12 : w - 24, Math.round(h * .55 + ((k * 23 + now / 6) % (h * .45))), 10, 2); }
+  // race readouts: speed and distance on the left, position on the right, the rival's gap in the middle
+  const num = (val, unit, y) => { c.textAlign = "left"; c.textBaseline = "top"; c.font = "14px " + PF; c.fillStyle = "#4ae0ff"; c.fillText(val, 8, y); const vw = c.measureText(val).width;
+    c.font = "8px " + PF; c.fillStyle = "#e8ffe8"; c.fillText(unit, 8 + vw + 5, y + 5); };
+  num(sp.mph.toFixed(1), "MPH", 40); num(sp.mi.toFixed(2), "MI", 60);
+  c.textAlign = "right"; c.textBaseline = "top"; c.font = "8px " + PF; c.fillStyle = "#e8ffe8"; c.fillText("POS", w - 8, 6); c.font = "14px " + PF; c.fillStyle = "#ffd700"; c.fillText(B.place + "/40", w - 8, 17);
+  if (B.rival && !B.rival.caught) { const gap = Math.max(0, (B.rival.z - B.pos - BR.ZP) / Math.max(1, v || 7)); c.textAlign = "center"; c.font = "8px " + PF; c.fillStyle = "#ffd700"; c.fillText("RIVAL +" + gap.toFixed(1) + "S", w / 2, 6);
+    c.fillStyle = "#400000"; c.fillRect(w / 2 - 50, 18, 100, 6); c.fillStyle = "#ffd700"; c.fillRect(w / 2 - 50, 18, Math.max(0, 100 * (1 - B.rival.prog)), 6); }
+  if (B.bannerT > 0) { c.textAlign = "center"; c.textBaseline = "alphabetic"; c.font = "16px " + PF;
+    c.fillStyle = "#5a0000"; c.fillText(B.banner.toUpperCase(), w / 2 + 3, h * .36 + 3); c.fillStyle = "#ffd700"; c.fillText(B.banner.toUpperCase(), w / 2, h * .36);
+    if (B.sub) { c.font = "7px " + PF; c.fillStyle = "#e8ffe8"; c.fillText(B.sub.toUpperCase(), w / 2, h * .36 + 14); } }
+  if (boss && Math.floor(now / 300) % 2) { c.fillStyle = "rgba(255,0,40,.06)"; c.fillRect(0, 0, w, h); }
+}
+function drawBrIcon(now) {                                          // the Breakaway card: a winding road with a rider to catch
+  const cv = $("gBrCv"), dpr = window.devicePixelRatio || 1, W2 = 150, H2 = 112;
+  if (cv.width !== W2 * dpr) { cv.width = W2 * dpr; cv.height = H2 * dpr; }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  const hz = 46; ["#0d0426", "#2a0a4a", "#5a1a6a"].forEach((col, k) => { c.fillStyle = col; c.fillRect(0, Math.round(hz * k / 3), W2, Math.ceil(hz / 3) + 1); });
+  c.fillStyle = "#ff8c00"; c.beginPath(); c.arc(108, hz - 3, 10, Math.PI, 0); c.fill();
+  c.fillStyle = "#0c3a48"; for (let x = 0; x < W2; x += 3) c.fillRect(x, hz - Math.round(8 * Math.abs(Math.sin(x / 17 + now / 4000))), 3, 10);
+  c.fillStyle = "#0e2e14"; c.fillRect(0, hz, W2, H2 - hz);
+  const pos = now / 1000 * 14;
+  for (let y = H2; y > hz; y -= 2) { const z = 300 / (y - hz + 2), bend = 18 * Math.sin((pos + z) / 9) * (1 - (y - hz) / (H2 - hz)), half = 4 + (y - hz) * .95, cx = 75 + bend;
+    const alt = Math.floor((pos + z) / 1.2) % 2; c.fillStyle = alt ? "#e8ffe8" : "#3ddc84"; c.fillRect(Math.round(cx - half * 1.15), y, Math.ceil(half * 2.3), 2);
+    c.fillStyle = alt ? "#3a3a46" : "#34343f"; c.fillRect(Math.round(cx - half), y, Math.ceil(half * 2), 2); if (alt) { c.fillStyle = "#ffd700"; c.fillRect(Math.round(cx - .5), y, 1, 2); } }
+  brRider(c, 88 + 6 * Math.sin(now / 900), 72, .9, "#ffd700", now, false);
+  brRider(c, 70 + 8 * Math.sin(now / 1300), 108, 1.9, "#2f5fc4", now, true);
 }
 /* Rider sprite: Ryan's reference art (43 x 43 pixel map). Legs, cranks, wheels and the frame tubes behind the legs are redrawn live so they animate. */
 const RMAP = [".......................#####...............", "......................#RRrRR##.............", ".....................#rRRRRrRr#............", ".....................#rrRRRrrR#............", ".....................#rrrrrRRRR#...........", ".....................#r#########...........", "......................#R#s#oo#.............", "..................#####r#sSSS#.............", ".................#CCCBb#osSSS#.............", "................#CCYCBBs#sSS##.............", "...............#C#CCYBCbo####..............", "..............#CY#bCCYSCbb#................", ".............#CYY#bb#tYY#bC#...............", "............#tYYCb#bo#tCt#bC#..............", "............##Ytbb#boo#oS##oS##............", "............#K##bBbb###oSSS#rsS##..........", "............#KKK##b#...#osSS##sos##........", "............#KKKK##K#...####kk###Kk#.......", "............#KKKKK##K#.....#Kkkkk#K#.......", ".............#KKKKk#K#.....#K#######.......", "............#K#KKKKK#K#.....##T............", ".............#K#KK#SS#s#..##TCT#...........", "...............###sSS#s###TtKtCT#..........", "...............#t#sSs##TTt#tC##K##.........", "................#SSo#TCC#.#C##K#KK#........", "................#SS#C###.#Tt#wo##o#........", ".....#######....#SS###..#Tt#.#o#G######....", "...###kkkkk###..#S#T##.#Tt#...#Y#kkkkk##...", "..##k#KKKKKKk###s##t#.##T#...##o#KKKKKKk#..", ".##K#Kk.g.g#KKK#C#k#k.#T#....#KoY#o..#KKk#.", ".#K#k...g...#Tt#tt##k#Tt#...#KKKYKo.k..#K#.", "#KK#.g.ggkwTt####Kkk#Tt#....#K#ko##kw.g.Kk#", "#K#...g###C##.K#####Tt##...#KK..rGKKKg..#K#", "#K#.ggKk#k##kg######C##....#K#wk#Y#Kg#gwgK#", "#K#..gk#CCCCCCCC#t#K#......#K#..gYK#K#..#K#", "#K#..gk###########Ct.......#K#..w#o#KK..wK#", "#K#g..#k#g#..k#K####.......#K#kg.gkkgK.g#K#", "#KK..g.kkk.g.wKK#..........#KK..g.k#gg..#K#", ".#K#g...gw..g#K#............#K#w....g.ggK#k", ".#KK#.g.g...#K##............#KKk.k..k..#K#.", "..#KK##.g.##K##..............#KK#k..w#KK#..", "...##KKKKKKK##...............k#KKK##KKK##..", "....KK#KKK#KK.................K##KKKK#K...."];
@@ -3056,7 +3172,7 @@ function drawGameStars(now) {                                    // drifting sta
   const cols = ["#e8ffe8", "#4ae0ff", "#ff3bff", "#ffd700"];
   S2.forEach(([x, y, v, k]) => { c.fillStyle = cols[k]; const yy = ((y * h + now / 1000 * 30 * v) % h + h) % h; c.fillRect(Math.round(x * w), Math.round(yy), v > 1.2 ? 3 : 2, v > 1.2 ? 3 : 2); });
 }
-function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); drawInvIcon(now); drawFightIcon(now); requestAnimationFrame(gameLoop); }
+function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); drawInvIcon(now); drawFightIcon(now); drawBrIcon(now); requestAnimationFrame(gameLoop); }
 function openGameSelect() {
   $("launchModal").style.display = "none";
   const hs = arcadeScores(); $("gHi").textContent = "Hi-score " + pad6(hs.length ? hs[0].s : 0);
@@ -3067,7 +3183,7 @@ function openGameSelect() {
   $("gameModal").classList.add("show"); requestAnimationFrame(gameLoop);
 }
 function pickGame(btn) {
-  ensureAudio(); arcadeGame = btn.dataset.game; if (window.RIDER) { window.RIDER.inv = null; window.RIDER.fight = null; }
+  ensureAudio(); arcadeGame = btn.dataset.game; if (window.RIDER) { window.RIDER.inv = null; window.RIDER.fight = null; window.RIDER.br = null; }
   document.querySelectorAll("#gameModal .g-card").forEach(b => b.disabled = true); btn.classList.add("picked");
   beep(988, 0.08, 0.15, "square"); beep(1319, 0.3, 0.15, "square", 0.08);                       // coin drop
   $("gCredit").textContent = "01"; $("gCoin").textContent = "Player 1 start"; $("gCoin").classList.add("go");
