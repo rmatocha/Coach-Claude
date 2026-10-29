@@ -106,7 +106,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.56</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.57</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -248,7 +248,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.56</span>
+  <span class="ver">v1.0.57</span>
 </div>
 
 <div class="ctrl">
@@ -1549,6 +1549,7 @@ $("btnAheadMinus").onclick = () => setFitRange("ahead", Math.max(0, FIT.ahead - 
 window.addEventListener("resize", () => { renderFit(); renderSummary(); });
 /* ---------------- Data tab: everything on the selected day (calendar entries and completed activities) ---------------- */
 let dayKey = "", dayReq = 0;
+function normName(s) { return (s || "").trim().toLowerCase(); }   // planned and completed entries are matched by name (or by pairing id when intervals.icu supplies one)
 function dayRowEl(kind, name, dur, tss, steps) {
   const row = document.createElement("div"); row.style.cssText = "background:#1c222b;border-radius:10px;padding:10px 12px;margin:6px 0;display:flex;flex-direction:column;gap:4px";
   const tag = document.createElement("div"); tag.textContent = kind === "done" ? "COMPLETED" : "PLANNED";
@@ -1576,8 +1577,10 @@ async function renderDayList(date) {
   if (my !== dayReq) return;
   box.innerHTML = "";
   const ftp = +$("ftp").value || 270;
-  const planned = (Array.isArray(ev) ? ev : []).filter(x => String(x.start_date_local || "").slice(0, 10) === date);
+  let planned = (Array.isArray(ev) ? ev : []).filter(x => String(x.start_date_local || "").slice(0, 10) === date);
   const done = (Array.isArray(acts) ? acts : []).filter(a => String(a.start_date_local || "").slice(0, 10) === date);
+  const doneNames = done.map(a => normName(a.name));
+  planned = planned.filter(x => !doneNames.includes(normName(x.name)) && !done.some(a => a.id && a.id === x.paired_activity_id));
   if (!planned.length && !done.length) { const none = document.createElement("div"); none.className = "hint"; none.style.fontSize = "13px"; none.textContent = "Nothing scheduled or completed on this day."; box.appendChild(none); return; }
   planned.forEach(x => {
     const text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
@@ -1727,6 +1730,7 @@ async function loadToday() {
     return;
   }
   box.textContent = ""; box.style.fontSize = "";
+  try { const acts = await icuRange(day, day, "activities"); const doneNames = acts.map(a => normName(a.name)); ev = ev.filter(x => !doneNames.includes(normName(x.name)) && !acts.some(a => a.id && a.id === x.paired_activity_id)); } catch (e) {}
   if (!ev.length) { box.className = "hint"; box.textContent = "Nothing planned for today (" + day + ")."; return; }
   ev.forEach(x => {
     const text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
@@ -1771,7 +1775,7 @@ async function loadNext7() {
   let ev, acts;
   try { [ev, acts] = await Promise.all([icuRange(start, end, "events"), icuRange(start, end, "activities")]); }
   catch (e) { out.textContent = "Couldn't load the calendar (" + e.message + ")."; return; }
-  const items = [];
+  let items = [];
   ev.forEach(x => {
     const date = String(x.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
     const cat = x.category || "", text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
@@ -1783,6 +1787,8 @@ async function loadNext7() {
     const date = String(a.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
     items.push({ date, name: a.name || a.type || "Activity", dur: a.moving_time || 0, tss: a.icu_training_load != null ? a.icu_training_load : null, done: true });
   });
+  const doneKeys = new Set(items.filter(x => x.done).map(x => x.date + "|" + normName(x.name)));
+  items = items.filter(x => x.done || !doneKeys.has(x.date + "|" + normName(x.name)));   // completed ride replaces its planned entry
   const endDay = ymd(days[6]), keep = {}; Object.keys(PLAN_TSS).forEach(k => { if (k > endDay) keep[k] = PLAN_TSS[k]; }); PLAN_TSS = keep;   // days past the 7-day window come from loadPlanAhead
   items.forEach(x => { if (!x.done && x.tss != null) PLAN_TSS[x.date] = (PLAN_TSS[x.date] || 0) + x.tss; });
   if (FIT_DAYS) renderFit();                                   // refresh the Data tab look-ahead with the new schedule
