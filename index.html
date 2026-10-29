@@ -101,12 +101,48 @@
   body.compact .seg button { padding:4px; font-size:13px; }
   .redbtn { background:#d93b3b; color:#fff; font-size:12px; font-weight:700; padding:3px 8px; border-radius:8px; }
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style id="arcadeMode">
+/* Arcade mode: the same look as v1.0.arcade, applied only while body has class "arcade" (set from the invader button). */
+
+/* v1.0.arcade: a vintage arcade skin. Only looks change; the app logic is untouched. */
+  body.arcade { --bg:#000000; --card:#0a0a14; --fg:#e8ffe8; --dim:#4ae0ff; --acc:#ffd700; --ok:#00ff41; --bad:#ff3b3b; --u:7px; }
+  body.arcade html, body.arcade { background:#000 !important; }
+  body.arcade { color:#e8ffe8 !important; font-family:"Courier New",Courier,monospace !important; font-size:14px !important; font-weight:bold; }
+  body.arcade::before { content:""; position:fixed; inset:0; pointer-events:none; z-index:999; background:repeating-linear-gradient(0deg, rgba(0,0,0,0.25) 0 1px, transparent 1px 3px); }
+  body.arcade h1, body.arcade h2, body.arcade h3, body.arcade .top span, body.arcade .sumtitle { font-family:"Press Start 2P",monospace !important; font-weight:normal !important; text-transform:uppercase; letter-spacing:0; }
+  body.arcade h2, body.arcade .sumtitle, body.arcade .card h2 { font-size:10px !important; color:#ffd700 !important; text-shadow:0 0 6px #ff8c00; }
+  body.arcade .top { background:#000 !important; border:4px solid #ff3b3b !important; box-shadow:0 0 0 2px #000, 0 0 14px #ff3b3b; padding:8px 10px !important; }
+  body.arcade .top span { color:#ffd700 !important; font-size:12px !important; text-shadow:0 0 8px #ffd700; }
+  body.arcade .top .ver { color:#4ae0ff !important; font-family:"Press Start 2P",monospace !important; font-size:8px !important; text-shadow:0 0 6px #4ae0ff; }
+  body.arcade .top span:first-child::after { content:" INSERT COIN"; color:#ff3b3b; font-size:8px; animation:flash 1s steps(2,start) infinite; }
+@keyframes flash { to { visibility:hidden; } }
+  body.arcade .card, body.arcade details.card { background:#0a0a14 !important; border:4px solid #4ae0ff !important; border-radius:0 !important; box-shadow:0 0 0 2px #000, inset 0 0 0 2px #000, 0 0 12px rgba(74,224,255,.5) !important; }
+  body.arcade .card h2, body.arcade .card summary { color:#ffd700 !important; }
+  body.arcade button { background:#000 !important; color:#00ff41 !important; border:3px solid #00ff41 !important; border-radius:0 !important; box-shadow:4px 4px 0 #00ff41 !important; font-family:"Press Start 2P",monospace !important; font-size:9px !important; font-weight:normal !important; text-transform:uppercase; }
+  body.arcade button:active { transform:translate(4px,4px); box-shadow:0 0 0 #00ff41 !important; }
+  body.arcade button.primary, body.arcade #btnLaunch, body.arcade #btnSaveLib, body.arcade #btnIcuConnect { background:#ffd700 !important; color:#000 !important; border-color:#ffd700 !important; box-shadow:4px 4px 0 #ff8c00 !important; }
+  body.arcade button.on, body.arcade .seg button.on { background:#ff3b3b !important; color:#fff !important; border-color:#ff3b3b !important; box-shadow:4px 4px 0 #8b0000 !important; }
+  body.arcade input, body.arcade textarea, body.arcade select { background:#000 !important; color:#00ff41 !important; border:3px solid #4ae0ff !important; border-radius:0 !important; font-family:"Courier New",monospace !important; font-weight:bold; }
+  body.arcade .libitem { background:#000 !important; border:3px solid #ff3bff !important; border-radius:0 !important; color:#e8ffe8 !important; box-shadow:4px 4px 0 #ff3bff !important; }
+  body.arcade .libitem .r { color:#4ae0ff !important; }
+  body.arcade .hint, body.arcade .status { color:#4ae0ff !important; font-weight:bold; }
+  body.arcade #woGraph, body.arcade canvas { border:3px solid #ffd700 !important; border-radius:0 !important; background:#000 !important; image-rendering:pixelated; }
+  body.arcade #dayList > div, body.arcade #schedModal > div, body.arcade #hardModal > div, body.arcade #launchModal > div, body.arcade #saveModal > div, body.arcade #endModal > div, body.arcade #renameModal > div { background:#0a0a14 !important; border:4px solid #ffd700 !important; border-radius:0 !important; }
+  body.arcade a { color:#4ae0ff; }
+  body.arcade #hrgraph { height:calc(var(--u)*14) !important; }
+  body.arcade #profile { height:calc(var(--u)*7) !important; }
+  body.arcade .tile { padding-top:3px !important; padding-bottom:3px !important; }
+  body.arcade hr { border:0; height:4px; background:repeating-linear-gradient(90deg,#ff3b3b 0 12px,#ffd700 12px 24px,#00ff41 24px 36px,#4ae0ff 36px 48px); }
+  body.arcade::after { content:"1 PLAYER  \2022  HIGH SCORE 999999"; display:block; text-align:center; color:#ffd700; font-family:"Press Start 2P",monospace; font-size:8px; padding:10px 0 14px; }
+
+</style>
 </head>
 <body data-screen="landing">
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.65</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.69</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -254,7 +290,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.65</span>
+  <span class="ver">v1.0.69</span>
 </div>
 
 <div class="ctrl">
@@ -316,7 +352,7 @@ Cooldown
     <div style="font-size:18px;font-weight:600;margin-bottom:6px">Load this workout?</div>
     <div id="launchName" style="font-size:20px;font-weight:700;margin-bottom:4px;overflow-wrap:anywhere"></div>
     <div id="launchInfo" class="hint" style="font-size:14px;margin-bottom:16px"></div>
-    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px">Cancel</button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px">Load workout</button></div>
+    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px">Cancel</button><button id="btnArcade" title="Load in arcade mode" style="width:58px;height:48px;padding:0;flex:none;background:#000;border:2px solid #00ff41;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 11 8" width="30" height="22" shape-rendering="crispEdges" aria-hidden="true"><path fill="#00ff41" d="M2 0h1v1H2zM8 0h1v1H8zM3 1h1v1H3zM7 1h1v1H7zM2 2h7v1H2zM1 3h2v1H1zM4 3h3v1H4zM8 3h2v1H8zM0 4h11v1H0zM0 5h1v1H0zM2 5h7v1H2zM10 5h1v1h-1zM0 6h1v1H0zM2 6h1v1H2zM8 6h1v1H8zM10 6h1v1h-1zM3 7h2v1H3zM6 7h2v1H6z"/></svg></button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px">Load workout</button></div>
   </div>
 </div>
 
@@ -714,16 +750,20 @@ function ensureAudio() {                                 // must run inside the 
     if (AC.state === "suspended") AC.resume();
   } catch (e) { AC = null; }
 }
-function beep(freq, dur, vol, type) {
+function beep(freq, dur, vol, type, delay) {
   if (!AC || !$("cueOn").checked) return;
-  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  const t = AC.currentTime + (delay || 0), o = AC.createOscillator(), g = AC.createGain();
   o.type = type || "sine"; o.frequency.value = freq;
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + 0.02);
 }
-const cueBell = () => { beep(1320, 1.2, 0.22, "sine"); beep(2640, 0.7, 0.06, "sine"); };   // 10 s left
-const cueTick = () => beep(1000, 0.05, 0.25, "triangle");                                   // last 5 s
-const cueStart = () => beep(1500, 0.08, 0.3, "triangle");                                   // new interval
+const cueBell = () => arcadeOn                                                          // 10 s left
+  ? (beep(988, 0.08, 0.15, "square"), beep(1319, 0.25, 0.15, "square", 0.08))              // arcade: two-tone coin
+  : (beep(1320, 1.2, 0.22, "sine"), beep(2640, 0.7, 0.06, "sine"));
+const cueTick = () => arcadeOn ? beep(1200, 0.05, 0.18, "square") : beep(1000, 0.05, 0.25, "triangle");   // last 5 s (arcade: square blip)
+const cueStart = () => arcadeOn                                                         // new interval
+  ? (beep(1760, 0.06, 0.16, "square"), beep(2093, 0.1, 0.16, "square", 0.06))              // arcade: rising blip
+  : beep(1500, 0.08, 0.3, "triangle");
 function cues() {                                        // called once a second, and after a skip
   if (!W.running || W.paused || W.idx >= W.steps.length) return;
   if (cueIdx !== W.idx) { cueIdx = W.idx; cueStart(); return; }   // the new interval has started
@@ -781,7 +821,13 @@ function collapseAllFolders() {                          // home page always sta
   new Set([...LIBRARY, ...userLib].map(x => effFolder(x.folder))).forEach(f => { foldOpen[f] = false; });
   saveFoldState(); renderLibrary();
 }
-function showScreen(name) { document.body.dataset.screen = name; if (name === "landing") collapseAllFolders(); if (name === "run") autoReconnect(); fitH(); render(); window.scrollTo(0, 0); }
+let arcadeOn = false;
+function applyArcade() {                                 // arcade look only on the ride screen and the summary
+  const on = arcadeOn && (document.body.dataset.screen === "run" || $("summary").classList.contains("show"));
+  document.body.classList.toggle("arcade", on);
+  if (on) startRider();
+}
+function showScreen(name) { if (name === "landing") arcadeOn = false; document.body.dataset.screen = name; applyArcade(); if (name === "landing") collapseAllFolders(); if (name === "run") autoReconnect(); fitH(); render(); window.scrollTo(0, 0); }
 
 /* ---------------- distance model ---------------- */
 const MOD = { m: 85, rho: 1.2, crr: 0.004, eta: 0.975, g: 9.81, wheel: 1.5, refW: 150 };
@@ -820,7 +866,7 @@ function summaryData() {
   ];
 }
 function showSummary(save = true) {
-  const d = summaryData();
+  const d = summaryData(); applyArcade();
   $("sumDate").textContent = new Date().toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "  \u00b7  FTP " + W.ftp + " w";
   $("sumGrid").innerHTML = d.map(m => '<div class="tile"><div class="l">' + m.l + '</div><div class="v">' + m.v + (m.u && m.v !== "--" ? "<small>" + m.u + "</small>" : "") + "</div></div>").join("");
   $("summary").classList.add("show"); sumBlob = null; fitBlob = null; $("btnSaveImg").disabled = true; $("btnSaveFit").disabled = true;
@@ -976,7 +1022,7 @@ async function stravaUpload() {
   }
 }
 function closeSummary() {                               // back to the start screen, everything cleared
-  $("summary").classList.remove("show"); $("imgModal").style.display = "none"; $("log").textContent = "";
+  arcadeOn = false; $("summary").classList.remove("show"); applyArcade(); $("imgModal").style.display = "none"; $("log").textContent = "";
   loadWorkout(); showScreen("landing");
 }
 
@@ -1320,6 +1366,7 @@ function drawProfileGraph(cv, o) {
 }
 function drawHR(cv, o) {
   cv = cv || $("hrgraph"); o = o || {};
+  if (cv.id === "hrgraph" && document.body.classList.contains("arcade")) { startRider(); return; }   // arcade: rider scene replaces the HR trace
   const dpr = o.dpr || window.devicePixelRatio || 1;
   const w = o.w || cv.clientWidth, h = o.h || cv.clientHeight; if (!w || !h) return;
   if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
@@ -1349,6 +1396,118 @@ function drawHR(cv, o) {
     c.fillStyle = "#8b94a3"; c.fillText("HR   avg " + Math.round(avg) + "  ·  max " + mx, 4, 3);
   }
   if (!o.noCursor && (W.running || W.t > 0)) { c.strokeStyle = "rgba(255,255,255,.7)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(X(W.t), 0); c.lineTo(X(W.t), h); c.stroke(); }
+}
+/* ---- arcade rider: a pixel-style mountain biker on a scrolling trail (arcade mode only) ---- */
+function rstate() { return window.RIDER || (window.RIDER = { on: false, last: 0, scroll: 0, crank: 0 }); }
+function startRider() { const R = rstate(); if (R.on) return; R.on = true; R.last = 0; requestAnimationFrame(riderFrame); }
+function riderFrame(ts) {
+  const R = rstate();
+  if (!document.body.classList.contains("arcade")) { R.on = false; return; }
+  const dt = R.last ? Math.min(0.1, (ts - R.last) / 1000) : 0; R.last = ts;
+  const live = W.running && !W.paused;
+  const rel = live ? Math.min(1.6, Math.max(0, (W.pw || 0) / (W.ftp || 200))) : 0;   // power sets trail speed
+  R.scroll += rel * 110 * dt;
+  R.crank += (live ? (cad3s() || 0) : 0) / 60 * Math.PI * 2 * dt;                    // cadence sets pedal speed
+  drawRider($("hrgraph"));
+  requestAnimationFrame(riderFrame);
+}
+function ridgeLine(c, w, h, gy, off, col, hf) {
+  const P = w * 0.9, pts = [[0, 0], [0.14, 0.55], [0.3, 0.28], [0.5, 0.92], [0.68, 0.4], [0.82, 0.66], [1, 0]];
+  const o = off % P;
+  c.fillStyle = col; c.beginPath(); c.moveTo(-P, gy);
+  for (let k = -1; k <= Math.ceil(w / P) + 1; k++) for (const [fx, fy] of pts) c.lineTo(k * P + fx * P - o, gy - fy * h * hf);
+  c.lineTo(w + P, gy); c.closePath(); c.fill();
+}
+function drawRider(cv) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const R = rstate();
+  const wR = Math.min(h * 0.3, w * 0.09), s = wR / 29.4, gy = h - 4, axleY = gy - wR;
+  const base = 3.1 * wR, rearX = (w - base) / 2, frontX = rearX + base;
+  const ln = (p, q, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.lineCap = "round"; c.beginPath(); c.moveTo(p.x, p.y); c.lineTo(q.x, q.y); c.stroke(); };
+  const dot = (p, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(p.x, p.y, r, 0, Math.PI * 2); c.fill(); };
+  const ring = (cx, cy, r, col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.stroke(); };
+
+  // backdrop: sky, two parallax mountain ranges, dirt ground with scrolling marks and rocks
+  c.fillStyle = "#05000f"; c.fillRect(0, 0, w, h);
+  ridgeLine(c, w, h, gy, R.scroll * 0.12, "#2a0a4a", 0.6);
+  ridgeLine(c, w, h, gy, R.scroll * 0.35, "#0c3a48", 0.38);
+  c.fillStyle = "#1a0d00"; c.fillRect(0, gy, w, h - gy);
+  c.fillStyle = "#ffd700"; c.fillRect(0, gy, w, 1.5);
+  c.fillStyle = "#ff8c00"; const P = 14, po = R.scroll % P;
+  for (let x = -po; x < w; x += P) c.fillRect(x, gy + 4, 6, 2);
+  c.fillStyle = "#8b5a2b"; const RP = w + 60;
+  for (let k = 0; k < 4; k++) { const x = ((((k * 97 - R.scroll) % RP) + RP) % RP) - 30; c.fillRect(x, gy - 3 * s, 4 * s, 3 * s); }
+
+  // bike geometry (scaled to the wheel size)
+  const A = { x: rearX, y: axleY }, F = { x: frontX, y: axleY };
+  const BB = { x: rearX + base * 0.34, y: axleY + 5 * s };
+  const S = { x: BB.x - 4 * s, y: BB.y - 30 * s };          // seat tube top
+  const H = { x: F.x - 4 * s, y: F.y - 38 * s };             // head tube top (MTB bars)
+  const hip = { x: S.x + 4 * s, y: S.y - 3 * s };
+  const sh = { x: H.x - 14 * s, y: H.y + 6 * s };            // crouched, arms bent
+  const head = { x: sh.x + 6 * s, y: sh.y - 9 * s }, hr = 8.5 * s;
+  const hand = { x: H.x + 5 * s, y: H.y - 1 * s };
+  const ang = R.crank, cr = 13 * s;
+  const pd1 = { x: BB.x + cr * Math.cos(ang), y: BB.y + cr * Math.sin(ang) };
+  const pd2 = { x: BB.x - cr * Math.cos(ang), y: BB.y - cr * Math.sin(ang) };
+
+  // rear wheel, frame, front wheel
+  const spin = (cx, cy, a) => {
+    ring(cx, cy, wR - 1.6 * s, "#3a3a3a", 3.2 * s);
+    for (let k = 0; k < 14; k++) {                                       // knobby MTB tread
+      const q = a + k * Math.PI / 7;
+      ln({ x: cx + Math.cos(q) * (wR - 2.4 * s), y: cy + Math.sin(q) * (wR - 2.4 * s) }, { x: cx + Math.cos(q) * (wR + 0.6 * s), y: cy + Math.sin(q) * (wR + 0.6 * s) }, "#6b6b6b", 2.4 * s);
+    }
+    ring(cx, cy, wR - 3.6 * s, "#4ae0ff", 1);
+    for (let k = 0; k < 6; k++) { const q = a + k * Math.PI / 3; ln({ x: cx, y: cy }, { x: cx + Math.cos(q) * (wR - 4 * s), y: cy + Math.sin(q) * (wR - 4 * s) }, "#8b94a3", 0.8); }
+    c.fillStyle = "#ffd700"; c.beginPath(); c.arc(cx, cy, 1.8 * s, 0, Math.PI * 2); c.fill();
+  };
+  spin(A.x, A.y, R.scroll / wR);
+  spin(F.x, F.y, R.scroll / wR);
+  ln(A, BB, "#ff3bff", 3 * s); ln(BB, S, "#ff3bff", 3 * s); ln(A, S, "#ff3bff", 2 * s);
+  ln(BB, H, "#ff3bff", 3 * s); ln(S, H, "#ff3bff", 2.6 * s); ln(H, F, "#ff3bff", 3.2 * s);
+  ln({ x: H.x - 2 * s, y: H.y - 4 * s }, { x: H.x + 7 * s, y: H.y - 6 * s }, "#ffd700", 2 * s);   // flat bar
+  // chainring and cranks
+  ring(BB.x, BB.y, 5 * s, "#ffd700", 1.2);
+  ln(BB, pd1, "#e8ffe8", 2 * s); ln(BB, pd2, "#e8ffe8", 2 * s);
+  c.fillStyle = "#e8ffe8"; c.fillRect(pd1.x - 2.5 * s, pd1.y - 1 * s, 5 * s, 2 * s); c.fillRect(pd2.x - 2.5 * s, pd2.y - 1 * s, 5 * s, 2 * s);
+
+  // legs: two-bone IK from hip to pedal, knee pointing forward
+  const leg = (hp, foot, col, lw) => {
+    const L = 34 * s; let dx = foot.x - hp.x, dy = foot.y - hp.y; let d = Math.hypot(dx, dy);
+    d = Math.min(d, 2 * L - 0.5);
+    const a = d / 2, hh = Math.sqrt(Math.max(0, L * L - a * a));
+    const mid = { x: hp.x + dx / 2, y: hp.y + dy / 2 }; const ux = dx / (Math.hypot(dx, dy) || 1), uy = dy / (Math.hypot(dx, dy) || 1);
+    let px = -uy, py = ux; if (px < 0) { px = -px; py = -py; }
+    const knee = { x: mid.x + px * hh, y: mid.y + py * hh };
+    ln(hp, knee, col, lw); ln(knee, foot, col, lw * 0.9);
+    c.fillStyle = "#111"; c.fillRect(foot.x - 3 * s, foot.y - 1.5 * s, 6 * s, 3 * s);
+  };
+  leg(hip, pd2, "#7a3d00", 3.2 * s);                       // far leg (dimmer)
+
+  // torso, arm, helmet
+  ln(hip, sh, "#ffd700", 6 * s);
+  ln(sh, hand, "#ffd700", 2.6 * s); dot(hand, 2 * s, "#111");
+  c.fillStyle = "#ff3b3b"; c.beginPath(); c.arc(head.x, head.y, hr, 0, Math.PI * 2); c.fill();          // full-face shell
+  c.fillStyle = "#ff3b3b"; c.beginPath(); c.moveTo(head.x - 3 * s, head.y + 1 * s); c.lineTo(head.x + 8 * s, head.y + 2 * s);
+  c.lineTo(head.x + 7 * s, head.y + 7 * s); c.lineTo(head.x - 2 * s, head.y + 8 * s); c.closePath(); c.fill();   // chin bar
+  c.fillStyle = "#ffffff"; c.fillRect(head.x - 6 * s, head.y - 6 * s, 5 * s, 1.4 * s);                          // helmet stripe
+  c.fillStyle = "#0a0a14"; c.beginPath(); c.moveTo(head.x + 1 * s, head.y - 3.5 * s); c.lineTo(head.x + 9 * s, head.y - 2 * s);
+  c.lineTo(head.x + 8.5 * s, head.y + 1.5 * s); c.lineTo(head.x + 1 * s, head.y + 0.5 * s); c.closePath(); c.fill();   // visor
+  c.strokeStyle = "#4ae0ff"; c.lineWidth = 0.8; c.stroke();
+  leg(hip, pd1, "#ff8c00", 3.4 * s);                       // near leg
+
+  // HUD on the tile: live HR, avg and max
+  const hv = W.hrHist.filter(v => v != null);
+  const hrNow = hv.length ? hv[hv.length - 1] : "--";
+  const hrAvg = hv.length ? Math.round(hv.reduce((a, b) => a + b, 0) / hv.length) : "--";
+  const hrMax = hv.length ? Math.max(...hv) : "--";
+  c.font = `bold ${Math.round(Math.max(9, 10 * s))}px "Courier New", monospace`; c.textBaseline = "top";
+  c.textAlign = "left"; c.fillStyle = "#ff3b3b"; c.fillText("♥ " + hrNow, 6, 4);
+  c.textAlign = "right"; c.fillStyle = "#4ae0ff"; c.fillText("AVG " + hrAvg + "  MAX " + hrMax, w - 6, 4);
 }
 window.addEventListener("resize", () => { drawProfile(); drawHR(); });
 function refreshDevBtns() {                                  // red Connect buttons in the ride header while a device is missing
@@ -1584,7 +1743,7 @@ function renderFit() {
     : "Demo data. Connect intervals.icu to see your real training load.";
 }
 function setFitRange(k, v) { FIT[k] = v; try { localStorage.setItem("kickrFitRange", JSON.stringify(FIT)); } catch (e) {} renderFit(); }
-function showTab(name) {
+function showTab(name) { arcadeOn = false; applyArcade();
   const data = name === "data";
   $("planTab").style.display = data ? "none" : ""; $("dataTab").style.display = data ? "" : "none";
   $("tabPlan").classList.toggle("on", !data); $("tabData").classList.toggle("on", data);
@@ -2005,6 +2164,7 @@ $("woGraph").onclick = e => {
   clearTimeout(woPickT); woPickT = setTimeout(() => { $("woPick").textContent = ""; drawWoGraph(null); }, 6000);
 };
 $("btnLaunchNo").onclick = () => { $("launchModal").style.display = "none"; pendingLaunch = null; };
+$("btnArcade").onclick = () => { arcadeOn = true; applyArcade(); $("btnLaunchYes").click(); };   // same as Load workout, in arcade mode
 $("btnLaunchYes").onclick = () => {
   const it = pendingLaunch; $("launchModal").style.display = "none"; pendingLaunch = null; if (!it) return;
   if (it.custom === "hard") { askHard(it); return; }
