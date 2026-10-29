@@ -296,7 +296,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.91</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.93</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -444,7 +444,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.91</span>
+  <span class="ver">v1.0.93</span>
 </div>
 
 <div class="ctrl">
@@ -1714,14 +1714,14 @@ function arcName(s) {
 }
 const ZCOL = r => r == null || r <= .55 ? "#7a8594" : r <= .75 ? "#3b9cff" : r <= .9 ? "#3ddc84" : r <= 1.05 ? "#ffd23f" : r <= 1.2 ? "#ff4d5e" : "#b36bff";
 function arcPlan(R) {                                            // cached per workout shape: start times, smoothed terrain, coin positions
-  const st = W.steps, key = st.length + ":" + st.reduce((a, s) => a + s.dur, 0) + ":" + (st[0] ? st[0].a : 0);
+  const st = W.steps, key = W.ftp + "|" + st.map(s => s.dur + "," + s.a + "," + s.b + (s.free ? "f" : "")).join("|");   // any change to the plan (+1 min, switch) rebuilds it
   if (R.key === key) return; R.key = key;
   R.t0 = []; let t = 0; st.forEach(s => { R.t0.push(t); t += s.dur; }); R.total = t;
   const relAt = x => { if (!st.length) return .5; x = Math.max(0, Math.min(t - .001, x)); let i = 0; while (i < st.length - 1 && x >= R.t0[i + 1]) i++;
     const s = st[i]; if (s.free) return .6; return s.a + (s.b - s.a) * (x - R.t0[i]) / s.dur; };
   R.relAt = relAt; R.prof = [];
   for (let x = 0; x <= t + 60; x += 0.5) { let v = 0, n = 0; for (let o = -4; o <= 4; o += 1) { v += relAt(x + o); n++; } R.prof.push(v / n); }
-  R.coinT = []; let k = 0; for (let x = 0; x < t; x += 0.5) { k += relAt(x) * W.ftp * 0.5 / 1000; if (k >= 1) { k -= 1; R.coinT.push(x); } }   // one coin per planned kJ
+  R.got = -1; R.coinT = []; let k = 0; for (let x = 0; x < t; x += 0.5) { k += relAt(x) * W.ftp * 0.5 / 1000; if (k >= 1) { k -= 1; R.coinT.push(x); } }   // one coin per planned kJ
 }
 function riderFrame(ts) {
   const R = rstate();
@@ -1732,10 +1732,13 @@ function riderFrame(ts) {
   R.scroll += rel * 110 * dt;
   R.crank += (live2 ? (cad3s() || 0) : 0) / 60 * Math.PI * 2 * dt;
   if (!Number.isFinite(R.scroll)) R.scroll = 0; if (!Number.isFinite(R.crank)) R.crank = 0;
-  R.tS = live2 ? Math.min(W.t + 1, R.tS + dt) : W.t; if (Math.abs(R.tS - W.t) > 1.5) R.tS = W.t;   // smooth workout clock for the scrolling trail
+  arcPlan(R); const pT = arcPlanT(R);                                  // position in the plan (the ride clock keeps running across a workout switch)
+  R.tS = live2 ? Math.min(pT + 1, R.tS + dt) : pT; if (Math.abs(R.tS - pT) > 1.5) R.tS = pT;
+  if (R.got < 0) R.got = R.coinT.filter(t => t <= pT).length;           // coins already passed in a rebuilt plan stay collected   // smooth workout clock for the scrolling trail
   if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : arcadeGame === "fighter" ? drawFighter : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
   requestAnimationFrame(riderFrame);
 }
+function arcPlanT(R) { const st = W.steps; return !st.length ? 0 : W.idx >= st.length ? (R.total || 0) : (R.t0 ? R.t0[W.idx] : 0) + W.stepT; }
 function arcTally(R) {                                           // per-second bookkeeping: W' balance, combo, coins
   if (W.pw.length < R.pi || W.t === 0 && R.pi > 0) Object.assign(R, { pi: 0, w: ARC.W0, combo: 0, best: 0, broke: 0, coins: 0, got: 0, lastIdx: -1 });
   for (; R.pi < W.pw.length; R.pi++) {
@@ -1801,9 +1804,9 @@ function drawArcScene(cv, R, now) {
 function drawArcMap(R) {
   const cv = $("arcMap"); if (!cv || !R.total) return; const dpr = window.devicePixelRatio || 1, w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr); if (!w || !h) return;
   if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
-  const c = cv.getContext("2d"); c.clearRect(0, 0, w, h);
-  for (let x = 0; x < w; x += 2) { const t = x / w * R.total, r = R.relAt(t); c.fillStyle = ZCOL(r); c.globalAlpha = t < W.t ? 1 : .45; const bh = Math.round(Math.min(1.3, r) / 1.3 * (h - 4)); c.fillRect(x, h - bh, 2, bh); }
-  c.globalAlpha = 1; c.fillStyle = "#fff"; c.fillRect(Math.round(W.t / R.total * w) - dpr, 0, 2 * dpr, h);
+  const c = cv.getContext("2d"); c.clearRect(0, 0, w, h); const pT = arcPlanT(R);
+  for (let x = 0; x < w; x += 2) { const t = x / w * R.total, r = R.relAt(t); c.fillStyle = ZCOL(r); c.globalAlpha = t < pT ? 1 : .45; const bh = Math.round(Math.min(1.3, r) / 1.3 * (h - 4)); c.fillRect(x, h - bh, 2, bh); }
+  c.globalAlpha = 1; c.fillStyle = "#fff"; c.fillRect(Math.round(pT / R.total * w) - dpr, 0, 2 * dpr, h);
   c.fillStyle = "#ffd700"; c.fillRect(w - 3 * dpr, 2 * dpr, 2 * dpr, h - 4 * dpr); c.fillRect(w - 9 * dpr, 2 * dpr, 6 * dpr, 4 * dpr);
 }
 function arcHud(R) {
@@ -1833,7 +1836,7 @@ function arcHud(R) {
   setT("aNx", !W.loaded || done ? "--" : !nx ? "Fin" : nx.free ? "Free" : Math.round(arcRel(nx) * W.ftp * W.adj));
   setT("aNxs", !W.loaded || done ? "--" : !nx ? "Last stage" : fmt(nx.dur) + " · " + arcName(nx));
   $("aNx").style.color = nx && arcBoss(nx) ? "#ff3b3b" : "";
-  setT("aEl", fmt(W.t)); setT("aTot", "of " + fmt(R.total || 0)); setT("aKj", Math.round(W.kj) + " kJ");
+  setT("aEl", fmt(W.t)); setT("aTot", "of " + fmt(W.t - arcPlanT(R) + (R.total || 0)));   /* ridden so far plus what is left of the plan */ setT("aKj", Math.round(W.kj) + " kJ");
   setT("aNp", "NP " + (W.n4 > 30 ? Math.round((W.sum4 / W.n4) ** 0.25) : "--"));
   setT("aAdj", W.adjPct + "%");
   // overlay: combo, coins, boss bar, warning
@@ -2182,6 +2185,20 @@ function wfKO(F) {                                                  // the oppon
   setTimeout(() => { beep(70, .25, .12, "square"); for (let j = 0; j < 14; j++) F.fx.push({ x: F.p2.x + (Math.random() - .5) * .12, y: .02, dx: 0, dy: 0, vx: (Math.random() - .5) * 60, vy: -10 - Math.random() * 25, t: .5, col: "#b08a5a" }); }, 120);
   wfCall(F, "K.O.!", F.php >= F.hp0 - F.drain + .005 ? "Perfect!" : "", true, 1.8); [784, 988, 1319, 1568].forEach((f, j) => beep(f, .09, .1, "square", j * .08));
 }
+function wfMedic(c, x, gy, cell, dir, reach, walking, now, skin, kit) {   // a short, simple ring medic: cap with a red cross, white scrubs, first-aid kit
+  const rects = [], R = (px, py, w, h, cl) => rects.push([px, py, w, h, cl]), step = walking ? Math.floor(now / 160) % 2 : 0;
+  R(-4, -14, 3, 14 - step, "#3a4a6a"); R(1, -14, 3, 14 - (1 - step), "#3a4a6a");                 // trousers (legs alternate when walking)
+  R(-5, -1, 4, 1, "#1a1a22"); R(1, -1, 4, 1, "#1a1a22");                                           // shoes
+  R(-5, -28, 10, 15, "#f2f2f2"); R(-5, -16, 10, 2, "#d0d0d0"); R(-1, -26, 2, 6, "#e2362b"); R(-3, -24, 6, 2, "#e2362b");   // scrubs with a red cross
+  R(-4, -34, 8, 6, skin); R(2, -32, 1, 1, "#000000");                                              // head and eye
+  R(-5, -37, 10, 4, "#ffffff"); R(-1, -37, 2, 3, "#e2362b"); R(-2, -36, 4, 1, "#e2362b"); R(4, -35, 3, 1, "#ffffff");   // cap with a cross and a brim
+  R(-7, -27, 3, 10, skin);                                                                          // back arm
+  if (reach) { R(4, -24, 10, 3, skin); R(13, -25, 4, 4, "#00c853"); } else { R(4, -27, 3, 10, skin); }   // reaching in with a green dressing
+  if (kit) { R(9, -6, 8, 6, "#e2362b"); R(12, -5, 2, 4, "#ffffff"); R(11, -4, 4, 2, "#ffffff"); R(11, -8, 4, 2, "#7a1010"); }   // first-aid kit on the boards
+  const u = cell * 1.15;                                                                             // about two thirds of a fighter's height
+  rects.forEach(([px, py, w, h]) => { c.fillStyle = "#000"; c.fillRect(Math.round(x + (dir > 0 ? px - 1 : -(px + w) - 1) * u), Math.round(gy + (py - 1) * u), (w + 2) * u, (h + 2) * u); });
+  rects.forEach(([px, py, w, h, cl]) => { c.fillStyle = cl; c.fillRect(Math.round(x + (dir > 0 ? px : -(px + w)) * u), Math.round(gy + py * u), w * u, h * u); });
+}
 function wfFoeHit(F, amt) {
   F.p2.act = Math.random() < .5 ? "punch" : "kick"; F.p2.at = 0; F.p1.hit = .2; F.p1.kb = -.03; F.taken++;
   F.php = Math.max(F.floor, F.php - amt); beep(90, .1, .1, "square"); wfSpark(F, F.p1.x + .05, .6);
@@ -2254,8 +2271,9 @@ function drawFighter(cv, R, now) {
   const cell = Math.max(1, Math.floor(h * .5 / WF_GH * dpr)) / dpr, cellO = Math.min(Math.max(cell, Math.round(cell * (F.scale || 1) * dpr) / dpr), Math.floor((gy - 34) / 60 * dpr) / dpr), blink = Math.floor(now / 50) % 2;
   F.balls.forEach(b => { const x = w * b.x, y = gy - 38 * cell, r = (Math.floor(now / 60) % 2) ? 5 : 6; c.fillStyle = "#4ae0ff"; c.fillRect(Math.round(x - r * u), Math.round(y - r * u / 1.4), r * 2 * u, r * 1.4 * u); c.fillStyle = "#ffffff"; c.fillRect(Math.round(x - 2 * u), Math.round(y - 2 * u), 4 * u, 4 * u); });
   if (F.p2.x < 1.1 && F.foePal) wfBlit(c, wfPoseOf(F.p2), F.foePal, now, w * F.p2.x, gy, cellO, true, F.p2.hit > 0 && blink);
-  if (F.medIn > 0) { const off = (1 - F.medIn) * .5, tend = { act: Math.floor(now / 600) % 2 ? "punch" : "idle", hit: 0 };   // medics walk in from both sides and tend the fighter
-    wfDraw(c, w * (F.p1.x - .17 - off), gy, u, WF_FOES.medic, 1, tend, now, false); wfDraw(c, w * (F.p1.x + .22 + off), gy, u, WF_FOES.medic2, -1, { act: tend.act === "punch" ? "idle" : "punch", hit: 0 }, now, false); }
+  if (F.medIn > 0) { const off = (1 - F.medIn) * .5, walking = F.medIn < 1 || F.mode !== "medic", tick = Math.floor(now / 600) % 2;   // medics trot in from both sides and tend the fighter
+    wfMedic(c, w * (F.p1.x - .13 - off), gy, cell, 1, !walking && tick === 1, walking, now, "#f0b48a", true);
+    wfMedic(c, w * (F.p1.x + .19 + off), gy, cell, -1, !walking && tick === 0, walking, now, "#8d5a3a", false); }
   wfBlit(c, wfPoseOf(F.p1), WF_ME2, now, w * F.p1.x, gy, cell, false, F.p1.hit > 0 && blink);
   F.fx = F.fx.filter(f => { f.t -= dt; if (f.t <= 0) return false; f.dx += f.vx * dt; f.dy += f.vy * dt; c.fillStyle = f.col; const fx = Math.round(f.x * w + f.dx), fy = Math.round(gy - f.y * 52 * cell + f.dy);
     if (f.plus) { c.fillRect(fx - u, fy - 3 * u, 2 * u, 6 * u); c.fillRect(fx - 3 * u, fy - u, 6 * u, 2 * u); } else c.fillRect(fx, fy, 2 * u, 2 * u); return true; });
