@@ -194,11 +194,18 @@
   #arc .a-map { position:relative; height:24px; flex:none; border:2px solid #2b1650; background:#000; } #arcMap { position:absolute; inset:0; width:100%; height:100%; }
   #arc .a-inst { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1.2fr 1fr; gap:5px; }
   #arc .a-box { background:#0b0618; border:2px solid #2b1650; padding:5px 7px; display:flex; flex-direction:column; gap:3px; min-width:0; overflow:hidden; }
-  #arc .a-pw { grid-column:1 / -1; display:grid; grid-template-columns:1fr auto; grid-template-rows:auto 1fr auto; column-gap:10px; }
-  #aPw { font-size:clamp(48px, 9.5vh, 80px); line-height:.8; color:#e8ffe8; grid-row:2; align-self:center; font-variant-numeric:tabular-nums; }
+  #arc .a-pw { grid-column:1 / -1; display:grid; grid-template-columns:1.55fr 1fr; grid-template-rows:1fr auto; column-gap:10px; row-gap:4px; }
+  #arc .a-pw .c1 { display:flex; flex-direction:column; justify-content:space-between; gap:2px; min-width:0; }
+  #arc .a-pw .c2 { display:flex; flex-direction:column; justify-content:center; align-items:flex-end; gap:3px; border-left:2px solid #2b1650; padding-left:8px; min-width:0; }
+  #arc .a-pw .pwv { white-space:nowrap; }
+  #aPw { font-size:clamp(48px, 9vh, 78px); line-height:.8; color:#e8ffe8; font-variant-numeric:tabular-nums; }
   #arc .a-pw .u { font-size:24px; color:#7c6fa3; margin-left:3px; }
-  #arc .a-pw .s2 { grid-row:1 / 3; grid-column:2; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; gap:3px; }
-  #aTgt { font-size:clamp(30px, 5.5vh, 44px); line-height:.85; color:#4ae0ff; font-variant-numeric:tabular-nums; }
+  #arc .a-pw .tgl { display:flex; align-items:baseline; gap:6px; white-space:nowrap; }
+  #aTgt { font-size:clamp(24px, 4vh, 32px); line-height:.9; color:#4ae0ff; font-variant-numeric:tabular-nums; }
+  #arc .a-pw .u2 { font-size:15px; color:#4ae0ff; margin-left:-4px; }
+  #aTgtPct { font-size:16px; }
+  #arc .a-pw .c2 .a-sm { font-size:15px; white-space:normal; text-align:right; }
+  #aHr2 { font-size:clamp(38px, 7vh, 58px); line-height:.85; color:#ff3b3b; font-variant-numeric:tabular-nums; }
   #aBoost { grid-column:1 / -1; display:grid; grid-template-columns:repeat(12,1fr); gap:2px; height:11px; }
   #arc .a-big { font-size:clamp(30px, 5.6vh, 46px); line-height:.85; color:#e8ffe8; font-variant-numeric:tabular-nums; white-space:nowrap; }
   #arc .a-big small { font-size:16px; color:#7c6fa3; margin-left:2px; }
@@ -285,7 +292,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.80</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.85</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -433,7 +440,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.80</span>
+  <span class="ver">v1.0.85</span>
 </div>
 
 <div class="ctrl">
@@ -506,7 +513,12 @@ Cooldown
   </div>
   <div class="a-map"><canvas id="arcMap"></canvas></div>
   <div class="a-inst">
-    <div class="a-box a-pw"><span class="lb">Power &middot; 3s</span><span><span id="aPw">--</span><span class="u">w</span></span><div class="s2"><span class="lb">Target</span><span id="aTgt">--</span><span class="a-sm" id="aTgtPct">-- % FTP</span></div><div id="aBoost"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="a-box a-pw">
+      <div class="c1"><span class="lb">Power &middot; 3s</span><span class="pwv"><span id="aPw">--</span><span class="u">w</span></span>
+        <span class="tgl"><span class="lb">Target</span><span id="aTgt">--</span><span class="u2">w</span><span class="a-sm" id="aTgtPct">-- % FTP</span></span></div>
+      <div class="c2"><span class="lb">Heart rate</span><span id="aHr2">--</span><span class="a-sm">bpm &middot; avg <span id="aHrAvg">--</span></span></div>
+      <div id="aBoost"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
     <div class="a-box"><span class="lb">Cadence</span><span class="a-big"><span id="aCad">--</span><small>rpm</small></span><div id="aTach"><i style="height:30%"></i><i style="height:37%"></i><i style="height:44%"></i><i style="height:51%"></i><i style="height:58%"></i><i style="height:65%"></i><i style="height:72%"></i><i style="height:79%"></i><i style="height:86%"></i><i style="height:93%"></i></div></div>
     <div class="a-box"><span class="lb">Next up</span><span class="a-big" id="aNx" style="color:#ff3bff">--</span><span class="a-sm" id="aNxs">--</span></div>
     <div class="a-box"><span class="lb">Ride</span><span class="a-sm" id="aEl" style="color:#e8ffe8;font-size:24px">0:00</span><span class="a-sm" id="aTot">of 0:00</span><span class="a-sm" id="aKj" style="color:#ffd700">0 kJ</span><span class="a-sm" id="aNp">NP --</span></div>
@@ -594,6 +606,7 @@ Cooldown
   <div class="g-ask">Choose your challenge</div>
   <div class="g-list">
     <button class="g-card" id="gTrail" type="button" data-game="trail" aria-label="Trail Rider"><canvas id="gTrailCv" width="150" height="112"></canvas></button>
+    <button class="g-card" id="gInv" type="button" data-game="invaders" aria-label="Pedal Defense"><canvas id="gInvCv" width="150" height="112"></canvas></button>
   </div>
   <div class="g-coin" id="gCoin">Insert coin</div>
   <div class="g-tbl" id="gTbl"></div>
@@ -1715,7 +1728,7 @@ function riderFrame(ts) {
   R.crank += (live2 ? (cad3s() || 0) : 0) / 60 * Math.PI * 2 * dt;
   if (!Number.isFinite(R.scroll)) R.scroll = 0; if (!Number.isFinite(R.crank)) R.crank = 0;
   R.tS = live2 ? Math.min(W.t + 1, R.tS + dt) : W.t; if (Math.abs(R.tS - W.t) > 1.5) R.tS = W.t;   // smooth workout clock for the scrolling trail
-  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { arcPlan(R); arcTally(R); drawArcScene($("arcCv"), R, ts); arcHud(R); }
+  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
   requestAnimationFrame(riderFrame);
 }
 function arcTally(R) {                                           // per-second bookkeeping: W' balance, combo, coins
@@ -1796,7 +1809,8 @@ function arcHud(R) {
   setT("aStage", !W.loaded ? "Load a workout" : done ? "Stage clear!" : "Stage " + (i + 1) + "/" + st.length + " · " + arcName(s));
   setT("aScore", pad6(Math.round(W.kj * 25 + R.best * 2)));
   const hs = arcadeScores(); setT("aHi", pad6(hs.length ? hs[0].s : 0));
-  setT("aHr", live.hr ?? "--");
+  setT("aHr", live.hr ?? "--"); setT("aHr2", live.hr ?? "--");
+  const hvA = W.hrHist.filter(v => v != null); setT("aHrAvg", hvA.length ? Math.round(hvA.reduce((a, b) => a + b, 0) / hvA.length) : "--");
   const sec = Math.floor(W.t); if (live.hr != null && sec !== R.hrBeat) { R.hrBeat = sec; const hb = $("aHeart"); hb.classList.remove("beat"); void hb.offsetWidth; hb.classList.add("beat"); }
   const hp = R.w / ARC.W0, hc = hp > .6 ? "#00ff41" : hp > .3 ? "#ffd700" : "#ff3b3b", nOn = Math.ceil(hp * 20);
   [...$("aHp").children].forEach((e, k) => { const col = k < nOn ? hc : ""; if (e.style.background !== col) e.style.background = col; });
@@ -1820,11 +1834,12 @@ function arcHud(R) {
   if (R.broke > 0) { R.broke -= 1 / 60; setT("aComboN", "Break!"); $("aCombo").classList.add("broke"); } else { $("aCombo").classList.remove("broke"); setT("aComboN", "x" + R.combo); }
   setT("aCoins", "x" + String(R.coins).padStart(2, "0"));
   $("aBoss").hidden = !boss;
-  if (boss) { setT("aBossName", "Boss · " + arcName(s)); $("aBossHp").style.width = Math.max(0, rem / s.dur * 100) + "%"; }
+  if (boss) { setT("aBossName", "Boss · " + arcName(s)); const IB = arcadeGame === "invaders" && R.inv && R.inv.boss;   // Pedal Defense: the bar is the mothership's HP
+    $("aBossHp").style.width = (IB ? IB.hp / IB.max * 100 : Math.max(0, rem / s.dur * 100)) + "%"; }
   let tb = 0, nb = -1; if (W.running && st.length) { tb = s.dur - W.stepT; for (let j = W.idx + 1; j < st.length; j++) { if (arcBoss(st[j])) { nb = j; break; } tb += st[j].dur; } }
   const warn = W.running && !boss && nb >= 0 && tb <= 8 && tb > 0; $("aWarn").hidden = !warn;
   if (warn) setT("aWarnSub", arcName(st[nb]) + " in " + fmt(tb));
-  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true);
+  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx) { if (!(arcadeGame === "invaders" && arcBoss(st[R.lastIdx]))) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true); }
   R.lastIdx = W.running ? W.idx : -1;
   // gamepad mirrors the real buttons
   const m = (aid, id) => { const a = $(aid), b = $(id); a.disabled = b.disabled; a.hidden = b.style.display === "none"; };
@@ -1833,6 +1848,157 @@ function arcHud(R) {
   const go = $("aGo"); if (!W.running) { go.disabled = $("btnStart").disabled; setT("aGo", "Start"); go.className = "a-go"; }
   else { go.disabled = $("btnPause").disabled; setT("aGo", W.paused ? "Resume" : "Pause"); go.className = "a-go" + (W.paused ? " res" : ""); }
   drawArcMap(R);
+}
+/* ---- arcade game 2: Pedal Defense (a Space Invaders-style shooter driven by the ride) ----
+   Each interval is a wave sized by its planned work (about one enemy per 2 kJ, so harder intervals bring more);
+   fallen enemies are replaced until the last 10%, when a final barrage clears the screen.
+   Power sets the fire rate (one shot per 0.25 kJ, so cadence doesn't matter); holding the target power
+   makes the shots land, so a well-ridden interval clears its wave just before it ends. Intervals at 85%+ FTP
+   bring a boss mothership. Below about 92% of target the shots miss and the enemies drop more bombs. */
+const INV_ART = {                                                 // original pixel art, two frames per enemy
+  a: [["...#...#...", "....###....", "..#######..", ".##.###.##.", "###########", "#.#######.#", "#.#.....#.#", "...##.##..."],
+      ["...#...#...", "#...###...#", "#.#######.#", "###.###.###", "###########", "..#######..", "..#.....#..", ".#.......#."]],
+  b: [["....###....", "..#######..", ".##.#.#.##.", "###########", "..##...##..", ".##.###.##.", "##.......##", "..........."],
+      ["....###....", "..#######..", ".##.#.#.##.", "###########", "..##...##..", ".##.###.##.", "..##...##..", ".##.....##."]],
+  c: [["...##.##...", "..#######..", ".#########.", "##..###..##", "###########", "..#.#.#.#..", ".#.#...#.#.", "#.........#"],
+      ["...##.##...", "..#######..", ".#########.", "##..###..##", "###########", "..#.#.#.#..", "..#.#.#.#..", ".#.#...#.#."]],
+  ship: ["....##....", "...####...", "...####...", ".########.", "##########", "##########", "#.#....#.#"],
+  boss: ["......########......", "...##############...", ".##################.", "###..###..###..###..#", "####################",
+         "..######....######..", "...#..#........#..#.", "....##..........##.."],
+  bunk: ["..######..", ".########.", "##########", "##########", "###....###", "##......##"]
+};
+const INV_COL = { a: "#ff3bff", b: "#4ae0ff", c: "#00ff41", ship: "#ffd700", boss: "#ff3b3b", bunk: "#3ddc84" };
+function invSprite(c, art, x, y, p, col) {
+  c.fillStyle = col;
+  for (let r = 0; r < art.length; r++) { const row = art[r]; for (let k = 0; k < row.length; k++) if (row[k] === "#") c.fillRect(x + k * p, y + r * p, p, p); }
+}
+function invState(R) { return R.inv || (R.inv = { idx: -2, aliens: [], dmg: 0, kills: 0, shots: [], bombs: [], fx: [], shipX: 0.5, march: 0, dir: 1, mt: 0, lastShot: 0, frame: 0, flash: 0, bossHit: 0, bunk: [], enter: 0, clear: false, ufo: null }); }
+function invWave(I, R) {                                          // build the wave for the current interval
+  if (I.boss && !I.boss.dead && W.running && I.idx >= 0) arcPop("Boss escaped!", 0.25, 0.25, true);   // only if the target slipped too long
+  const s = W.steps[Math.min(W.idx, W.steps.length - 1)]; I.idx = W.idx; I.dmg = 0; I.bDmg = 0; I.barrage = false; I.kills = 0; I.hits = 0; I.holdSum = 0; I.holdT = 0; I.shots = []; I.bombs = []; I.enter = 1; I.clear = false; I.march = 0;
+  const boss = arcBoss(s), J = s ? s.dur * (s.free ? 0.6 : (s.a + s.b) / 2) * W.ftp * W.adj : 30000;   // planned work for the interval, joules
+  const n = Math.max(boss ? 3 : 5, Math.min(boss ? 30 : 40, Math.round(J / 2000))); I.jPer = 750; I.shotJ = 0;   // formation size follows planned work; one enemy falls per 0.75 kJ done on target
+  const cols = n > 32 ? 10 : Math.min(8, n), rows = Math.ceil(n / cols), kinds = ["c", "b", "a", "a"];
+  I.aliens = []; for (let k = 0; k < n; k++) I.aliens.push({ col: k % cols, row: Math.floor(k / cols), kind: kinds[Math.floor(k / cols) % 4], alive: true, dying: 0 });
+  const B = boss ? Math.max(8, Math.round(n * 0.8)) : 0;                  // mothership hit points
+  I.cols = cols; I.rows = rows; I.boss = boss ? { hp: B, max: B, x: 0.5, dir: 1, dead: false } : null; I.n = n; I.units = n + B;
+}
+function drawInvaders(cv, R, now) {
+  if (!cv) return;
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  const I = invState(R); I.lastW = w; const dt = Math.min(0.1, I.last ? (now - I.last) / 1000 : 0); I.last = now;
+  if (W.t === 0 && !W.running || I.bunk.length !== 4) I.bunk = [0, 1, 2, 3].map(() => INV_ART.bunk.map(r => r.split("")));   // fresh bunkers for each ride
+  if (I.idx !== W.idx || !I.aliens.length) invWave(I, R);
+  const s = W.steps[Math.min(W.idx, W.steps.length - 1)], live2 = W.running && !W.paused;
+  const P = Math.max(1, Math.floor(Math.min(w / 140, h / 80) * dpr)) / dpr;   // one art pixel, in whole device pixels
+  // how well the target is being held: 1 at 92% of target or better, 0 at 80% or below
+  const p3 = power3s(), tg = W.running ? (sentTarget() ?? stepTarget()) : null;   // what the trainer is asked for, so the cadence governor and ramps don't count as misses
+  const hold = !live2 ? 0 : tg == null ? (p3 > 20 ? 1 : 0) : Math.max(0, Math.min(1, ((p3 || 0) / tg - 0.8) / 0.12));
+  // backdrop
+  c.fillStyle = arcBoss(s) && W.running ? "#12000a" : "#03000c"; c.fillRect(0, 0, w, h);
+  const ST = window.INV_STARS || (window.INV_STARS = Array.from({ length: 50 }, () => [Math.random(), Math.random(), 0.3 + Math.random()]));
+  ST.forEach(([x, y, v]) => { c.fillStyle = v > 1 ? "#4ae0ff" : "#e8ffe8"; c.fillRect(Math.round(x * w), Math.round(((y * h + now / 1000 * 12 * v) % h)), v > 1 ? 2 : 1, v > 1 ? 2 : 1); });
+  // formation geometry: drifts down over the interval, marches faster with more power and fewer survivors
+  const aw = 11 * P, ah = 8 * P, gx = 4 * P, gy = 5 * P, fw = I.cols * (aw + gx) - gx, prog = s && W.running ? Math.min(1, W.stepT / s.dur) : 0;
+  const alive = I.aliens.filter(a => a.alive).length;
+  I.enter = Math.max(0, I.enter - dt * 1.5);
+  const top = I.boss ? 60 : 34, fy0 = top + prog * Math.max(0, h * 0.62 - top - I.rows * (ah + gy)) - I.enter * h * 0.5;
+  I.mt += dt; const step = Math.max(0.12, (0.7 - 0.35 * Math.min(1.2, (p3 || 0) / W.ftp)) * (0.4 + 0.6 * alive / Math.max(1, I.n)));
+  if (I.mt >= step) { I.mt = 0; I.frame ^= 1; I.march += I.dir * 3 * P; const room = (w - fw) / 2 - 6; if (Math.abs(I.march) > room) { I.dir *= -1; I.march = Math.sign(I.march) * room; } }
+  const fx0 = (w - fw) / 2 + I.march, posOf = a => ({ x: fx0 + a.col * (aw + gx), y: fy0 + a.row * (ah + gy) - (a.enterY || 0) * h * 0.45 });
+  // damage: holding target destroys the wave on pace with the interval (a little ahead, so it clears before the end)
+  // pacing: escorts fall one per share of the planned work done on target; the mothership is paced by time (down by ~80%)
+  const fin = s && s.dur > 0 && s.dur - W.stepT <= Math.max(3, s.dur * 0.1);      // last 10% of the interval: no reinforcements, final barrage
+  if (live2 && s && s.dur > 0) {
+    const ramping = W.stepT < Math.min(8, s.dur * 0.2) && (p3 || 0) > 0.6 * (tg || 0);   // power still climbing into the interval counts as on target
+    const hh = ramping ? 1 : hold; I.holdSum += hh * dt; I.holdT += dt;
+    if (I.jPer > 0) I.dmg += hh * (p3 || 0) * dt / I.jPer * 1.05;
+    if (I.boss) I.bDmg += hh * dt * I.boss.max / (s.dur * 0.9) * 1.1;
+    if (fin && !I.barrage && I.holdT > 0 && I.holdSum / I.holdT >= 0.6) { I.barrage = true; arcPop("Final barrage!", 0.22, 0.42, true); }   // a mostly-held interval always ends clean
+  }
+  // shots: one per 0.25 kJ of work (about 1/s at 250 W); extra rapid fire whenever hits are owed
+  if (live2) I.shotJ = Math.min(500, (I.shotJ || 0) + (p3 || 0) * dt);
+  const shipY = h - 12 - 7 * P;
+  const inE = () => I.shots.filter(t => t.hit).length, inB = () => I.shots.filter(t => t.boss).length;
+  const owedE = () => I.barrage ? I.aliens.filter(a => a.alive && !a.marked).length : Math.floor(I.dmg) - I.kills - inE();
+  const owedB = () => !I.boss || I.boss.dead ? 0 : I.barrage ? I.boss.hp - inB() : Math.min(I.boss.hp - inB(), Math.floor(I.bDmg) - (I.boss.max - I.boss.hp) - inB());
+  const workShot = I.shotJ >= 250, catchUp = owedE() > 0 && I.aliens.some(a => a.alive && !a.marked) || owedB() > 0;
+  if (live2 && (workShot || catchUp) && now / 1000 - I.lastShot >= (I.barrage ? 0.08 : catchUp ? 0.12 : 0.2)) {
+    if (workShot) I.shotJ -= 250; I.lastShot = now / 1000;
+    let tgtA = null, bossShot = false;
+    const pick = owedE() > 0 ? I.aliens.filter(a => a.alive && !a.marked) : [];
+    if (pick.length) { tgtA = pick[Math.floor(Math.random() * pick.length)]; tgtA.marked = true; }
+    else if (owedB() > 0) bossShot = true;
+    I.shots.push({ x: w * I.shipX, y: shipY, hit: tgtA, boss: bossShot });
+  }
+  // reinforcements: a fallen enemy is replaced after a moment, until the last 10% of the interval
+  I.aliens.forEach(a => {
+    if (a.enterY > 0) a.enterY = Math.max(0, a.enterY - dt * 1.6);
+    if (!a.alive && a.respawn > 0 && W.running && !fin) { a.respawn -= live2 ? dt : 0;
+      if (a.respawn <= 0) Object.assign(a, { alive: true, marked: false, dying: 0, enterY: 1, kind: ["a", "b", "c"][Math.floor(Math.random() * 3)] }); }
+  });
+  // ship steers toward the next target column, or drifts under the boss
+  const aim = I.shots.length && I.shots[I.shots.length - 1].hit ? posOf(I.shots[I.shots.length - 1].hit).x + aw / 2 : I.boss ? w * I.boss.x : w * (0.5 + 0.3 * Math.sin(now / 1500));
+  I.shipX += (aim / w - I.shipX) * Math.min(1, dt * 4);
+  // move shots
+  I.shots = I.shots.filter(t => {
+    t.y -= 360 * dt;
+    if (t.hit) { const q = posOf(t.hit); t.x += (q.x + aw / 2 - t.x) * Math.min(1, dt * 10);
+      if (t.y <= q.y + ah) { t.hit.alive = false; t.hit.dying = 0.35; t.hit.respawn = 1 + Math.random() * 0.8; I.kills++; I.hits++; arcBoom(I, q.x + aw / 2, q.y + ah / 2, INV_COL[t.hit.kind]); beep(220, 0.08, 0.08, "square"); beep(140, 0.1, 0.06, "square", 0.04); return false; } }
+    if (t.boss && I.boss) { const B = I.boss, bx = w * B.x, by = 34 - I.enter * h; t.x += (bx - t.x) * Math.min(1, dt * 10);
+      if (t.y <= by + 8 * P * 1.5) { I.hits++; B.hp = Math.max(0, B.hp - 1); I.bossHit = 0.12; arcBoom(I, t.x, by + 8 * P * 1.5, "#ffd700"); beep(160, 0.06, 0.07, "square");
+        if (B.hp === 0 && !B.dead) { B.dead = true; for (let k = 0; k < 5; k++) arcBoom(I, bx + (k - 2) * 12, by + 6 * P, ["#ff3b3b", "#ffd700", "#ffffff", "#ff8c00", "#ff3bff"][k]);
+          arcPop("Boss down!", 0.3, 0.3, true); beep(90, 0.4, 0.12, "square"); beep(60, 0.5, 0.1, "square", 0.1); [784, 988, 1319, 1568].forEach((f, k) => beep(f, 0.09, 0.11, "square", 0.3 + k * 0.08)); }
+        return false; } }
+    return t.y > -10;
+  });
+  // enemy bombs: more of them when the target slips; a bomb that reaches the ship makes it flash
+  if (live2 && alive && Math.random() < dt * (0.4 + 2.2 * (1 - hold))) { const sh = I.aliens.filter(a => a.alive); const a = sh[Math.floor(Math.random() * sh.length)], q = posOf(a); I.bombs.push({ x: q.x + aw / 2, y: q.y + ah }); }
+  const bunkY = h - 26 - 6 * P, bunkW = 10 * P, bunkGap = (w - 4 * bunkW) / 5;
+  I.bombs = I.bombs.filter(b => {
+    b.y += 90 * dt;
+    for (let k = 0; k < 4; k++) { const bx = bunkGap + k * (bunkW + bunkGap); if (b.x >= bx && b.x < bx + bunkW && b.y >= bunkY && b.y < bunkY + 6 * P) {
+      const col = Math.floor((b.x - bx) / P), row = Math.floor((b.y - bunkY) / P), cell = I.bunk[k][row];
+      if (cell && cell[col] === "#") { cell[col] = "."; if (cell[col + 1]) cell[col + 1] = "."; return false; } } }
+    if (b.y >= shipY && Math.abs(b.x - w * I.shipX) < 6 * P) { I.flash = 0.4; beep(80, 0.15, 0.08, "square"); return false; }
+    return b.y < h;
+  });
+  // boss mothership
+  if (I.boss) { const B = I.boss; B.x += B.dir * dt * 0.12; if (B.x > 0.8 || B.x < 0.2) B.dir *= -1;
+    const bp = P * 1.5, bx = w * B.x - 10 * bp, by = 34 - I.enter * h;
+    if (W.running && !B.dead) invSprite(c, INV_ART.boss, bx, by, bp, I.bossHit > 0 ? "#ffffff" : INV_COL.boss);
+    if (I.bossHit > 0) I.bossHit -= dt; }
+  // wave cleared before the interval ends: a bonus saucer crosses
+  if (!I.clear && I.barrage && alive === 0 && (!I.boss || I.boss.dead)) { I.clear = true; arcPop("Wave clear!", 0.3, 0.3, true); [523, 659, 784].forEach((f, k) => beep(f, 0.08, 0.1, "square", k * 0.08)); if (!I.boss) I.ufo = { x: -0.1 }; }
+  if (I.ufo) { I.ufo.x += dt * 0.25; const ux = w * I.ufo.x; c.fillStyle = "#ffd700"; c.fillRect(Math.round(ux - 8 * P), 18, 16 * P, 3 * P); c.fillRect(Math.round(ux - 4 * P), 18 - 2 * P, 8 * P, 2 * P); if (I.ufo.x > 1.1) I.ufo = null; }
+  // draw the formation, bunkers, shots, bombs, ship, explosions
+  I.aliens.forEach(a => { const q = posOf(a);
+    if (a.alive) invSprite(c, INV_ART[a.kind][I.frame], q.x, q.y, P, INV_COL[a.kind]);
+    else if (a.dying > 0) { a.dying -= dt; c.fillStyle = "#ffffff"; [[0, 0], [8, 0], [4, 3], [0, 6], [8, 6], [2, 3], [6, 3]].forEach(([dx, dy]) => c.fillRect(q.x + dx * P + P, q.y + dy * P, P, P)); } });
+  I.bunk.forEach((b, k) => invSprite(c, b.map(r => r.join("")), bunkGap + k * (bunkW + bunkGap), bunkY, P, INV_COL.bunk));
+  c.fillStyle = "#e8ffe8"; I.shots.forEach(t => c.fillRect(Math.round(t.x - P / 2), Math.round(t.y), Math.max(1, P), 4 * P));
+  c.fillStyle = "#ff3b3b"; I.bombs.forEach(b => { const z = Math.floor(now / 80) % 2; c.fillRect(Math.round(b.x - P / 2 + (z ? P : 0)), Math.round(b.y), P, 2 * P); c.fillRect(Math.round(b.x - P / 2 + (z ? 0 : P)), Math.round(b.y + 2 * P), P, 2 * P); });
+  if (I.flash > 0) I.flash -= dt;
+  invSprite(c, INV_ART.ship, Math.round(w * I.shipX - 5 * P), shipY, P, I.flash > 0 && Math.floor(now / 60) % 2 ? "#ff3b3b" : INV_COL.ship);
+  c.fillStyle = "#00ff41"; c.fillRect(0, h - 6, w, 2);
+  I.fx = I.fx.filter(f => { f.t -= dt; if (f.t <= 0) return false; f.x += f.vx * dt; f.y += f.vy * dt; c.fillStyle = f.col; c.fillRect(Math.round(f.x), Math.round(f.y), 2, 2); return true; });
+  if (arcBoss(s) && W.running && Math.floor(now / 300) % 2) { c.fillStyle = "rgba(255,0,40,.07)"; c.fillRect(0, 0, w, h); }
+}
+function arcBoom(I, x, y, col) { for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, v = 40 + Math.random() * 50; I.fx.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: 0.35 + Math.random() * 0.25, col }); } }
+function drawInvIcon(now) {                                      // the Pedal Defense card: a small looping attract scene
+  const cv = $("gInvCv"), dpr = window.devicePixelRatio || 1, W2 = 150, H2 = 112;
+  if (cv.width !== W2 * dpr) { cv.width = W2 * dpr; cv.height = H2 * dpr; }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  c.fillStyle = "#03000c"; c.fillRect(0, 0, W2, H2);
+  c.fillStyle = "#e8ffe8"; [[12, 20], [40, 70], [90, 10], [130, 54], [70, 88], [20, 96], [110, 92]].forEach(([x, y]) => c.fillRect(x, (y + Math.floor(now / 90)) % H2, 1, 1));
+  const fr = Math.floor(now / 500) % 2, mx = Math.round(Math.sin(now / 900) * 10), kinds = ["c", "b", "a"];
+  for (let r = 0; r < 3; r++) for (let k = 0; k < 5; k++) { if ((r * 5 + k + Math.floor(now / 700)) % 7 === 0) continue; invSprite(c, INV_ART[kinds[r]][fr], 22 + k * 22 + mx, 14 + r * 14, 1.5, INV_COL[kinds[r]]); }
+  [0, 1, 2].forEach(k => invSprite(c, INV_ART.bunk, 22 + k * 45, 78, 1.5, INV_COL.bunk));
+  const sx = 75 + Math.round(Math.sin(now / 700) * 40); invSprite(c, INV_ART.ship, sx - 7, 96, 1.5, INV_COL.ship);
+  c.fillStyle = "#e8ffe8"; const sy = 92 - (now / 3) % 80; c.fillRect(sx, Math.round(sy), 1.5, 6);
+  c.fillStyle = "#00ff41"; c.fillRect(0, 108, W2, 2);
 }
 /* Rider sprite: Ryan's reference art (43 x 43 pixel map). Legs, cranks, wheels and the frame tubes behind the legs are redrawn live so they animate. */
 const RMAP = [".......................#####...............", "......................#RRrRR##.............", ".....................#rRRRRrRr#............", ".....................#rrRRRrrR#............", ".....................#rrrrrRRRR#...........", ".....................#r#########...........", "......................#R#s#oo#.............", "..................#####r#sSSS#.............", ".................#CCCBb#osSSS#.............", "................#CCYCBBs#sSS##.............", "...............#C#CCYBCbo####..............", "..............#CY#bCCYSCbb#................", ".............#CYY#bb#tYY#bC#...............", "............#tYYCb#bo#tCt#bC#..............", "............##Ytbb#boo#oS##oS##............", "............#K##bBbb###oSSS#rsS##..........", "............#KKK##b#...#osSS##sos##........", "............#KKKK##K#...####kk###Kk#.......", "............#KKKKK##K#.....#Kkkkk#K#.......", ".............#KKKKk#K#.....#K#######.......", "............#K#KKKKK#K#.....##T............", ".............#K#KK#SS#s#..##TCT#...........", "...............###sSS#s###TtKtCT#..........", "...............#t#sSs##TTt#tC##K##.........", "................#SSo#TCC#.#C##K#KK#........", "................#SS#C###.#Tt#wo##o#........", ".....#######....#SS###..#Tt#.#o#G######....", "...###kkkkk###..#S#T##.#Tt#...#Y#kkkkk##...", "..##k#KKKKKKk###s##t#.##T#...##o#KKKKKKk#..", ".##K#Kk.g.g#KKK#C#k#k.#T#....#KoY#o..#KKk#.", ".#K#k...g...#Tt#tt##k#Tt#...#KKKYKo.k..#K#.", "#KK#.g.ggkwTt####Kkk#Tt#....#K#ko##kw.g.Kk#", "#K#...g###C##.K#####Tt##...#KK..rGKKKg..#K#", "#K#.ggKk#k##kg######C##....#K#wk#Y#Kg#gwgK#", "#K#..gk#CCCCCCCC#t#K#......#K#..gYK#K#..#K#", "#K#..gk###########Ct.......#K#..w#o#KK..wK#", "#K#g..#k#g#..k#K####.......#K#kg.gkkgK.g#K#", "#KK..g.kkk.g.wKK#..........#KK..g.k#gg..#K#", ".#K#g...gw..g#K#............#K#w....g.ggK#k", ".#KK#.g.g...#K##............#KKk.k..k..#K#.", "..#KK##.g.##K##..............#KK#k..w#KK#..", "...##KKKKKKK##...............k#KKK##KKK##..", "....KK#KKK#KK.................K##KKKK#K...."];
@@ -2571,7 +2737,7 @@ function drawGameStars(now) {                                    // drifting sta
   const cols = ["#e8ffe8", "#4ae0ff", "#ff3bff", "#ffd700"];
   S2.forEach(([x, y, v, k]) => { c.fillStyle = cols[k]; const yy = ((y * h + now / 1000 * 30 * v) % h + h) % h; c.fillRect(Math.round(x * w), Math.round(yy), v > 1.2 ? 3 : 2, v > 1.2 ? 3 : 2); });
 }
-function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); requestAnimationFrame(gameLoop); }
+function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); drawInvIcon(now); requestAnimationFrame(gameLoop); }
 function openGameSelect() {
   $("launchModal").style.display = "none";
   const hs = arcadeScores(); $("gHi").textContent = "Hi-score " + pad6(hs.length ? hs[0].s : 0);
@@ -2582,7 +2748,7 @@ function openGameSelect() {
   $("gameModal").classList.add("show"); requestAnimationFrame(gameLoop);
 }
 function pickGame(btn) {
-  ensureAudio(); arcadeGame = btn.dataset.game;
+  ensureAudio(); arcadeGame = btn.dataset.game; if (window.RIDER) window.RIDER.inv = null;
   document.querySelectorAll("#gameModal .g-card").forEach(b => b.disabled = true); btn.classList.add("picked");
   beep(988, 0.08, 0.15, "square"); beep(1319, 0.3, 0.15, "square", 0.08);                       // coin drop
   $("gCredit").textContent = "01"; $("gCoin").textContent = "Player 1 start"; $("gCoin").classList.add("go");
