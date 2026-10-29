@@ -183,6 +183,7 @@
   #aCombo { position:absolute; left:7px; top:6px; font-family:"Press Start 2P","Courier New",monospace; font-size:8px; color:#00ff41; text-shadow:2px 2px 0 #003b10; text-transform:uppercase; }
   #aComboN { display:block; font-size:13px; margin-top:3px; } #aCombo.broke { color:#ff3b3b; text-shadow:2px 2px 0 #4a0000; }
   #arc .a-coins { position:absolute; right:7px; top:6px; font-family:"Press Start 2P","Courier New",monospace; font-size:9px; color:#ffd700; display:flex; align-items:center; gap:5px; }
+  #arc[data-game="fighter"] #aCombo, #arc[data-game="fighter"] .a-coins { top:34px; }
   #arc .a-coins i { width:9px; height:9px; background:#ffd700; box-shadow:inset -2px -2px 0 #b8860b; display:inline-block; }
   #aBoss { position:absolute; left:50%; top:6px; transform:translateX(-50%); width:44%; display:flex; flex-direction:column; gap:4px; align-items:center; }
   #aBossName { font-family:"Press Start 2P","Courier New",monospace; font-size:7px; color:#ff3b3b; text-transform:uppercase; white-space:nowrap; }
@@ -270,15 +271,15 @@
   @keyframes gTick { from { transform:translateX(0); } to { transform:translateX(-50%); } }
   @media (prefers-reduced-motion: reduce) { #gameModal .g-title, #gameModal .g-title .b, #gameModal .g-tick span { animation:none; } }
   #gameModal .g-ask { font-size:10px; color:#ff3bff; margin-top:10px; text-align:center; }
-  #gameModal .g-list { display:flex; flex-wrap:wrap; justify-content:center; gap:14px; }
+  #gameModal .g-list { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
   #gameModal .g-card { display:flex; flex-direction:column; align-items:center; padding:6px; width:auto; background:#0b0618; border:3px solid #ff3bff; box-shadow:5px 5px 0 #4a004a; color:#e8ffe8; cursor:pointer; font:inherit; text-transform:uppercase; border-radius:0; }
   #gameModal .g-card:active { transform:translate(3px,3px); box-shadow:2px 2px 0 #4a004a; }
   #gameModal .g-card:focus-visible { outline:3px solid #ffd700; outline-offset:3px; }
-  #gameModal .g-card canvas { width:150px; height:112px; image-rendering:pixelated; background:#05000f; border:2px solid #2b1650; display:block; }
+  #gameModal .g-card canvas { width:96px; height:72px; image-rendering:pixelated; background:#05000f; border:2px solid #2b1650; display:block; }
   #gameModal .g-card .n { font-size:10px; color:#ffd700; }
   #gameModal .g-card .d { font-size:7px; color:#4ae0ff; line-height:1.4; text-align:center; }
   #gameModal .g-item { display:flex; flex-direction:column; align-items:center; gap:10px; }
-  #gameModal .g-name { font-size:9px; color:#ffd700; text-shadow:2px 2px 0 #7a3d00; letter-spacing:1px; }
+  #gameModal .g-name { font-size:7px; color:#ffd700; text-shadow:2px 2px 0 #7a3d00; letter-spacing:1px; }
   #gameModal .g-card.picked + .g-name { color:#00ff41; text-shadow:2px 2px 0 #003b10; animation:awBlink .25s steps(2) infinite; }
   #gameModal .g-card.picked { border-color:#00ff41; box-shadow:5px 5px 0 #003b10; }
   #gameModal .g-coin { font-size:12px; color:#e8ffe8; animation:awBlink 1s steps(2) infinite; text-align:center; }
@@ -295,7 +296,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.86</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.88</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -443,7 +444,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.86</span>
+  <span class="ver">v1.0.88</span>
 </div>
 
 <div class="ctrl">
@@ -610,6 +611,7 @@ Cooldown
   <div class="g-list">
     <div class="g-item"><button class="g-card" id="gTrail" type="button" data-game="trail" aria-labelledby="gTrailN"><canvas id="gTrailCv" width="150" height="112"></canvas></button><span class="g-name" id="gTrailN">Trail Rider</span></div>
     <div class="g-item"><button class="g-card" id="gInv" type="button" data-game="invaders" aria-labelledby="gInvN"><canvas id="gInvCv" width="150" height="112"></canvas></button><span class="g-name" id="gInvN">Pedal Defense</span></div>
+    <div class="g-item"><button class="g-card" id="gFight" type="button" data-game="fighter" aria-labelledby="gFightN"><canvas id="gFightCv" width="150" height="112"></canvas></button><span class="g-name" id="gFightN">Watt Fighter</span></div>
   </div>
   <div class="g-coin" id="gCoin">Insert coin</div>
   <div class="g-tbl" id="gTbl"></div>
@@ -1731,7 +1733,7 @@ function riderFrame(ts) {
   R.crank += (live2 ? (cad3s() || 0) : 0) / 60 * Math.PI * 2 * dt;
   if (!Number.isFinite(R.scroll)) R.scroll = 0; if (!Number.isFinite(R.crank)) R.crank = 0;
   R.tS = live2 ? Math.min(W.t + 1, R.tS + dt) : W.t; if (Math.abs(R.tS - W.t) > 1.5) R.tS = W.t;   // smooth workout clock for the scrolling trail
-  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
+  if (document.body.dataset.screen === "run" && !$("summary").classList.contains("show")) { try { arcPlan(R); arcTally(R); (arcadeGame === "invaders" ? drawInvaders : arcadeGame === "fighter" ? drawFighter : drawArcScene)($("arcCv"), R, ts); arcHud(R); } catch (e) { log("Arcade: " + e.message); } }   // a drawing error never stops the frame loop
   requestAnimationFrame(riderFrame);
 }
 function arcTally(R) {                                           // per-second bookkeeping: W' balance, combo, coins
@@ -1815,7 +1817,8 @@ function arcHud(R) {
   setT("aHr", live.hr ?? "--"); setT("aHr2", live.hr ?? "--");
   const hvA = W.hrHist.filter(v => v != null); setT("aHrAvg", hvA.length ? Math.round(hvA.reduce((a, b) => a + b, 0) / hvA.length) : "--");
   const sec = Math.floor(W.t); if (live.hr != null && sec !== R.hrBeat) { R.hrBeat = sec; const hb = $("aHeart"); hb.classList.remove("beat"); void hb.offsetWidth; hb.classList.add("beat"); }
-  const hp = R.w / ARC.W0, hc = hp > .6 ? "#00ff41" : hp > .3 ? "#ffd700" : "#ff3b3b", nOn = Math.ceil(hp * 20);
+  $("arc").dataset.game = arcadeGame;
+  const hp = arcadeGame === "fighter" && R.fight ? R.fight.php : R.w / ARC.W0, hc = hp > .6 ? "#00ff41" : hp > .3 ? "#ffd700" : "#ff3b3b", nOn = Math.ceil(hp * 20);
   [...$("aHp").children].forEach((e, k) => { const col = k < nOn ? hc : ""; if (e.style.background !== col) e.style.background = col; });
   // power panel
   const p3 = power3s(), tg = W.running ? stepTarget() : null;
@@ -1836,13 +1839,13 @@ function arcHud(R) {
   // overlay: combo, coins, boss bar, warning
   if (R.broke > 0) { R.broke -= 1 / 60; setT("aComboN", "Break!"); $("aCombo").classList.add("broke"); } else { $("aCombo").classList.remove("broke"); setT("aComboN", "x" + R.combo); }
   setT("aCoins", "x" + String(R.coins).padStart(2, "0"));
-  $("aBoss").hidden = !boss;
+  $("aBoss").hidden = !boss || arcadeGame === "fighter";
   if (boss) { setT("aBossName", "Boss · " + arcName(s)); const IB = arcadeGame === "invaders" && R.inv && R.inv.boss;   // Pedal Defense: the bar is the mothership's HP
     $("aBossHp").style.width = (IB ? IB.hp / IB.max * 100 : Math.max(0, rem / s.dur * 100)) + "%"; }
   let tb = 0, nb = -1; if (W.running && st.length) { tb = s.dur - W.stepT; for (let j = W.idx + 1; j < st.length; j++) { if (arcBoss(st[j])) { nb = j; break; } tb += st[j].dur; } }
-  const warn = W.running && !boss && nb >= 0 && tb <= 8 && tb > 0; $("aWarn").hidden = !warn;
+  const warn = W.running && !boss && nb >= 0 && tb <= 8 && tb > 0 && arcadeGame !== "fighter"; $("aWarn").hidden = !warn;   // Watt Fighter announces its own challenger
   if (warn) setT("aWarnSub", arcName(st[nb]) + " in " + fmt(tb));
-  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx) { if (!(arcadeGame === "invaders" && arcBoss(st[R.lastIdx]))) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true); }
+  if (W.running && R.lastIdx >= 0 && W.idx !== R.lastIdx && arcadeGame !== "fighter") { if (!(arcadeGame === "invaders" && arcBoss(st[R.lastIdx]))) arcPop(arcBoss(st[R.lastIdx]) ? "Boss down!" : "Checkpoint!", 0.2, 0.25, true); }
   R.lastIdx = W.running ? W.idx : -1;
   // gamepad mirrors the real buttons
   const m = (aid, id) => { const a = $(aid), b = $(id); a.disabled = b.disabled; a.hidden = b.style.display === "none"; };
@@ -2002,6 +2005,175 @@ function drawInvIcon(now) {                                      // the Pedal De
   const sx = 75 + Math.round(Math.sin(now / 700) * 40); invSprite(c, INV_ART.ship, sx - 7, 96, 1.5, INV_COL.ship);
   c.fillStyle = "#e8ffe8"; const sy = 92 - (now / 3) % 80; c.fillRect(sx, Math.round(sy), 1.5, 6);
   c.fillStyle = "#00ff41"; c.fillRect(0, 108, W2, 2);
+}
+/* ---- arcade game 3: Watt Fighter (a one-on-one fighting game driven by the ride) ----
+   Fights happen only on hard intervals (85%+ FTP, Sweet Spot and up): a zone opponent lands scheduled hits that drain
+   your HP by a planned amount (never below 8%), and you always win by K.O. at the end. Easier intervals are breaks:
+   medics patch your fighter up right after a fight, then he stretches and shadow-boxes to warm up for the next one.
+   Holding target speeds your attacks; surging past 105% of target for 1.5 s fires a Watt Wave. */
+const WF_FOES = {
+  "Sweet Spot": { skin: "#c98a62", gi: "#2fbf71", belt: "#0b3d22", hair: "#2a1a0a", band: "#ffd700" },
+  "Threshold": { skin: "#f0b48a", gi: "#ffd23f", belt: "#7a3d00", hair: "#5a2a0a", band: "#ff3b3b" },
+  "VO2 Max": { skin: "#a8704c", gi: "#ff3b3b", belt: "#2a0000", hair: "#111111", band: "#ffffff" },
+  "Anaerobic": { skin: "#e8c0a0", gi: "#9b4dff", belt: "#1a0033", hair: "#e8ffe8", band: "#00ff41" },
+  sparring: { skin: "#8a8f99", gi: "#5a6170", belt: "#30343c", hair: "#30343c", band: "#8a8f99" },
+  medic: { skin: "#f0b48a", gi: "#f2f2f2", belt: "#d0d0d0", hair: "#ffffff", band: "#ffffff", cross: true },
+  medic2: { skin: "#a8704c", gi: "#f2f2f2", belt: "#d0d0d0", hair: "#ffffff", band: "#ffffff", cross: true }
+};
+const WF_ME = { skin: "#f0b48a", gi: "#2f5fc4", belt: "#f2c230", hair: "#3a2414", band: "#e2362b" };
+function wfState(R) { return R.fight || (R.fight = { php: 1, idx: -2, p1: { x: .37, act: "idle", at: 0, hit: 0, kb: 0 }, p2: { x: 1.15, act: "idle", at: 0, hit: 0, kb: 0, down: 0 }, foeHp: 1, dmg: 0, units: 1, hits: 0, taken: 0, ko: false, balls: [], fx: [], surge: 0, call: "", callT: 0, callKo: false, sub: "" }); }
+function wfDraw(c, x, gy, u, pal, dir, st, now, down) {          // fighters are built from pixel blocks so they can punch and kick
+  const rects = [], R = (px, py, w, h, col) => rects.push([px, py, w, h, col]);
+  const bob = st.act === "idle" ? (Math.floor(now / 260) % 2) : 0, lean = st.hit > 0 ? -2 : 0;
+  if (down) { R(-12, -4, 22, 4, pal.gi); R(10, -5, 5, 5, pal.skin); R(10, -6, 5, 2, pal.hair); R(-4, -4, 2, 4, pal.belt); R(-18, -3, 6, 3, pal.skin); }
+  else if (st.act === "sit") {                                       // sitting on the boards while the medics work
+    R(-4, -4, 16, 3, pal.gi); R(11, -4, 3, 3, pal.skin); R(-6, -18, 9, 14, pal.gi); R(-6, -6, 9, 2, pal.belt);
+    R(-5, -25, 8, 7, pal.skin); R(-5, -26, 8, 2, pal.hair); R(-6, -23, 10, 2, pal.band); R(1, -22, 1, 1, "#000000");
+    R(1, -16, 9, 3, pal.skin); R(9, -16, 3, 3, pal.band);
+  } else if (st.act === "reach") {                                   // overhead stretch
+    R(-5, -12, 3, 12, pal.gi); R(2, -12, 3, 12, pal.gi); R(-6, -1, 4, 1, "#1a1a22"); R(2, -1, 4, 1, "#1a1a22");
+    R(-5, -26, 10, 14, pal.gi); R(-5, -14, 10, 2, pal.belt); R(-4, -33, 8, 7, pal.skin); R(-4, -34, 8, 2, pal.hair); R(-5, -31, 10, 2, pal.band); R(2, -30, 1, 1, "#000000");
+    R(-7, -43, 3, 18, pal.skin); R(4, -43, 3, 18, pal.skin); R(-7, -45, 3, 3, pal.band); R(4, -45, 3, 3, pal.band);
+  } else if (st.act === "bend") {                                    // touching the toes
+    R(-5, -12, 3, 12, pal.gi); R(2, -12, 3, 12, pal.gi); R(-6, -1, 4, 1, "#1a1a22"); R(2, -1, 4, 1, "#1a1a22");
+    R(-5, -18, 15, 7, pal.gi); R(-5, -12, 3, 2, pal.belt); R(9, -17, 7, 7, pal.skin); R(15, -17, 2, 7, pal.hair); R(10, -18, 2, 8, pal.band);
+    R(10, -10, 3, 9, pal.skin); R(10, -2, 3, 2, pal.band);
+  } else {
+    const leg = st.act === "kick", arm = st.act === "punch" || st.act === "special";
+    R(-5, -12, 3, 12, pal.gi); R(2 + lean, -12, 3, leg ? 6 : 12, pal.gi);
+    R(-6, -1, 4, 1, "#1a1a22"); if (!leg) R(2 + lean, -1, 4, 1, "#1a1a22");
+    if (leg) { R(4, -12, 14, 3, pal.gi); R(17, -12, 3, 3, pal.skin); }
+    R(-5 + lean, -26 + bob, 10, 14, pal.gi); R(-5 + lean, -14 + bob, 10, 2, pal.belt);
+    R(-4 + lean, -33 + bob, 8, 7, pal.skin); R(-4 + lean, -34 + bob, 8, 2, pal.hair); R(-5 + lean, -31 + bob, 10, 2, pal.band);
+    R(2 + lean, -30 + bob, 1, 1, "#000000"); R(-7 + lean, -24 + bob, 3, 9, pal.skin);
+    if (arm) { R(4 + lean, -23 + bob, 14, 3, pal.skin); R(17 + lean, -24 + bob, 4, 5, pal.band); }
+    else { R(4 + lean, -24 + bob, 3, 7, pal.skin); R(5 + lean, -18 + bob, 4, 4, pal.band); }
+  }
+  if (pal.cross && !down && st.act !== "sit") { R(-1 + lean, -23 + bob, 2, 8, "#e2362b"); R(-4 + lean, -20 + bob, 8, 2, "#e2362b"); }   // medic's red cross
+  const flash = st.hit > 0 && Math.floor(now / 50) % 2;
+  rects.forEach(([px, py, w, h]) => { c.fillStyle = "#000"; c.fillRect(Math.round(x + (dir > 0 ? px - 1 : -(px + w) - 1) * u), Math.round(gy + (py - 1) * u), (w + 2) * u, (h + 2) * u); });
+  rects.forEach(([px, py, w, h, col]) => { c.fillStyle = flash ? "#ffffff" : col; c.fillRect(Math.round(x + (dir > 0 ? px : -(px + w)) * u), Math.round(gy + py * u), w * u, h * u); });
+}
+function wfCall(F, text, sub, ko, sec) { F.call = text; F.sub = sub || ""; F.callKo = !!ko; F.callT = sec || 1.1; }
+function wfSpark(F, x, y) { for (let k = 0; k < 10; k++) { const a = Math.random() * Math.PI * 2, v = 30 + Math.random() * 50; F.fx.push({ x, y, dx: 0, dy: 0, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: .3 + Math.random() * .2, col: k % 2 ? "#ffd700" : "#ffffff" }); } }
+function wfRound(F) {
+  const wasFight = F.idx >= 0 && F.boss;
+  if (F.idx >= 0 && !F.boss) F.php = 1;                              // a break always ends with full HP
+  const i = Math.min(W.idx, W.steps.length - 1), s = W.steps[i], rel = arcRel(s) ?? 0.6, boss = arcBoss(s);
+  F.fightNo = W.steps.slice(0, i + 1).filter(arcBoss).length;       // rounds count fights only
+  const nb = W.steps.slice(i + 1).find(arcBoss); F.nextFoe = nb ? arcName(nb) : "";
+  F.mode = boss ? "fight" : wasFight && F.php < .999 ? "medic" : "warm"; F.medDur = s ? Math.max(3, Math.min(20, s.dur * .6)) : 6; F.medIn = F.mode === "medic" ? 0 : (F.medIn || 0); F.ready = false;
+  Object.assign(F, { idx: W.idx, foeHp: 1, dmg: 0, hits: 0, taken: 0, ko: false, balls: [], surge: 0, barr: false, boss, foeDealt: 0, hp0: F.php, floor: 0.08 });
+  F.units = Math.min(120, boss ? Math.max(10, Math.round(s.dur * rel * W.ftp / 900)) : Math.max(6, Math.round(s.dur * rel * W.ftp / 1500)));
+  F.drain = boss ? Math.max(0, Math.min(F.php - F.floor, 0.12 + 0.28 * Math.min(1, s.dur / 300) + 0.6 * Math.max(0, rel - 0.85))) : 0;   // planned HP cost of the round
+  F.foeHits = boss ? Math.min(60, Math.max(4, Math.round(s.dur / 7))) : 0;
+  F.foe = boss ? (WF_FOES[arcName(s)] || WF_FOES["VO2 Max"]) : WF_FOES.sparring; F.foeName = boss ? arcName(s) : "Sparring";
+  Object.assign(F.p2, { x: 1.15, act: "idle", hit: 0, kb: 0, down: 0 }); Object.assign(F.p1, { x: .37, act: "idle", hit: 0, kb: 0 });
+  if (W.running && boss) { wfCall(F, "Round " + F.fightNo, F.foeName + " enters", false, 1); F.fightAt = 1; beep(523, .08, .1, "square"); beep(784, .2, .1, "square", .08); }
+  else if (W.running && F.mode === "medic") { wfCall(F, "Medic!", "Patching you up", false, 1.4); beep(988, .08, .08, "square"); beep(988, .08, .08, "square", .16); }
+}
+function wfFoeHit(F, amt) {
+  F.p2.act = Math.random() < .5 ? "punch" : "kick"; F.p2.at = 0; F.p1.hit = .2; F.p1.kb = -.03; F.taken++;
+  F.php = Math.max(F.floor, F.php - amt); beep(90, .1, .1, "square"); wfSpark(F, F.p1.x + .05, .6);
+}
+function drawFighter(cv, R, now) {
+  if (!cv) return;
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  const F = wfState(R), dt = Math.min(0.1, F.last ? (now - F.last) / 1000 : 0); F.last = now;
+  if (W.t === 0 && !W.running) { F.php = 1; F.idx = -2; }
+  if (F.idx !== W.idx) wfRound(F);
+  const i = Math.min(W.idx, W.steps.length - 1), s = W.steps[i], live2 = W.running && !W.paused && W.idx < W.steps.length;
+  const p3 = power3s(), tg = W.running ? (sentTarget() ?? stepTarget()) : null, ratio = tg ? (p3 || 0) / tg : 1;
+  const hold = !live2 ? 0 : tg == null ? (p3 > 20 ? 1 : 0) : Math.max(0, Math.min(1, (ratio - .8) / .12));
+  const k = s && W.running ? W.stepT / s.dur : 0, ramp = s && W.stepT < Math.min(8, s.dur * .2) && (p3 || 0) > .6 * (tg || 0), hh = ramp ? 1 : hold;
+  if (F.fightAt > 0) { F.fightAt -= dt; if (F.fightAt <= 0) wfCall(F, "Fight!", "", false, .7); }
+  if (live2 && F.boss) {
+    F.p2.x += (.63 - F.p2.x) * Math.min(1, dt * 3);                              // the opponent walks in
+    if (!F.ko) F.dmg += (0.55 + 0.45 * hh) * dt * F.units / (s.dur * .85);   // slipping slows your attacks but never stops them
+    if (s.dur - W.stepT <= Math.max(3, s.dur * .1) && !F.ko) { if (!F.barr) { F.barr = true; wfCall(F, "K.O. combo!", "", false, .8); } F.dmg = F.units; }   // you always win the round
+    if (F.boss && !F.ko) { const due = Math.min(F.foeHits, Math.floor(Math.min(1, k / .9) * F.foeHits));   // their scheduled hits, spread over the first 90%
+      if (due > F.foeDealt && F.p2.act === "idle" && F.p2.at > .35) { F.foeDealt++; wfFoeHit(F, F.drain / F.foeHits); } }
+    if (F.boss && hold < .4 && !ramp && !F.ko && F.p2.act === "idle" && F.p2.at > .9) wfFoeHit(F, .02);   // slipping lets in extra hits (still floored)
+    F.surge = ratio > 1.05 ? F.surge + dt : Math.max(0, F.surge - dt * 2);       // the Watt Wave special
+    if (F.surge >= 1.5 && !F.ko && F.p1.act === "idle") { F.surge = -2; F.p1.act = "special"; F.p1.at = 0; F.balls.push({ x: F.p1.x + .06 }); beep(220, .3, .1, "square"); beep(440, .25, .08, "square", .1); arcPop("Watt Wave!", .15, .4, true); }
+    F.p1.at += dt; F.p2.at += dt;
+    const owed = Math.floor(F.dmg) - F.hits;
+    if (owed > 0 && !F.ko && F.p1.act === "idle" && F.p1.at > .12) {
+      F.p1.act = Math.random() < .55 ? "punch" : "kick"; F.p1.at = 0; F.hits++; F.p2.hit = .15; F.p2.kb = .02;
+      beep(F.p1.act === "punch" ? 180 : 140, .06, .09, "square"); wfSpark(F, F.p2.x - .05, F.p1.act === "punch" ? .55 : .7);
+    }
+  }
+  else if (F.mode !== "fight") {                                     // a break: medics first if you just fought, then warm-up
+    F.p2.x += (1.25 - F.p2.x) * Math.min(1, dt * 2); F.p1.at += dt;
+    if (F.mode === "medic") {
+      F.medIn = Math.min(1, F.medIn + dt * 1.5); F.p1.act = "sit";
+      if (live2) { const b = F.php; F.php = Math.min(1, F.php + dt * (1 - F.hp0) / F.medDur + 1e-4);
+        if (Math.floor(b * 10) !== Math.floor(F.php * 10)) { arcPop("+HP", .3, .42); beep(1319, .05, .05, "square"); }
+        if (Math.random() < dt * 4) F.fx.push({ x: F.p1.x + (Math.random() - .5) * .06, y: .5, dx: 0, dy: 0, vx: 0, vy: -25, t: .8, col: "#00ff41", plus: true }); }
+      if (F.php >= 1 || (s && W.stepT >= s.dur * .8)) { F.php = 1; F.mode = "warm"; F.p1.act = "idle"; F.p1.at = 0; if (W.running) { wfCall(F, "HP restored!", "Warm up for the next fight", false, 1.3); [784, 1047].forEach((f, j) => beep(f, .08, .08, "square", j * .08)); } }
+    } else {
+      F.medIn = Math.max(0, F.medIn - dt * 1.2);
+      const rem = s ? s.dur - W.stepT : 99, nextHard = W.steps[W.idx + 1] && arcBoss(W.steps[W.idx + 1]);
+      if (W.running && nextHard && rem <= 8) { F.p1.act = "idle"; if (!F.ready) { F.ready = true; wfCall(F, "Challenger!", F.nextFoe + " in " + Math.ceil(rem) + "s", false, 2.2); beep(392, .1, .08, "square"); beep(392, .1, .08, "square", .2); } }   // ready stance before the bell
+      else { const seg = Math.floor(now / 2200) % 4;                  // shadow-box, stretch up, shadow-box, toe touch
+        if (seg === 1) F.p1.act = "reach"; else if (seg === 3) F.p1.act = "bend";
+        else if (F.p1.at > .38) { F.p1.act = F.p1.act === "punch" ? "idle" : Math.random() < .7 ? "punch" : "kick"; F.p1.at = 0; } }
+      if (s && W.stepT >= s.dur * .8) F.php = 1;
+    }
+  }
+  if (F.mode === "fight" && F.p1.act !== "idle" && F.p1.at > .28) F.p1.act = "idle"; if (F.p2.act !== "idle" && F.p2.at > .3) F.p2.act = "idle";
+  F.balls = F.balls.filter(b => { b.x += dt * .55; if (b.x >= F.p2.x - .05) { F.hits += Math.min(3, Math.max(0, Math.floor(F.dmg) - F.hits)); F.p2.hit = .3; F.p2.kb = .05; wfSpark(F, F.p2.x - .04, .55); beep(110, .2, .1, "square"); return false; } return true; });
+  F.foeHp = Math.max(0, 1 - F.hits / F.units);
+  if (F.boss && F.foeHp === 0 && !F.ko && W.running) { F.ko = true; F.p2.down = 1; wfCall(F, "K.O.!", F.php >= F.hp0 - F.drain + .005 ? "Perfect!" : "", true, 1.8); [784, 988, 1319, 1568].forEach((f, j) => beep(f, .09, .1, "square", j * .08)); }
+  if (F.p2.hit > 0) F.p2.hit -= dt; if (F.p1.hit > 0) F.p1.hit -= dt;
+  F.p2.x += F.p2.kb; F.p2.kb *= .6; F.p1.x += F.p1.kb; F.p1.kb *= .6;
+  F.p1.x += (.37 - F.p1.x) * .05; F.p1.x = Math.max(.25, Math.min(.42, F.p1.x)); if (F.boss && !F.ko) F.p2.x = Math.min(F.p2.x, .8); if (!W.running && F.boss) F.p2.x = .63;
+  // arena: a night velodrome with a crowd on the banking and wooden boards
+  const boss = W.running && F.boss, gy = Math.round(h * .88), u = Math.max(1, Math.floor(h / 70 * dpr)) / dpr;
+  c.fillStyle = boss ? "#12000a" : "#05000f"; c.fillRect(0, 0, w, h);
+  c.fillStyle = "#1a0d2e"; c.fillRect(0, h * .3, w, h * .32);
+  const CR = window.WF_CROWD || (window.WF_CROWD = Array.from({ length: 60 }, () => [Math.random(), Math.random(), Math.floor(Math.random() * 5)]));
+  CR.forEach(([x, y, q]) => { const bo = Math.floor(now / (300 + q * 40)) % 2; c.fillStyle = ["#2a1650", "#3a1d6a", "#22104a", "#4a2a7a", "#301860"][q]; c.fillRect(Math.round(x * w), Math.round(h * (.34 + y * .2)) - bo * 2, 6, 8); c.fillStyle = "#c98a62"; c.fillRect(Math.round(x * w) + 1, Math.round(h * (.34 + y * .2)) - 4 - bo * 2, 4, 4); });
+  c.fillStyle = "#ff3b3b"; c.fillRect(0, h * .62, w, 3); c.fillStyle = "#e8ffe8"; c.fillRect(0, h * .62 + 3, w, 2); c.fillStyle = "#3b9cff"; c.fillRect(0, h * .62 + 5, w, 3);
+  for (let j = 0; j < 6; j++) { c.fillStyle = Math.floor(now / 400 + j) % 3 ? "#ffd700" : "#7a6000"; c.fillRect(Math.round(w * (j + .5) / 6) - 3, Math.round(h * .27), 6, 4); }
+  const bd = ["#6b3d14", "#7a4818", "#5e3410"]; for (let y = Math.round(h * .66); y < h; y += 6) { c.fillStyle = bd[(y / 6 | 0) % 3]; c.fillRect(0, y, w, 6); }
+  F.balls.forEach(b => { const x = w * b.x, y = gy - 24 * u, r = (Math.floor(now / 60) % 2) ? 5 : 6; c.fillStyle = "#4ae0ff"; c.fillRect(Math.round(x - r * u), Math.round(y - r * u / 1.4), r * 2 * u, r * 1.4 * u); c.fillStyle = "#ffffff"; c.fillRect(Math.round(x - 2 * u), Math.round(y - 2 * u), 4 * u, 4 * u); });
+  if (F.p2.x < 1.1) wfDraw(c, w * F.p2.x, gy, u, F.foe || WF_FOES.sparring, -1, F.p2, now, F.p2.down);
+  if (F.medIn > 0) { const off = (1 - F.medIn) * .5, tend = { act: Math.floor(now / 600) % 2 ? "punch" : "idle", hit: 0 };   // medics walk in from both sides and tend the fighter
+    wfDraw(c, w * (F.p1.x - .14 - off), gy, u, WF_FOES.medic, 1, tend, now, false); wfDraw(c, w * (F.p1.x + .2 + off), gy, u, WF_FOES.medic2, -1, { act: tend.act === "punch" ? "idle" : "punch", hit: 0 }, now, false); }
+  wfDraw(c, w * F.p1.x, gy, u, WF_ME, 1, F.p1, now, false);
+  F.fx = F.fx.filter(f => { f.t -= dt; if (f.t <= 0) return false; f.dx += f.vx * dt; f.dy += f.vy * dt; c.fillStyle = f.col; const fx = Math.round(f.x * w + f.dx), fy = Math.round(gy - f.y * 34 * u + f.dy);
+    if (f.plus) { c.fillRect(fx - u, fy - 3 * u, 2 * u, 6 * u); c.fillRect(fx - 3 * u, fy - u, 6 * u, 2 * u); } else c.fillRect(fx, fy, 2 * u, 2 * u); return true; });
+  if (boss && Math.floor(now / 300) % 2) { c.fillStyle = "rgba(255,0,40,.07)"; c.fillRect(0, 0, w, h); }
+  // fighting-game bars: you on the left (your HP), the opponent on the right, round in the middle
+  const PF = '"Press Start 2P","Courier New",monospace', bw = Math.round(w * .4), by = 18;
+  c.font = "7px " + PF; c.textBaseline = "top";
+  c.fillStyle = "#e8ffe8"; c.textAlign = "left"; c.fillText("RYAN", 7, 6);
+  c.fillStyle = "#ff3b3b"; c.textAlign = "right"; c.fillText(F.boss ? String(F.foeName || "").toUpperCase() : F.nextFoe ? "NEXT: " + F.nextFoe.toUpperCase() : "", w - 7, 6);
+  c.fillStyle = "#4ae0ff"; c.textAlign = "center"; c.fillText(F.boss ? "ROUND " + F.fightNo : F.mode === "medic" ? "MEDIC" : "WARM-UP", w / 2, 8);
+  const bar = (x, frac, rightAnchor, col) => { c.fillStyle = "#e8ffe8"; c.fillRect(x - 2, by - 2, bw + 4, 12); c.fillStyle = "#400000"; c.fillRect(x, by, bw, 8);
+    const fw = Math.round(bw * Math.max(0, Math.min(1, frac))); c.fillStyle = col; c.fillRect(rightAnchor ? x + bw - fw : x, by, fw, 8); };
+  const pc = F.php > .6 ? "#ffd700" : F.php > .25 ? "#ff8c00" : (Math.floor(now / 250) % 2 ? "#ff3b3b" : "#ffd700");
+  bar(8, F.php, true, pc); if (F.boss) bar(w - 8 - bw, F.foeHp, false, "#ffd700");
+  if (F.callT > 0) { F.callT -= dt;
+    c.textAlign = "center"; const big = F.callKo ? 26 : 18, y0 = Math.round(h * .36);
+    if (!F.callKo || Math.floor(now / 150) % 2) { c.font = big + "px " + PF; c.fillStyle = "#5a0000"; c.fillText(F.call.toUpperCase(), w / 2 + 5, y0 + 5); c.fillStyle = F.callKo ? "#ffd700" : "#ff3b3b"; c.fillText(F.call.toUpperCase(), w / 2 + 3, y0 + 3); c.fillStyle = F.callKo ? "#ff3b3b" : "#ffd700"; c.fillText(F.call.toUpperCase(), w / 2, y0); }
+    if (F.sub) { c.font = "8px " + PF; c.fillStyle = "#e8ffe8"; c.fillText(F.sub.toUpperCase(), w / 2, y0 + big + 10); } }
+}
+function drawFightIcon(now) {                                      // the Watt Fighter card: two fighters trading blows
+  const cv = $("gFightCv"), dpr = window.devicePixelRatio || 1, W2 = 150, H2 = 112;
+  if (cv.width !== W2 * dpr) { cv.width = W2 * dpr; cv.height = H2 * dpr; }
+  const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.imageSmoothingEnabled = false;
+  c.fillStyle = "#05000f"; c.fillRect(0, 0, W2, H2); c.fillStyle = "#1a0d2e"; c.fillRect(0, 30, W2, 36);
+  for (let j = 0; j < 14; j++) { const bo = Math.floor(now / (300 + j * 37)) % 2; c.fillStyle = ["#2a1650", "#3a1d6a", "#4a2a7a"][j % 3]; c.fillRect(6 + j * 10, 40 + (j * 7) % 14 - bo * 2, 6, 7); }
+  c.fillStyle = "#ff3b3b"; c.fillRect(0, 66, W2, 2); c.fillStyle = "#3b9cff"; c.fillRect(0, 68, W2, 2);
+  const bd = ["#6b3d14", "#7a4818", "#5e3410"]; for (let y = 70; y < H2; y += 5) { c.fillStyle = bd[(y / 5 | 0) % 3]; c.fillRect(0, y, W2, 5); }
+  const ph = Math.floor(now / 350) % 4;
+  wfDraw(c, 54, 102, 1.8, WF_ME, 1, { act: ph === 1 ? "punch" : ph === 3 ? "kick" : "idle", hit: 0 }, now, false);
+  wfDraw(c, 98, 102, 1.8, WF_FOES["VO2 Max"], -1, { act: ph === 2 ? "punch" : "idle", hit: ph === 1 || ph === 3 ? .1 : 0 }, now, false);
+  c.fillStyle = "#ffd700"; c.fillRect(8, 8, 52, 5); c.fillStyle = "#ffd700"; c.fillRect(90, 8, 40 - ph * 4, 5);
 }
 /* Rider sprite: Ryan's reference art (43 x 43 pixel map). Legs, cranks, wheels and the frame tubes behind the legs are redrawn live so they animate. */
 const RMAP = [".......................#####...............", "......................#RRrRR##.............", ".....................#rRRRRrRr#............", ".....................#rrRRRrrR#............", ".....................#rrrrrRRRR#...........", ".....................#r#########...........", "......................#R#s#oo#.............", "..................#####r#sSSS#.............", ".................#CCCBb#osSSS#.............", "................#CCYCBBs#sSS##.............", "...............#C#CCYBCbo####..............", "..............#CY#bCCYSCbb#................", ".............#CYY#bb#tYY#bC#...............", "............#tYYCb#bo#tCt#bC#..............", "............##Ytbb#boo#oS##oS##............", "............#K##bBbb###oSSS#rsS##..........", "............#KKK##b#...#osSS##sos##........", "............#KKKK##K#...####kk###Kk#.......", "............#KKKKK##K#.....#Kkkkk#K#.......", ".............#KKKKk#K#.....#K#######.......", "............#K#KKKKK#K#.....##T............", ".............#K#KK#SS#s#..##TCT#...........", "...............###sSS#s###TtKtCT#..........", "...............#t#sSs##TTt#tC##K##.........", "................#SSo#TCC#.#C##K#KK#........", "................#SS#C###.#Tt#wo##o#........", ".....#######....#SS###..#Tt#.#o#G######....", "...###kkkkk###..#S#T##.#Tt#...#Y#kkkkk##...", "..##k#KKKKKKk###s##t#.##T#...##o#KKKKKKk#..", ".##K#Kk.g.g#KKK#C#k#k.#T#....#KoY#o..#KKk#.", ".#K#k...g...#Tt#tt##k#Tt#...#KKKYKo.k..#K#.", "#KK#.g.ggkwTt####Kkk#Tt#....#K#ko##kw.g.Kk#", "#K#...g###C##.K#####Tt##...#KK..rGKKKg..#K#", "#K#.ggKk#k##kg######C##....#K#wk#Y#Kg#gwgK#", "#K#..gk#CCCCCCCC#t#K#......#K#..gYK#K#..#K#", "#K#..gk###########Ct.......#K#..w#o#KK..wK#", "#K#g..#k#g#..k#K####.......#K#kg.gkkgK.g#K#", "#KK..g.kkk.g.wKK#..........#KK..g.k#gg..#K#", ".#K#g...gw..g#K#............#K#w....g.ggK#k", ".#KK#.g.g...#K##............#KKk.k..k..#K#.", "..#KK##.g.##K##..............#KK#k..w#KK#..", "...##KKKKKKK##...............k#KKK##KKK##..", "....KK#KKK#KK.................K##KKKK#K...."];
@@ -2740,7 +2912,7 @@ function drawGameStars(now) {                                    // drifting sta
   const cols = ["#e8ffe8", "#4ae0ff", "#ff3bff", "#ffd700"];
   S2.forEach(([x, y, v, k]) => { c.fillStyle = cols[k]; const yy = ((y * h + now / 1000 * 30 * v) % h + h) % h; c.fillRect(Math.round(x * w), Math.round(yy), v > 1.2 ? 3 : 2, v > 1.2 ? 3 : 2); });
 }
-function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); drawInvIcon(now); requestAnimationFrame(gameLoop); }
+function gameLoop(now) { if (!$("gameModal").classList.contains("show")) return; drawGameStars(now); drawGameIcon(now); drawInvIcon(now); drawFightIcon(now); requestAnimationFrame(gameLoop); }
 function openGameSelect() {
   $("launchModal").style.display = "none";
   const hs = arcadeScores(); $("gHi").textContent = "Hi-score " + pad6(hs.length ? hs[0].s : 0);
@@ -2751,7 +2923,7 @@ function openGameSelect() {
   $("gameModal").classList.add("show"); requestAnimationFrame(gameLoop);
 }
 function pickGame(btn) {
-  ensureAudio(); arcadeGame = btn.dataset.game; if (window.RIDER) window.RIDER.inv = null;
+  ensureAudio(); arcadeGame = btn.dataset.game; if (window.RIDER) { window.RIDER.inv = null; window.RIDER.fight = null; }
   document.querySelectorAll("#gameModal .g-card").forEach(b => b.disabled = true); btn.classList.add("picked");
   beep(988, 0.08, 0.15, "square"); beep(1319, 0.3, 0.15, "square", 0.08);                       // coin drop
   $("gCredit").textContent = "01"; $("gCoin").textContent = "Player 1 start"; $("gCoin").classList.add("go");
