@@ -293,7 +293,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.94</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.98</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -377,7 +377,7 @@ Cooldown
     <summary>Distance model</summary>
     <div class="row">
       <span class="status">Average speed at 150 w</span>
-      <input id="distMph" type="number" value="16" step="0.5" inputmode="decimal" style="width:64px">
+      <input id="distMph" type="number" value="17.5" step="0.5" inputmode="decimal" style="width:64px">
       <span class="status">mph</span>
     </div>
     <div class="hint">Distance is estimated from power with a physics model (air drag + rolling resistance + momentum), scaled so 150 w holds this speed on flat ground. It goes into the summary and the .fit file.</div>
@@ -441,7 +441,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.94</span>
+  <span class="ver">v1.0.98</span>
 </div>
 
 <div class="ctrl">
@@ -545,7 +545,7 @@ Cooldown
     <div style="font-size:18px;font-weight:600;margin-bottom:6px">Load this workout?</div>
     <div id="launchName" style="font-size:20px;font-weight:700;margin-bottom:4px;overflow-wrap:anywhere"></div>
     <div id="launchInfo" class="hint" style="font-size:14px;margin-bottom:16px"></div>
-    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px">Cancel</button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px">Load workout</button><button id="btnArcade" title="Load in arcade mode" style="width:58px;height:48px;padding:0;flex:none;background:#000;border:2px solid #00ff41;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 11 8" width="30" height="22" shape-rendering="crispEdges" aria-hidden="true"><path fill="#00ff41" d="M2 0h1v1H2zM8 0h1v1H8zM3 1h1v1H3zM7 1h1v1H7zM2 2h7v1H2zM1 3h2v1H1zM4 3h3v1H4zM8 3h2v1H8zM0 4h11v1H0zM0 5h1v1H0zM2 5h7v1H2zM10 5h1v1h-1zM0 6h1v1H0zM2 6h1v1H2zM8 6h1v1H8zM10 6h1v1h-1zM3 7h2v1H3zM6 7h2v1H6z"/></svg></button></div>
+    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="btnLaunchNo" style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;line-height:1.15;padding:0 6px">Cancel</button><button id="btnLaunchYes" class="primary" style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;line-height:1.15;padding:0 6px">Load Workout</button><button id="btnArcade" title="Load in arcade mode" style="width:58px;height:48px;padding:0;flex:none;background:#000;border:2px solid #00ff41;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 11 8" width="30" height="22" shape-rendering="crispEdges" aria-hidden="true"><path fill="#00ff41" d="M2 0h1v1H2zM8 0h1v1H8zM3 1h1v1H3zM7 1h1v1H7zM2 2h7v1H2zM1 3h2v1H1zM4 3h3v1H4zM8 3h2v1H8zM0 4h11v1H0zM0 5h1v1H0zM2 5h7v1H2zM10 5h1v1h-1zM0 6h1v1H0zM2 6h1v1H2zM8 6h1v1H8zM10 6h1v1h-1zM3 7h2v1H3zM6 7h2v1H6z"/></svg></button></div>
   </div>
 </div>
 
@@ -1060,7 +1060,7 @@ function simRide(pw, mph) {                             // per-second power -> {
   }
   return { v: vs, d: ds };
 }
-function distMph() { return Math.min(30, Math.max(5, +$("distMph").value || 16)); }
+function distMph() { return Math.min(30, Math.max(5, +$("distMph").value || 17.5)); }
 
 /* ---------------- workout summary ---------------- */
 let sumBlob = null;
@@ -1750,6 +1750,13 @@ function arcPop(text, fx, fy, big) {
   el.className = "a-pop" + (big ? " big" : ""); el.textContent = text; el.style.left = (fx * 100) + "%"; el.style.top = (fy * 100) + "%";
   ov.appendChild(el); setTimeout(() => el.remove(), 950);
 }
+function arcSpeed(R) {                                           // runs the distance model one new second at a time (no full re-run each frame)
+  const S = R.spd || (R.spd = { i: 0, v: 0, d: 0 });
+  if (W.pw.length < S.i || (W.t === 0 && S.i > 0)) Object.assign(S, { i: 0, v: 0, d: 0 });
+  if (S.i < W.pw.length) { const cda = cdaFor(distMph()), roll = MOD.crr * MOD.m * MOD.g, me = MOD.m + MOD.wheel;
+    for (; S.i < W.pw.length; S.i++) { const p = W.pw[S.i]; for (let k = 0; k < 4; k++) { const F = (p * MOD.eta) / Math.max(S.v, 1) - (0.5 * MOD.rho * cda * S.v * S.v + (S.v > 0 ? roll : 0)); S.v = Math.max(0, S.v + (F / me) * 0.25); S.d += S.v * 0.25; } } }
+  return { mph: S.v / 0.44704, mi: S.d / 1609.344 };
+}
 function arcRidge(c, W2, H, off, col, amp, base, period) {
   c.fillStyle = col; const B = 4;
   for (let x = 0; x < W2; x += B) { const u = (x + off) / period;
@@ -1796,6 +1803,15 @@ function drawArcScene(cv, R, now) {
   const p3 = power3s();
   if (W.running && !W.paused && p3 > W.ftp * 1.05) { c.fillStyle = "rgba(232,255,232,.6)"; for (let j = 0; j < 5; j++) c.fillRect(Math.round(rx - RG.w * cell * .6 - (now / 3 + j * 23) % 40), Math.round(gy - 10 - ((j * 17 + now / 30) % (cell * 38))), 12, 2); }
   if (boss && Math.floor(now / 300) % 2) { c.fillStyle = "rgba(255,0,40,.08)"; c.fillRect(0, 0, w, h); }
+  // live speed and distance, from the same physics model as the summary and the .fit file
+  const sp = arcSpeed(R), PF = '"Press Start 2P","Courier New",monospace';
+  const gauge = (x, align, label, val, unit) => { c.textAlign = align; c.textBaseline = "alphabetic";
+    c.font = "13px " + PF; const vw = c.measureText(val).width; c.font = "7px " + PF; const uw = c.measureText(" " + unit).width, bw = Math.max(vw + uw, 46) + 10;
+    const bx = align === "left" ? x - 5 : x - bw + 5; c.fillStyle = "rgba(0,0,0,.6)"; c.fillRect(bx, h - 36, bw, 31);
+    c.fillStyle = "#7c6fa3"; c.font = "7px " + PF; c.fillText(label, x, h - 25);
+    c.textAlign = "left"; const vx = align === "left" ? x : x - vw - uw;
+    c.fillStyle = "#e8ffe8"; c.font = "13px " + PF; c.fillText(val, vx, h - 9); c.fillStyle = "#4ae0ff"; c.font = "7px " + PF; c.fillText(" " + unit, vx + vw, h - 9); };
+  gauge(9, "left", "SPEED", sp.mph.toFixed(1), "MPH"); gauge(w - 9, "right", "DISTANCE", sp.mi.toFixed(2), "MI");
 }
 function drawArcMap(R) {
   const cv = $("arcMap"); if (!cv || !R.total) return; const dpr = window.devicePixelRatio || 1, w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr); if (!w || !h) return;
