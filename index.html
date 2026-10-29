@@ -264,12 +264,9 @@
   #gameModal .g-tbl { font-size:9px; display:grid; grid-template-columns:auto auto auto; gap:5px 18px; color:#e8ffe8; background:rgba(0,0,0,.6); padding:6px 10px; }
   #gameModal .g-tbl .h { grid-column:1 / -1; text-align:center; color:#ff3bff; font-size:9px; margin-bottom:2px; }
   #gameModal .g-tbl .s { color:#ffd700; } #gameModal .g-tbl .d { color:#4ae0ff; }
-  #gameModal .g-tick { width:100%; max-width:420px; overflow:hidden; white-space:nowrap; border-top:2px solid #2b1650; border-bottom:2px solid #2b1650; padding:6px 0; font-size:8px; color:#00ff41; background:rgba(0,0,0,.6); }
-  #gameModal .g-tick span { display:inline-block; animation:gTick 14s linear infinite; }
   @keyframes gChase { 50% { border-color:#ff3b3b; } }
   @keyframes gFlash { 0% { color:#4ae0ff; text-shadow:3px 3px 0 #003a4a; } 25% { color:#ffffff; text-shadow:0 0 10px #4ae0ff, 3px 3px 0 #003a4a; } 50% { color:#ff3bff; text-shadow:3px 3px 0 #4a004a; } 75% { color:#00ff41; text-shadow:3px 3px 0 #003b10; } }
-  @keyframes gTick { from { transform:translateX(0); } to { transform:translateX(-50%); } }
-  @media (prefers-reduced-motion: reduce) { #gameModal .g-title, #gameModal .g-title .b, #gameModal .g-tick span { animation:none; } }
+  @media (prefers-reduced-motion: reduce) { #gameModal .g-title, #gameModal .g-title .b { animation:none; } }
   #gameModal .g-ask { font-size:10px; color:#ff3bff; margin-top:10px; text-align:center; }
   #gameModal .g-list { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
   #gameModal .g-card { display:flex; flex-direction:column; align-items:center; padding:6px; width:auto; background:#0b0618; border:3px solid #ff3bff; box-shadow:5px 5px 0 #4a004a; color:#e8ffe8; cursor:pointer; font:inherit; text-transform:uppercase; border-radius:0; }
@@ -296,7 +293,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.93</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.94</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -444,7 +441,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.93</span>
+  <span class="ver">v1.0.94</span>
 </div>
 
 <div class="ctrl">
@@ -615,7 +612,6 @@ Cooldown
   </div>
   <div class="g-coin" id="gCoin">Insert coin</div>
   <div class="g-tbl" id="gTbl"></div>
-  <div class="g-tick"><span>&#9733; Beat the bosses &#9733; Collect the coins &#9733; Keep your combo &#9733; Guard your HP &#9733; Beat the bosses &#9733; Collect the coins &#9733; Keep your combo &#9733; Guard your HP &#9733;</span></div>
   <button class="g-back" id="gBack" type="button">&#9664; Back</button>
   <div class="g-copy">&copy; 2026 Intervals Player</div>
 </div>
