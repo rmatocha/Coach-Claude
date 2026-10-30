@@ -105,6 +105,8 @@
   .mini { padding:3px 9px; font-size:12px; border-radius:8px; }
   #btnEdit { padding:calc(var(--u)*0.8) calc(var(--u)*2); font-size:calc(var(--u)*2.2); font-weight:700; border-radius:10px; background:#2f3742; }
   #run .top .status:not(.ok) { text-decoration:underline dotted; }
+  .libitem.done { cursor:default; background:rgba(61,220,132,.07); border:1px solid rgba(61,220,132,.35); border-radius:10px; }
+  .donetag { color:var(--ok); font-weight:700; font-size:13px; white-space:nowrap; }
   .libitem { display:grid; grid-template-columns:1fr auto; column-gap:10px; row-gap:3px; align-items:center; width:100%; text-align:left; margin:4px 0; padding:10px 12px; font-size:15px; }
   .libitem canvas { width:100%; height:26px; display:block; border-radius:4px; }
   .libitem .r { text-align:right; color:var(--fg); font-size:13px; line-height:1.15; white-space:nowrap; }
@@ -365,7 +367,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.5</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.6</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -554,7 +556,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.5</span>
+  <span class="ver">v1.0.6</span>
 </div>
 
 <div class="ctrl">
@@ -4171,8 +4173,17 @@ async function loadToday() {
     return;
   }
   box.textContent = ""; box.style.fontSize = "";
-  try { const acts = await icuRange(day, day, "activities"); const doneNames = acts.map(a => normName(a.name)); ev = ev.filter(x => !doneNames.includes(normName(x.name)) && !acts.some(a => a.id && a.id === x.paired_activity_id)); } catch (e) {}
-  if (!ev.length) { box.className = "hint"; box.textContent = "Nothing planned for today (" + day + ")."; return; }
+  let acts = [];
+  try { acts = await icuRange(day, day, "activities"); const doneNames = acts.map(a => normName(a.name)); ev = ev.filter(x => !doneNames.includes(normName(x.name)) && !acts.some(a => a.id && a.id === x.paired_activity_id)); } catch (e) {}
+  acts.forEach(a => {                                     // what's already ridden today shows as completed, above anything still to do
+    const row = document.createElement("div"); row.className = "libitem done"; row.setAttribute("role", "group");
+    const n = document.createElement("span"); n.textContent = a.name || a.type || "Ride"; n.style.cssText = "overflow-wrap:anywhere;font-weight:600;color:var(--fg)";
+    const ck = document.createElement("span"); ck.className = "donetag"; ck.textContent = "\u2713 Completed";
+    const m = document.createElement("span"); m.className = "r"; m.style.cssText = "grid-column:1 / -1;font-size:13px";
+    m.textContent = [a.moving_time ? fmtHM(a.moving_time) : "", a.icu_training_load != null ? "TSS " + Math.round(a.icu_training_load) : "", a.icu_average_watts || a.average_watts ? Math.round(a.icu_average_watts || a.average_watts) + " W avg" : ""].filter(Boolean).join("  \u00b7  ");
+    row.append(n, ck, m); box.appendChild(row);
+  });
+  if (!ev.length) { if (!acts.length) { box.className = "hint"; box.textContent = "Nothing planned for today (" + day + ")."; } return; }
   ev.forEach(x => {
     const text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
     const row = document.createElement("div"); row.style.cssText = "display:flex;gap:6px;align-items:stretch;margin:4px 0";
