@@ -402,7 +402,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.8</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.9</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -524,8 +524,13 @@ Cooldown
     <div class="card"><h2>Workout library</h2><div id="dayLib"></div></div>
     <div class="card">
       <h2>Workout builder</h2>
-      <input id="dName" type="text" placeholder="Workout name" maxlength="60" style="width:100%;margin-top:0">
-      <textarea id="dWo" spellcheck="false" placeholder="Warmup&#10;-10m ramp 50%-75%&#10;&#10;Main Set 3x&#10;-10m 90%&#10;-5m 55%&#10;&#10;Cooldown&#10;-10m 50%"></textarea>
+      <input id="dName" type="text" value="Custom Workout" placeholder="Workout name" maxlength="60" style="width:100%;margin-top:0">
+      <textarea id="dWo" spellcheck="false">-5m ramp 50%-65%
+-3m 65%
+-2m 88%
+-3m 65%
+-2m 50%
+</textarea>
       <div id="dWoInfo" class="status" style="margin-top:6px;font-size:14px">Type the workout steps above.</div>
       <canvas id="dWoGraph" style="width:100%;height:64px;display:block;margin-top:8px;border-radius:8px;background:#11151a"></canvas>
       <button id="dSched" class="primary" type="button" style="width:100%;height:44px;font-size:16px;margin:12px 0 0" disabled>Schedule</button>
@@ -607,7 +612,7 @@ Cooldown
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnDevices" class="redbtn" type="button" style="display:none">Connect devices</button>
-  <span class="ver">v1.0.8</span>
+  <span class="ver">v1.0.9</span>
 </div>
 
 <div class="ctrl">
@@ -768,6 +773,14 @@ Cooldown
     </div>
     <div class="hint" style="font-size:12px;margin:10px 0 14px">Tap each one; your phone asks you to pick the device.</div>
     <button type="button" id="devDone" style="width:100%">Done</button>
+  </div>
+</div>
+
+<div id="askModal" role="dialog" aria-modal="true" aria-labelledby="askTitle" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:57;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div id="askTitle" style="font-size:18px;font-weight:600;margin-bottom:8px"></div>
+    <div id="askText" class="hint" style="margin-bottom:16px;font-size:14px;overflow-wrap:anywhere"></div>
+    <div class="row" style="justify-content:center;flex-wrap:nowrap"><button id="askNoBtn" style="flex:1;height:48px">Cancel</button><button id="askYesBtn" class="primary" style="flex:1;height:48px"></button></div>
   </div>
 </div>
 
@@ -4471,6 +4484,16 @@ $("btnSchedYes").onclick = async () => {
   if (!it || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { toast("Pick a date.", true); return; }
   await scheduleOn(date, it.name, it.text);
 };
+/* The app's own yes/no pop-up: Bluefy doesn't show the browser's confirm() box and silently answers no. */
+const niceDay = ds => { const [y, m, d] = ds.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" }); };
+function askYes(title, text, yes) {
+  return new Promise(res => {
+    $("askTitle").textContent = title; $("askText").textContent = text; $("askYesBtn").textContent = yes || "Yes";
+    const done = v => { $("askModal").style.display = "none"; $("askYesBtn").onclick = $("askNoBtn").onclick = null; res(v); };
+    $("askYesBtn").onclick = () => done(true); $("askNoBtn").onclick = () => done(false);
+    $("askModal").style.display = "flex"; $("askYesBtn").focus();
+  });
+}
 // Put one workout on the intervals.icu calendar for a day. Asks first if that day already has something planned. Resolves true when added.
 async function scheduleOn(date, name, text) {
   if (!icuAuth()) { toast("Connect intervals.icu first (Settings).", true); return false; }
@@ -4478,7 +4501,7 @@ async function scheduleOn(date, name, text) {
   try { existing = await icuEvents(date); } catch (e) { toast("Couldn't check the calendar (" + e.message + ").", true); return false; }
   if (existing.length) {
     const names = existing.map(x => x.name || "Workout").join(", ");
-    if (!window.confirm("Already planned on " + date + ": " + names + ".\n\nAdd \u201c" + name + "\u201d too?")) return false;
+    if (!await askYes("Already Planned", "\u201c" + names + "\u201d is already on " + niceDay(date) + ". Add \u201c" + name + "\u201d too?", "Add it")) { toast("Not added."); return false; }
   }
   try {
     const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(icuId()) + "/events/bulk?upsert=true", {
@@ -4518,6 +4541,7 @@ async function daySchedule(name, text, btn) {
   const ok = await scheduleOn(dayDate, name, text);
   btn.disabled = false; btn.textContent = was;
   if (ok) { closeDay(); loadToday(); loadNext7(); }
+  return ok;
 }
 function renderDayLib() {                                      // same folders and rows as the home library; each row's only button is Schedule
   const box = $("dayLib"); box.textContent = "";
@@ -4560,7 +4584,11 @@ function dayInfo() {                                            // live duration
   $("dSched").disabled = !(st && st.length);
 }
 $("dWo").addEventListener("input", dayInfo);
-$("dSched").onclick = () => daySchedule(($("dName").value || "").trim() || "Workout", $("dWo").value, $("dSched"));
+const D_WARMUP = "-5m ramp 50%-65%\n-3m 65%\n-2m 88%\n-3m 65%\n-2m 50%\n";
+$("dSched").onclick = async () => {
+  const ok = await daySchedule(($("dName").value || "").trim() || "Custom Workout", $("dWo").value, $("dSched"));
+  if (ok) { $("dName").value = "Custom Workout"; $("dWo").value = D_WARMUP; dayInfo(); }   // scheduled: the builder starts fresh next time
+};
 /* ---------------- Hard intervals: choose a power target before launching ---------------- */
 let hardMode = "pct", pendingHard = null;
 const hardFtp = () => +$("ftp").value || 270;
