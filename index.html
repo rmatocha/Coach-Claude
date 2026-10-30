@@ -315,7 +315,19 @@
   #gameModal .g-card.picked { border-color:#00ff41; box-shadow:5px 5px 0 #003b10; }
   #gameModal .g-coin { font-size:12px; color:#e8ffe8; animation:awBlink 1s steps(2) infinite; text-align:center; }
   #gameModal .g-coin.go { color:#00ff41; animation:awBlink .25s steps(2) infinite; }
-  #gameModal .g-back { margin-top:auto; position:relative; z-index:1; background:#000; color:#7c6fa3; border:2px solid #7c6fa3; font:inherit; font-size:9px; padding:10px 16px; border-radius:0; cursor:pointer; }
+  #gameModal .g-btns { margin-top:auto; position:relative; z-index:1; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  #gameModal .g-back { background:#000 !important; color:#7c6fa3 !important; border:2px solid #7c6fa3 !important; box-shadow:3px 3px 0 #2b1650 !important; font-family:"Press Start 2P","Courier New",monospace !important; font-size:9px !important; padding:12px 18px !important; height:auto !important; border-radius:0 !important; cursor:pointer; text-transform:uppercase; }
+  #gameModal .g-back.go { color:#001018 !important; background:#00ff41 !important; border-color:#00ff41 !important; box-shadow:3px 3px 0 #003b10 !important; }
+  #arcConfirm { display:none; position:fixed; inset:0; z-index:58; background:rgba(0,0,0,.82); align-items:center; justify-content:center; padding:24px; font-family:"Press Start 2P","Courier New",monospace; text-transform:uppercase; }
+  #arcConfirm.show { display:flex; }
+  #arcConfirm .k-box { background:#000; border:3px solid #ffd700; box-shadow:6px 6px 0 #5a0000; padding:18px 16px; max-width:330px; width:100%; text-align:center; display:flex; flex-direction:column; gap:12px; }
+  #arcConfirm .k-q { font-size:11px; color:#ffd700; line-height:1.6; }
+  #arcConfirm .k-i { font-size:7px; color:#4ae0ff; line-height:1.7; }
+  #arcConfirm .k-row { display:flex; gap:10px; margin-top:4px; }
+  #arcConfirm .k-row button { flex:1; height:46px !important; font-family:inherit !important; font-size:9px !important; text-transform:uppercase; border-radius:0 !important; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0 6px !important; }
+  #arcConfirm #acNo { background:#000 !important; color:#e8ffe8 !important; border:2px solid #e8ffe8 !important; box-shadow:3px 3px 0 #333 !important; }
+  #arcConfirm #acYes { background:#ffd700 !important; color:#000 !important; border:2px solid #000 !important; box-shadow:3px 3px 0 #7a3d00 !important; }
+  #arcConfirm #acYes.bad { background:#ff3b3b !important; color:#fff !important; box-shadow:3px 3px 0 #5a0000 !important; }
   #gameModal .g-copy { font-size:7px; color:#7c6fa3; }
   @keyframes aBeat { 50% { transform:scale(1.25); } }
   @keyframes aRise { to { transform:translateY(-30px); opacity:0; } }
@@ -327,7 +339,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.06</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.07</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -475,7 +487,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.1.06</span>
+  <span class="ver">v1.1.07</span>
 </div>
 
 <div class="ctrl">
@@ -643,6 +655,10 @@ Cooldown
   <div class="k-q">Load this workout?</div><div class="k-n" id="arcAskName"></div><div class="k-i" id="arcAskInfo"></div>
   <div class="k-row"><button id="arcAskNo" type="button">Cancel</button><button id="arcAskYes" type="button">Load</button></div>
 </div></div>
+<div id="arcConfirm" role="dialog" aria-modal="true" aria-labelledby="acQ"><div class="k-box">
+  <div class="k-q" id="acQ"></div><div class="k-i" id="acI"></div>
+  <div class="k-row"><button id="acNo" type="button">Cancel</button><button id="acYes" type="button">OK</button></div>
+</div></div>
 <div id="gameModal" role="dialog" aria-label="Choose your challenge">
   <div class="g-top"><span><b>1UP</b> 00</span><span>Credit <b id="gCredit">00</b></span></div>
   <canvas id="gStars"></canvas>
@@ -659,7 +675,7 @@ Cooldown
   </div>
   <div class="g-coin" id="gCoin">Insert coin</div>
   <div class="g-tbl" id="gTbl"></div>
-  <button class="g-back" id="gBack" type="button">&#9664; Back</button>
+  <div class="g-btns"><button class="g-back" id="gBack" type="button">&#9664; Home</button><button class="g-back go" id="gResume" type="button" hidden>Resume &#9654;</button></div>
   <div class="g-copy">&copy; 2026 Intervals Player</div>
 </div>
 <canvas id="arcFx"></canvas>
@@ -1053,12 +1069,13 @@ function tick() {
   cues();
   pushTarget(false); render();
 }
-function finishWorkout(reason) {
+function finishWorkout(reason, quiet) {
   W.endedEarly = reason === "Workout ended by user.";
   W.running = false; W.paused = false; clearInterval(W.timer); clearInterval(W.fast); W.ramp = null; W.idx = W.steps.length; $("btnPause").textContent = "Pause";
   cpWrite([0x05, 0, 0]); cpWrite([0x08, 0x01]);     // 0 W target, then stop
   try { window._wl && window._wl.release(); } catch (e) {}
   log(reason || "Workout complete."); refreshButtons(); render();
+  if (quiet) return;                                    // the arcade Home button asks about saving itself
   if (W.t > 0) { if (reason === "Workout ended by user.") askSaveRide(); else showSummary(true); } else closeSummary();
 }
 function skipStep() {
@@ -3991,6 +4008,7 @@ function openGameSelect() {
   document.querySelectorAll("#gameModal .g-card").forEach(b => { b.classList.remove("picked"); b.disabled = false; });
   const ord = ["1st", "2nd", "3rd", "4th", "5th"], dS = d => d.slice(5, 7) + "/" + d.slice(8, 10) + "/" + d.slice(2, 4);
   $("gTbl").innerHTML = '<span class="h">High scores</span>' + ord.map((o, k) => { const e = hs[k]; return "<span>" + o + '</span><span class="s">' + (e ? pad6(e.s) : "------") + '</span><span class="d">' + (e ? dS(e.d) : "--/--/--") + "</span>"; }).join("");
+  $("gResume").hidden = !gameFromRun;
   $("gameModal").classList.add("show"); requestAnimationFrame(gameLoop);
 }
 let gameFromRun = false;                                        // game select opened from the ride screen's Back button: the loaded workout stays
@@ -4007,7 +4025,27 @@ function pickGame(btn) {
   }, 900);
 }
 document.querySelectorAll("#gameModal .g-card").forEach(b => b.onclick = () => pickGame(b));
-$("gBack").onclick = () => { $("gameModal").classList.remove("show"); if (gameFromRun) { gameFromRun = false; if (W.running && W.paused) togglePause(); return; } $("launchModal").style.display = "flex"; };
+function arcAskBox(q, info, yes, no, bad) {                       // a two-button arcade prompt; resolves true for the right-hand button
+  return new Promise(res => { $("acQ").textContent = q; $("acI").textContent = info || ""; $("acYes").textContent = yes; $("acNo").textContent = no; $("acYes").classList.toggle("bad", !!bad);
+    const done = v => { $("arcConfirm").classList.remove("show"); $("acYes").onclick = $("acNo").onclick = null; res(v); };
+    $("acYes").onclick = () => done(true); $("acNo").onclick = () => done(false); $("arcConfirm").classList.add("show"); $("acYes").focus(); }); }
+function arcGoHome() {                                            // leave the arcade for the plan screen, nothing loaded
+  $("gameModal").classList.remove("show"); gameFromRun = false; pendingLaunch = null; $("launchModal").style.display = "none";
+  (window.ARC_T || []).forEach(clearTimeout); arcadeOn = false; showScreen("landing");
+}
+$("gBack").onclick = async () => {                                // Home
+  if (!gameFromRun) { arcGoHome(); return; }                      // before a game was picked: straight home
+  const started = W.running || W.t > 0;
+  if (!await arcAskBox(started ? "End this ride and go home?" : "Go back home?", started ? "Your ride stops here." : "The workout stays in your library.", started ? "End ride" : "Go home", "Cancel", started)) return;
+  if (!started) { arcGoHome(); return; }
+  finishWorkout("Workout ended by user.", true);                   // stop the trainer and the clock, no summary screen
+  const save = await arcAskBox("Save this ride?", "Saving uploads it to intervals.icu and Strava. Discarding uploads nothing.", "Save", "Discard");
+  if (save) { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); }
+    Promise.all([uploadRide(), stravaUpload()]).then(() => { const m = [$("sumUp").textContent, $("sumStrava").textContent].filter(Boolean).join(" "); if (m) toast(m, /fail|Not uploaded/.test(m)); });
+    arcGoHome(); toast("Ride saved. Uploading\u2026"); }
+  else { arcGoHome(); loadWorkout(); toast("Ride discarded."); }
+};
+$("gResume").onclick = () => { $("gameModal").classList.remove("show"); gameFromRun = false; if (W.running && W.paused) togglePause(); };   // same game, ride carries on (or waits for Start)
 $("aGames").onclick = () => { if (W.running) return; gameFromRun = true; openGameSelect(); };
 let arcLibOpen = {}, arcPending = null, arcLibMode = "switch";
 function openArcLib(mode) {
