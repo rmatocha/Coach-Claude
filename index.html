@@ -37,6 +37,7 @@
   .hrow .hc { grid-area:c; align-self:center; font-size:22px; color:var(--dim); }
   .hscreen { display:none; position:fixed; inset:0; z-index:45; background:var(--bg); overflow-y:auto; -webkit-overflow-scrolling:touch; }
   .hscreen.show { display:block; } #rideSheet { z-index:46; }
+  #settingsScr details.card { margin:0 0 10px; }
   .hbar { position:sticky; top:0; z-index:2; display:flex; align-items:center; gap:12px; padding:calc(8px + env(safe-area-inset-top)) 12px 8px; background:var(--bg); border-bottom:1px solid #222831; }
   .hbar span { font-weight:700; font-size:16px; } .hbar button { padding:8px 12px; }
   .hin { padding:12px 12px calc(24px + env(safe-area-inset-bottom)); max-width:640px; margin:0 auto; }
@@ -363,7 +364,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.14</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.1</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -385,7 +386,7 @@
   </div>
   <div class="card" id="todayCard">
     <h2>Today</h2>
-    <div id="todayList" class="hint" style="font-size:14px">Connect intervals.icu above to see today's planned workout.</div>
+    <div id="todayList" class="hint" style="font-size:14px">Connect intervals.icu in Settings to see today's planned workout.</div>
     <div class="row" style="margin:8px 0 0"><button id="btnToday" style="flex:1">Refresh</button></div>
   </div>
 
@@ -426,50 +427,7 @@ Cooldown
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><button id="btnSaveLib" class="primary" style="width:100%;height:44px;font-size:16px;margin:0">Save to Library</button><div style="display:flex;gap:8px;align-items:stretch"><button id="btnSchedule" title="Add to intervals.icu calendar" disabled style="height:44px;flex:none;border-radius:12px;margin:0;padding:0 12px;font-size:16px;display:flex;align-items:center;gap:6px;white-space:nowrap"><span style="font-size:18px">📅</span>Schedule</button><button id="btnLaunch" class="primary big" style="width:auto;flex:1;height:44px;margin:0;font-size:16px;min-width:0;border-radius:12px">Launch Workout</button></div></div>
   </div>
 
-  <details class="card">
-    <summary>Cadence governor</summary>
-    <div class="row">
-      <label><input type="checkbox" id="govOn" checked> On</label>
-      <span class="status">full power above</span>
-      <input id="govCad" type="number" value="55" inputmode="numeric" style="width:64px">
-      <span class="status">rpm</span>
-    </div>
-    <div class="hint">Below that cadence, target power is reduced in proportion (never under 50%) so resistance can't snowball. It only acts when the target is above 80% of FTP.</div>
-  </details>
-
-  <details class="card">
-    <summary>Simulation mode</summary>
-    <div class="row">
-      <span class="status">top of the band at</span>
-      <input id="simCad" type="number" value="85" min="50" max="120" inputmode="numeric" style="width:64px">
-      <span class="status">rpm</span>
-    </div>
-    <div class="hint">On freeride and Simulation-mode intervals the grade is set so the top of the power band comes at this cadence. Ride a little under it to sit in the band, spin faster for more.</div>
-  </details>
-
-  <details class="card">
-    <summary>Audio cues</summary>
-    <div class="row"><label><input type="checkbox" id="cueOn" checked> On</label></div>
-    <div class="hint">A bell with 10 s left in an interval, a tick each second for the last 5 s, and a higher tick when the next interval starts. Needs sound on and the ringer switch up.</div>
-  </details>
-
-  <details class="card">
-    <summary>Distance model</summary>
-    <div class="row">
-      <span class="status">Average speed at 150 w</span>
-      <input id="distMph" type="number" value="17.5" step="0.5" inputmode="decimal" style="width:64px">
-      <span class="status">mph</span>
-    </div>
-    <div class="hint">Distance is estimated from power with a physics model (air drag + rolling resistance + momentum), scaled so 150 w holds this speed on flat ground. It goes into the summary and the .fit file.</div>
-  </details>
-
-  <details class="card" id="icuCard" open>
-    <summary>Connections</summary>
-    <div class="row" style="margin:0"><button id="btnIcuConnect" style="flex:1;background:#35b6e4;color:#001018;border-color:#35b6e4;font-weight:700">Connect intervals.icu</button></div>
-    <div id="icuOut" class="hint" style="margin-top:8px;font-size:13px"></div>
-    <div class="row" style="margin:12px 0 0"><button id="btnStrava" style="flex:1;background:#FC4C02;color:#fff;border-color:#FC4C02;font-weight:700">Connect Strava</button></div>
-    <div id="stravaOut" class="hint" style="margin-top:8px;font-size:13px"></div>
-  </details>
+  <button id="btnSettings2" type="button" style="width:100%;height:44px;font-size:16px;margin:12px 0 4px">Settings</button>
   </div>
 
   <div id="dataTab" style="display:none">
@@ -520,6 +478,55 @@ Cooldown
   </div>
 </div>
 
+<div id="settingsScr" class="hscreen" role="dialog" aria-label="Settings">
+  <div class="hbar"><button id="setBack" type="button">‹ Back</button><span>Settings</span></div>
+  <div class="hin">
+  <details class="card" open>
+    <summary>Cadence governor</summary>
+    <div class="row">
+      <label><input type="checkbox" id="govOn" checked> On</label>
+      <span class="status">full power above</span>
+      <input id="govCad" type="number" value="55" inputmode="numeric" style="width:64px">
+      <span class="status">rpm</span>
+    </div>
+    <div class="hint">Below that cadence, target power is reduced in proportion (never under 50%) so resistance can't snowball. It only acts when the target is above 80% of FTP.</div>
+  </details>
+
+  <details class="card" open>
+    <summary>Simulation mode</summary>
+    <div class="row">
+      <span class="status">top of the band at</span>
+      <input id="simCad" type="number" value="85" min="50" max="120" inputmode="numeric" style="width:64px">
+      <span class="status">rpm</span>
+    </div>
+    <div class="hint">On freeride and Simulation-mode intervals the grade is set so the top of the power band comes at this cadence. Ride a little under it to sit in the band, spin faster for more.</div>
+  </details>
+
+  <details class="card" open>
+    <summary>Audio cues</summary>
+    <div class="row"><label><input type="checkbox" id="cueOn" checked> On</label></div>
+    <div class="hint">A bell with 10 s left in an interval, a tick each second for the last 5 s, and a higher tick when the next interval starts. Needs sound on and the ringer switch up.</div>
+  </details>
+
+  <details class="card" open>
+    <summary>Distance model</summary>
+    <div class="row">
+      <span class="status">Average speed at 150 w</span>
+      <input id="distMph" type="number" value="17.5" step="0.5" inputmode="decimal" style="width:64px">
+      <span class="status">mph</span>
+    </div>
+    <div class="hint">Distance is estimated from power with a physics model (air drag + rolling resistance + momentum), scaled so 150 w holds this speed on flat ground. It goes into the summary and the .fit file.</div>
+  </details>
+
+  <details class="card" id="icuCard" open>
+    <summary>Connections</summary>
+    <div class="row" style="margin:0"><button id="btnIcuConnect" style="flex:1;background:#35b6e4;color:#001018;border-color:#35b6e4;font-weight:700">Connect intervals.icu</button></div>
+    <div id="icuOut" class="hint" style="margin-top:8px;font-size:13px"></div>
+    <div class="row" style="margin:12px 0 0"><button id="btnStrava" style="flex:1;background:#FC4C02;color:#fff;border-color:#FC4C02;font-weight:700">Connect Strava</button></div>
+    <div id="stravaOut" class="hint" style="margin-top:8px;font-size:13px"></div>
+  </details>
+  </div>
+</div>
 <div id="histAll" class="hscreen" role="dialog" aria-label="Ride history">
   <div class="hbar"><button id="haBack" type="button">‹ Back</button><span>Ride history</span></div>
   <div class="hin"><div id="haSum" class="hsums"></div><div id="haList"></div><div id="haNote" class="hint" style="margin:10px 2px 0;font-size:12px"></div></div>
@@ -544,7 +551,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.1.14</span>
+  <span class="ver">v1.0.1</span>
 </div>
 
 <div class="ctrl">
@@ -3979,6 +3986,9 @@ async function rideStreams(a) {                                // power and hear
   } catch (e) { box.hidden = true; }
 }
 function closeRide() { $("rideSheet").classList.remove("show"); if (!$("histAll").classList.contains("show")) document.body.style.overflow = ""; }
+function openSettings() { $("settingsScr").classList.add("show"); $("settingsScr").scrollTop = 0; document.body.style.overflow = "hidden"; }
+function closeSettings() { $("settingsScr").classList.remove("show"); document.body.style.overflow = ""; }
+$("btnSettings").onclick = openSettings; $("btnSettings2").onclick = openSettings; $("setBack").onclick = closeSettings;
 $("btnHistAll").onclick = openHistAll; $("haBack").onclick = closeHistAll; $("rsBack").onclick = closeRide;
 
 $("btnYearMinus").onclick = () => { yearSel = Math.max(new Date().getFullYear() - 2, yearSel - 1); renderYear(); };
@@ -4000,7 +4010,7 @@ async function loadToday() {
   let ev;
   try { ev = await icuEvents(day); }
   catch (e) {
-    box.textContent = e.message === "no API key saved" ? "Connect intervals.icu above to see today's planned workout." : "Couldn't load today's workout (" + e.message + ").";
+    box.textContent = e.message === "no API key saved" ? "Connect intervals.icu in Settings to see today's planned workout." : "Couldn't load today's workout (" + e.message + ").";
     return;
   }
   box.textContent = ""; box.style.fontSize = "";
@@ -4042,7 +4052,7 @@ async function icuRange(oldest, newest, path) {
 async function loadNext7() {
   const out = $("planWeekOut"), grid = $("planWeekGrid"), list = $("planWeekList");
   const auth = icuAuth();
-  if (!auth) { grid.innerHTML = ""; list.textContent = ""; out.textContent = "Connect intervals.icu below to see the next 7 days."; return; }
+  if (!auth) { grid.innerHTML = ""; list.textContent = ""; out.textContent = "Connect intervals.icu in Settings to see the next 7 days."; return; }
   const now = new Date(), days = Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + i));
   const start = ymd(days[0]), end = ymd(days[6]);
   out.textContent = "Checking intervals.icu\u2026";
