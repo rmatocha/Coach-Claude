@@ -58,7 +58,7 @@
   .stack .nxt.long { font-size:min(calc(var(--u)*1.9),3.2vw); }
   .stack .bar { height:4px; margin-top:2px; }
   .split .v { font-size:min(calc(var(--u)*6.49),12vw); }
-  #iavg { font-size:.82em; }                          /* a touch smaller so a freeride band beside it never collides */
+  #iavg { font-size:.76em; }                          /* a touch smaller so a freeride band beside it never collides */
   .tile .v small { font-size:20px; font-weight:600; color:var(--dim); margin-left:3px; }
   #target { color:var(--acc); }
   #target.band + small { display:none; }
@@ -83,8 +83,9 @@
   .p3tile { position:relative; overflow:hidden; }
   #p3strip { position:absolute; left:0; right:0; bottom:0; height:0; opacity:.55; background:#7a8594; transition:height .3s, background .35s; }
   .hrt { display:flex; justify-content:space-between; gap:8px; }
+  .caldel { flex:none; align-self:center; width:30px; height:30px; padding:0; margin:0; border-radius:8px; font-size:13px; line-height:1; background:#2a2f37; color:#a7b0bd; }
   .hrt .avg { text-align:right; }
-  .hrt .avg .a { font-size:calc(var(--u)*3.3); font-weight:600; color:#c3cad6; line-height:1.1; font-variant-numeric:tabular-nums; }
+  .hrt .avg .a { font-size:calc(var(--u)*2.6); font-weight:600; color:#c3cad6; line-height:1.1; font-variant-numeric:tabular-nums; }
   .two { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
   .two .v { font-size:calc(var(--u)*4.6); }
   #p3u { margin-left:1px; }
@@ -364,7 +365,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.1</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.3</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -504,8 +505,10 @@ Cooldown
 
   <details class="card" open>
     <summary>Audio cues</summary>
-    <div class="row"><label><input type="checkbox" id="cueOn" checked> On</label></div>
-    <div class="hint">A bell with 10 s left in an interval, a tick each second for the last 5 s, and a higher tick when the next interval starts. Needs sound on and the ringer switch up.</div>
+    <div class="row"><label><input type="checkbox" id="cueOn" checked> On</label>
+      <select id="cueVol" aria-label="Cue volume"><option value="1">Normal</option><option value="2">Loud</option><option value="3">Max (over fans)</option></select>
+      <button type="button" class="mini" id="cueTest">Test</button></div>
+    <div class="hint">Loud and Max push the cues as hard as the phone speaker allows (a limiter keeps them from distorting), and Max also makes the ticks longer and brighter so they cut through fan noise. A bell with 10 s left in an interval, a tick each second for the last 5 s, and a higher tick when the next interval starts. Needs sound on and the ringer switch up.</div>
   </details>
 
   <details class="card" open>
@@ -546,12 +549,12 @@ Cooldown
 
 <div id="run">
 <div class="top">
-  <button id="btnEdit" class="mini">‹ Library</button><button id="btnGames" class="mini" type="button" style="display:none">&#9664; Games</button><button id="btnArcRun" class="mini" type="button" title="Continue in arcade mode" aria-label="Continue in arcade mode" style="display:none;padding:4px 8px;background:#000;border:2px solid #00ff41;line-height:0"><svg viewBox="0 0 11 8" width="20" height="15" shape-rendering="crispEdges" aria-hidden="true"><path fill="#00ff41" d="M2 0h1v1H2zM8 0h1v1H8zM3 1h1v1H3zM7 1h1v1H7zM2 2h7v1H2zM1 3h2v1H1zM4 3h3v1H4zM8 3h2v1H8zM0 4h11v1H0zM0 5h1v1H0zM2 5h7v1H2zM10 5h1v1h-1zM0 6h1v1H0zM2 6h1v1H2zM8 6h1v1H8zM10 6h1v1h-1zM3 7h2v1H3zM6 7h2v1H6z"/></svg></button>
+  <button id="btnEdit" class="mini">‹ Library</button><button id="btnGames" class="mini" type="button" style="display:none">&#9664; Games</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.1</span>
+  <span class="ver">v1.0.3</span>
 </div>
 
 <div class="ctrl">
@@ -570,6 +573,8 @@ Cooldown
 
 <div class="grid">
   <div class="tile wide slim" id="timerRow"><div class="l">Timer</div><div class="v" id="elapsed">0:00</div><div class="s" id="remain">--</div></div>
+  <div class="tile p3tile"><div class="l">3s Power</div><div class="v"><span id="p3">--</span><small id="p3u" style="display:none">w</small></div><div id="p3strip"></div></div>
+  <div class="tile hrt"><div><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div><div class="avg"><div class="l">Avg</div><div class="a" id="hravg">--</div></div></div>
   <div class="tile wide split">
     <div style="position:relative">
       <span id="adjLbl"></span>
@@ -580,7 +585,7 @@ Cooldown
     <div>
       <div class="l">Interval avg</div>
       <div class="v"><span id="iavg">--</span><small>W</small></div>
-      <div class="s"><span id="iavgPct">--</span>% of target</div>
+      <div class="s" id="iavgS"><span id="iavgPct">--</span>% of target</div>
     </div>
     <div class="stack">
       <div>
@@ -597,12 +602,10 @@ Cooldown
   </div>
   <div class="tile wide" style="padding:4px"><canvas id="profile" style="width:100%;height:calc(var(--u)*8.14);display:block"></canvas></div>
   <div class="tile wide" style="padding:4px"><canvas id="hrgraph" style="width:100%;height:calc(var(--u)*6.05);display:block"></canvas></div>
-  <div class="tile p3tile"><div class="l">3s Power</div><div class="v"><span id="p3">--</span><small id="p3u" style="display:none">w</small></div><div id="p3strip"></div></div>
-  <div class="tile hrt"><div><div class="l">Heart rate</div><div class="v" id="hr">--</div><div class="s">bpm</div></div><div class="avg"><div class="l">Avg</div><div class="a" id="hravg">--</div></div></div>
   <div class="tile"><div class="l">Cadence</div><div class="v" id="cad">--</div><div class="s" id="govState">rpm</div></div>
   <div class="tile"><div class="two"><div><div class="l">TSS</div><div class="v" id="tss">--</div></div><div><div class="l">IF</div><div class="v" id="ifv">--</div></div></div></div>
   <div class="tile"><div class="l">Energy</div><div class="v" id="kj">0</div><div class="s">kJ</div></div>
-  <div class="tile"><div class="l">Norm. power</div><div class="v"><span id="np">--</span><small id="npu" style="display:none">w</small></div></div>
+  <div class="tile hrt"><div><div class="l">Norm. power</div><div class="v"><span id="np">--</span><small id="npu" style="display:none">w</small></div></div><div class="avg"><div class="l">Avg</div><div class="a" id="pavg">--</div></div></div>
 </div>
 
 <div id="arc">
@@ -703,6 +706,33 @@ Cooldown
     </div>
   </div>
 </div>
+<div id="calDelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:55;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:18px;font-weight:600;margin-bottom:8px">Delete planned workout?</div>
+    <div id="calDelText" class="hint" style="margin-bottom:16px;font-size:14px"></div>
+    <div class="row" style="justify-content:center">
+      <button id="btnCalDelNo">Cancel</button>
+      <button id="btnCalDelYes" style="background:#7a2a30">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="recModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:60;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div id="recTitle" style="font-size:18px;font-weight:600;margin-bottom:8px">Unfinished workout</div>
+    <div id="recText" class="hint" style="margin-bottom:16px;font-size:14px"></div>
+    <div id="recMain" style="display:flex;flex-direction:column;gap:10px">
+      <button id="recResume" style="background:#3ddc84;color:#001018;font-weight:700">Resume</button>
+      <button id="recSave" style="background:#1f6feb;color:#fff;font-weight:600">Save</button>
+      <button id="recDiscard" style="background:#7a2a30;color:#fff;font-weight:600">Discard</button>
+    </div>
+    <div id="recConfirm" class="row" style="justify-content:center;display:none">
+      <button id="recBack">Back</button>
+      <button id="recYes"></button>
+    </div>
+  </div>
+</div>
+
 <div id="endModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;align-items:center;justify-content:center;padding:24px">
   <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
     <div style="font-size:18px;font-weight:600;margin-bottom:16px">Are you sure you would like to end the workout?</div>
@@ -848,7 +878,12 @@ const setTargetPower = w => cpWrite([0x05, w & 0xff, (w >> 8) & 0xff]);   // sin
 
 const errText = e => (e && (e.message || e.name)) || (typeof e === "string" ? e : (() => { try { return JSON.stringify(e); } catch (x) { return String(e); } })()) || "unknown error";
 
+let trainerBusy = false;
 async function connectTrainer(known) {
+  if (known && (trainerBusy || cp)) return;                    // an auto-reconnect never runs on top of another attempt
+  trainerBusy = true; try { return await connectTrainer2(known); } finally { trainerBusy = false; }
+}
+async function connectTrainer2(known) {
   let step = "choosing device";
   try {
     // full-length UUIDs are required here: Bluefy rejects the short numeric form in the device request
@@ -860,14 +895,14 @@ async function connectTrainer(known) {
     try { localStorage.setItem("kickrTrainerId", dev.id); } catch (e) {}
     setStatus("stTrainer", "Trainer: connecting…");
     dev.addEventListener("gattserverdisconnected", () => { setStatus("stTrainer", "Trainer: disconnected", "bad"); cp = null; refreshButtons(); });
-    step = "opening GATT connection";   const server = await dev.gatt.connect();
+    step = "opening GATT connection";
+    let server; try { server = await dev.gatt.connect(); } catch (e1) { await new Promise(r => setTimeout(r, 1200)); if (cp) return; server = await dev.gatt.connect(); }   // iOS often refuses the first try
     step = "finding FTMS service";      const svc = await server.getPrimaryService(FTMS);
     step = "finding bike data";         const bike = await svc.getCharacteristic(BIKE_DATA);
     bike.addEventListener("characteristicvaluechanged", e => {
       const r = parseBike(e.target.value);
       if (r.power != null) { live.power = r.power; powerBuf.push({ t: Date.now(), w: r.power }); }
       if (r.cad != null) { live.cad = r.cad; cadBuf.push({ t: Date.now(), c: r.cad }); }
-      if (r.spd != null && r.cad != null && r.cad > 40 && r.spd > 1) simGear(r.spd / r.cad);
     });
     step = "subscribing to bike data";  await bike.startNotifications();
     step = "finding control point";     cp = await svc.getCharacteristic(CTRL_POINT);
@@ -879,6 +914,7 @@ async function connectTrainer(known) {
     refreshButtons();
   } catch (e) {
     const msg = "failed while " + step + ": " + errText(e);
+    if (cp) { log("Trainer: extra connection attempt ignored (" + msg + ")"); return; }   // another attempt already got through: nothing wrong
     setStatus("stTrainer", "Trainer " + msg, "bad"); log("Trainer " + msg);
   }
 }
@@ -1013,16 +1049,17 @@ function loadWorkout() {
   return true;
 }
 function resetWorkout() {
-  clearInterval(W.timer); clearInterval(W.fast); Object.assign(W, { simOff: 0, simBase: null, simGrade: null, tgtHist: [], hrHist: [], cadHist: [], cadRaw: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, adjPct: 100, erg: true, ramp: null, fast: null, gov: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
+  clearInterval(W.timer); clearInterval(W.fast); Object.assign(W, { simOff: 0, simBase: null, simGrade: null, simMem: {}, simIdx: -1, simSentT: null, tgtHist: [], hrHist: [], cadHist: [], cadRaw: [], running: false, paused: false, idx: 0, stepT: 0, t: 0, adj: 1, adjPct: 100, erg: true, ramp: null, fast: null, gov: 1, kj: 0, pw: [], sum4: 0, n4: 0, iSum: 0, iN: 0, lastTarget: null, timer: null });
 }
 // A step rides in road simulation when it is a freeride band, or when the workout was launched in Simulation mode
 // (every step converted, "conv") and the ERG button hasn't switched it back to ERG.
 const isSim = s => !!s && !!s.sim && (!s.conv || !!W.simMode);
 const bandW = s => {
-  if (s.conv) { const f = s.ra + (s.rb - s.ra) * Math.min(1, (s === W.steps[W.idx] ? W.stepT : 0) / s.dur), c = f * W.ftp * W.adj; return [Math.round(c - 10), Math.round(c + 10)]; }   // converted: +/- 10 W round the plan
+  if (s.conv && !s.cr) { const c = s.ra * W.ftp * W.adj; return [Math.round(c - 10), Math.round(c + 10)]; }   // converted steady step: +/- 10 W round the plan
   return [Math.round(s.lo * W.ftp * W.adj), Math.round(s.hi * W.ftp * W.adj)];
 };
-function simConvert(steps) { steps.forEach(s => { if (s.free || s.sim) return; s.sim = true; s.conv = true; s.ra = s.a; s.rb = s.b; }); return steps; }
+function simConvert(steps) { steps.forEach(s => { if (s.free || s.sim) return; s.sim = true; s.conv = true; s.ra = s.a; s.rb = s.b;
+  if (s.a !== s.b) { s.cr = true; s.lo = Math.min(s.a, s.b); s.hi = Math.max(s.a, s.b); } }); return steps; }   // a ramp rides as one fixed band from its low end to its high end
 const stepTarget = () => {
   const s = W.steps[W.idx]; if (!s || s.free) return null;
   if (isSim(s)) { const [lo, hi] = bandW(s), p = power3s(); return p == null ? Math.round((lo + hi) / 2) : Math.round(Math.max(lo, p)); }   // anywhere in the band, or above it (the headroom), counts as on target
@@ -1089,35 +1126,53 @@ async function startWorkout() {
   refreshButtons();
 }
 /* Freeride bands on a single-cog trainer: no shifting, so wheel speed is set by cadence. The trainer is put in road
-   simulation at a fixed grade chosen so the TOP of the band comes at 85 rpm: settle in a little under 85 and you sit in
-   the band, spin up for more. The grade is set at the start of the interval, corrected once or twice in the first ~15 s
-   from what the trainer actually reports, then held, so it rides like a hill rather than ERG. */
+   simulation at a fixed grade chosen so the TOP of the band comes at the cadence set in Settings (85 rpm by default):
+   settle in a little under it and you sit in the band, spin up for more.
+   On one cog, power at a fixed grade is close to  P = a * cadence * (grade + crr), with one trainer constant a
+   (rider mass x gravity x wheel speed per rpm). a is learned from what the trainer reports, so the grade for a band
+   top T at cadence C is just  T / (C * a) - crr.  A new band is checked at 5, 10, 15, 30 and 60 s, each check
+   averaging the seconds since the last grade change and trusting the later checks more. A band already ridden this
+   workout starts from the grade it finished on, with lighter checks at 15, 30 and 60 s. */
 const SIM = { CRR: 0.004, CW: 0, RPM: 85 };                        // no air drag: power rises evenly with cadence, like a steady climb
-const SIMK = { k: null, M: (() => { try { return +localStorage.getItem("kickrSimMass") || 85; } catch (e) { return 85; } })() };
-function simGear(k) { if (k > 0.03 && k < 0.3) SIMK.k = SIMK.k == null ? k : SIMK.k + (k - SIMK.k) * 0.05; }      // metres per second per rpm, learned continuously
+const SIMK = { a: (() => { try { const v = +localStorage.getItem("kickrSimA"); return v > 20 && v < 300 ? v : 86; } catch (e) { return 86; } })() };
+const SIM_NEW = [[5, 0.5], [10, 0.6], [15, 0.7], [30, 0.9], [60, 1]];     // [seconds into the interval, how much that check is trusted]
+const SIM_REP = [[15, 0.6], [30, 0.8], [60, 1]];                              // a band ridden before: verification only
 try { const c = +localStorage.getItem("kickrSimCad"); if (c >= 50 && c <= 120) SIM.RPM = c; } catch (e) {}   // the rider's chosen cadence for the top of the band
 function setSimCad(v) { v = Math.round(+v); if (!(v >= 50 && v <= 120)) { $("simCad").value = SIM.RPM; return; } SIM.RPM = v; try { localStorage.setItem("kickrSimCad", v); } catch (e) {}
-  if (W.running && isSim(W.steps[W.idx]) && W.erg) { W.simIdx = -1; pushTarget(true); } }   // re-aim the hill straight away if one is being ridden
-function simGrade(Ptop) {                                          // grade (fraction) that needs Ptop watts at the chosen cadence (85 rpm by default)
-  const v = (SIMK.k || 6.2 / 60) * SIM.RPM; return Math.max(0, Math.min(0.2, (Ptop - SIM.CW * v * v * v) / (v * SIMK.M * 9.81) - SIM.CRR));
+  if (W.running && isSim(W.steps[W.idx]) && W.erg) { W.simMem = {}; W.simIdx = -1; pushTarget(true); } }   // re-aim the hill straight away if one is being ridden
+function simGrade(Ptop) {                                          // grade (fraction) that needs Ptop watts at the chosen cadence
+  return Math.max(0, Math.min(0.2, Ptop / (SIM.RPM * SIMK.a) - SIM.CRR));
 }
 function simSend(g) {                                              // g = the computed grade; the rider's +/- resistance offset rides on top
-  const gs = Math.max(-0.05, Math.min(0.25, g + (W.simOff || 0))), G = Math.round(gs * 10000); W.simBase = g; W.simGrade = gs; W.lastTarget = "sim:" + G;
+  const gs = Math.max(-0.05, Math.min(0.25, g + (W.simOff || 0))), G = Math.round(gs * 10000); W.simBase = g; W.simGrade = gs; W.simSentT = W.t; W.lastTarget = "sim:" + G;
   return cpWrite([0x11, 0, 0, G & 0xff, (G >> 8) & 0xff, 40, 0]);
 }
-function simCalibrate(st) {                                        // learn the trainer's virtual rider mass from one steady moment
-  const p = power3s(), c = cad3s(), v = SIMK.k && c ? SIMK.k * c : null, g = W.simGrade;
-  if (!p || !v || v < 2 || g == null || g + SIM.CRR < 0.005) return;
-  const M = (p - SIM.CW * v * v * v) / (v * 9.81 * (g + SIM.CRR)); if (!(M > 40 && M < 200)) return;
-  SIMK.M = SIMK.M * 0.4 + M * 0.6; try { localStorage.setItem("kickrSimMass", SIMK.M.toFixed(1)); } catch (e) {}
-  const ng = simGrade(bandW(st)[1]); if (Math.abs(ng - (W.simBase ?? g)) > 0.003) simSend(ng);
+const simKey = st => Math.round(bandW(st)[1]);                    // bands are matched by their top in watts
+function simCalibrate(st, w, rep) {                               // one check: learn a from the steady seconds since the last grade change
+  const from = Math.max(0, W.t - 20, (W.simSentT ?? 0) + 2), P = W.pw.slice(from, W.t), C = W.cadHist.slice(from, W.t), g = W.simGrade;
+  if (P.length < 3 || g == null || g + SIM.CRR < 0.004) return;
+  const ps = [], cs = []; P.forEach((p, i) => { if (C[i] > 50 && p > 30) { ps.push(p); cs.push(C[i]); } });
+  if (ps.length < 3) return;                                       // coasting or barely turning: nothing to learn from
+  const p = ps.reduce((x, y) => x + y, 0) / ps.length, c = cs.reduce((x, y) => x + y, 0) / cs.length, aObs = p / (c * (g + SIM.CRR));
+  if (!(aObs > 20 && aObs < 300)) return;
+  SIMK.a += (aObs - SIMK.a) * w; try { localStorage.setItem("kickrSimA", SIMK.a.toFixed(2)); } catch (e) {}
+  const top = bandW(st)[1], want = Math.max(0, Math.min(0.2, top / (SIM.RPM * aObs) - SIM.CRR)), base = W.simBase ?? g;
+  const ng = Math.max(base - 0.015, Math.min(base + 0.015, base + (want - base) * w));   // never more than 1.5% in one check
+  W.simLog = { t: W.stepT, p: Math.round(p), c: Math.round(c), a: +aObs.toFixed(1), from: +(base * 100).toFixed(2), to: +(ng * 100).toFixed(2) };
+  if (Math.abs(ng - base) > (rep ? 0.001 : 0.0005)) simSend(ng);   // 0.05% is about 4 W at the band top
+  W.simMem[simKey(st)] = W.simBase;                                 // remembered for the next time this band comes round
 }
 function pushTarget(force) {
   const st = W.steps[W.idx]; if (!st || !W.erg) return;           // ERG off: the trainer is left alone
   if (isSim(st)) {
-    if (force || !String(W.lastTarget).startsWith("sim:") || W.simIdx !== W.idx) { W.simIdx = W.idx; W.simCal = 0; W.simRampT = W.stepT; return simSend(simGrade(bandW(st)[1])); }
-    if ((W.simCal === 0 && W.stepT >= 6) || (W.simCal === 1 && W.stepT >= 14)) { W.simCal++; simCalibrate(st); return; }
-    if (st.conv && st.ra !== st.rb && W.stepT - (W.simRampT || 0) >= 10) { W.simRampT = W.stepT; simSend(simGrade(bandW(st)[1])); }   // a converted ramp: the hill steepens every 10 s
+    if (!W.simMem) W.simMem = {};
+    if (W.simIdx !== W.idx) {                                       // a new interval: the +/- bias goes back to zero, the hill starts from memory if this band was ridden before
+      W.simIdx = W.idx; W.simOff = 0; W.simCal = 0; const m = W.simMem[simKey(st)]; W.simRep = m != null;
+      return simSend(m != null ? m : simGrade(bandW(st)[1]));
+    }
+    if (force || !String(W.lastTarget).startsWith("sim:")) return simSend(W.simBase ?? simGrade(bandW(st)[1]));
+    const plan = W.simRep ? SIM_REP : SIM_NEW, ck = plan[W.simCal];
+    if (ck && W.stepT >= ck[0]) { W.simCal++; simCalibrate(st, ck[1], W.simRep); }
     return;
   }
   if (st.free) {                                      // freeride: leave ERG, flat-road simulation (grade 0)
@@ -1140,20 +1195,36 @@ function ensureAudio() {                                 // must run inside the 
     if (AC.state === "suspended") AC.resume();
   } catch (e) { AC = null; }
 }
+let cueLvl = 2; try { const v = +localStorage.getItem("kickrCueVol"); if (v >= 1 && v <= 3) cueLvl = v; } catch (e) {}
+$("cueVol").value = cueLvl;
+$("cueVol").onchange = () => { cueLvl = +$("cueVol").value; try { localStorage.setItem("kickrCueVol", cueLvl); } catch (e) {} if (AC) AC._out.gain.value = CUE_GAIN[cueLvl]; };
+$("cueTest").onclick = () => { ensureAudio(); const on = $("cueOn").checked; $("cueOn").checked = true; cueBell(); [1.6, 2.6, 3.6].forEach(d => cueTick(d)); cueStart(4.6); $("cueOn").checked = on; };
+const CUE_GAIN = [0, 1, 3, 6];                            // master gain per level; the limiter after it keeps peaks clean
+function cueOut() {                                       // every cue runs through gain -> limiter -> speaker
+  if (!AC._out) {
+    const g = AC.createGain(), lim = AC.createDynamicsCompressor();
+    lim.threshold.value = -6; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.001; lim.release.value = 0.08;
+    g.gain.value = CUE_GAIN[cueLvl]; g.connect(lim); lim.connect(AC.destination); AC._out = g;
+  }
+  return AC._out;
+}
 function beep(freq, dur, vol, type, delay) {
   if (!AC || !$("cueOn").checked) return;
   const t = AC.currentTime + (delay || 0), o = AC.createOscillator(), g = AC.createGain();
   o.type = type || "sine"; o.frequency.value = freq;
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + 0.02);
+  o.connect(g); g.connect(cueOut()); o.start(t); o.stop(t + dur + 0.02);
 }
-const cueBell = () => arcadeOn                                                          // 10 s left
-  ? (beep(988, 0.08, 0.15, "square"), beep(1319, 0.25, 0.15, "square", 0.08))              // arcade: two-tone coin
-  : (beep(1320, 1.2, 0.22, "sine"), beep(2640, 0.7, 0.06, "sine"));
-const cueTick = () => arcadeOn ? beep(1200, 0.05, 0.18, "square") : beep(1000, 0.05, 0.25, "triangle");   // last 5 s (arcade: square blip)
-const cueStart = () => arcadeOn                                                         // new interval
-  ? (beep(1760, 0.06, 0.16, "square"), beep(2093, 0.1, 0.16, "square", 0.06))              // arcade: rising blip
-  : beep(1500, 0.08, 0.3, "triangle");
+/* Max: longer tones with a bright 2-4 kHz edge, where the ear is most sensitive and fan noise is thinner */
+const cueBell = (d = 0) => arcadeOn                                                     // 10 s left
+  ? (beep(988, 0.08, 0.15, "square", d), beep(1319, 0.25, 0.15, "square", d + 0.08))      // arcade: two-tone coin
+  : cueLvl === 3 ? (beep(1320, 1.4, 0.25, "triangle", d), beep(2640, 0.9, 0.12, "sine", d), beep(3300, 0.5, 0.05, "square", d), beep(1320, 1.0, 0.2, "triangle", d + 0.35), beep(2640, 0.7, 0.1, "sine", d + 0.35))
+  : (beep(1320, 1.2, 0.22, "sine", d), beep(2640, 0.7, 0.06, "sine", d));
+const cueTick = (d = 0) => arcadeOn ? beep(1200, cueLvl === 3 ? 0.1 : 0.05, 0.18, "square", d)   // last 5 s (arcade: square blip)
+  : cueLvl === 3 ? (beep(2000, 0.12, 0.3, "triangle", d), beep(3000, 0.08, 0.06, "square", d)) : beep(1000, 0.05, 0.25, "triangle", d);
+const cueStart = (d = 0) => arcadeOn                                                    // new interval
+  ? (beep(1760, 0.06, 0.16, "square", d), beep(2093, 0.1, 0.16, "square", d + 0.06))      // arcade: rising blip
+  : cueLvl === 3 ? (beep(2400, 0.2, 0.3, "triangle", d), beep(3600, 0.12, 0.06, "square", d)) : beep(1500, 0.08, 0.3, "triangle", d);
 function cues() {                                        // called once a second, and after a skip
   if (!W.running || W.paused || W.idx >= W.steps.length) return;
   if (cueIdx !== W.idx) { cueIdx = W.idx; cueStart(); return; }   // the new interval has started
@@ -1184,6 +1255,7 @@ function tick() {
   }
   cues();
   pushTarget(false); render();
+  if (W.t % 5 === 0) recSave();
 }
 function finishWorkout(reason, quiet) {
   W.endedEarly = reason === "Workout ended by user.";
@@ -1206,7 +1278,11 @@ function skipStep() {
 function togglePause() {
   if (!W.running) return;
   W.paused = !W.paused; $("btnPause").textContent = W.paused ? "Resume" : "Pause";
-  if (W.paused) { W.ramp = null; W.gov = 1; W.lastTarget = null; if (W.erg) setTargetPower(50); } else pushTarget(true);
+  if (!W.paused && W.recovered) {                         // first Resume after reopening the app: the trainer needs its start command again
+    if (!cp) { W.paused = true; $("btnPause").textContent = "Resume"; toast("Connect the trainer first, then tap Resume.", true); return; }
+    W.recovered = false; ensureAudio(); cpWrite([0x07]);
+  }
+  if (W.paused) { W.ramp = null; W.gov = 1; W.lastTarget = null; if (W.erg) setTargetPower(50); recSave(); } else pushTarget(true);
   refreshButtons();
 }
 function collapseAllFolders() {                          // home page always starts with every folder closed
@@ -1222,7 +1298,7 @@ function applyArcade() {                                 // arcade look only on 
   syncTopBtns();
 }
 function syncTopBtns() {                                  // arcade: top-left is Library before the ride, Games once it has started
-  const g = arcadeOn && W.running, n = !arcadeOn && W.running; $("btnGames").style.display = g ? "" : "none"; $("btnArcRun").style.display = n ? "" : "none"; $("btnEdit").style.display = g || n ? "none" : "";
+  const g = arcadeOn && W.running, n = !arcadeOn && W.running; $("btnGames").style.display = g ? "" : "none"; $("btnEdit").style.display = g || n ? "none" : "";
 }
 function showScreen(name) { if (name === "landing") arcadeOn = false; document.body.dataset.screen = name; applyArcade(); if (name === "landing") collapseAllFolders(); if (name === "run") autoReconnect(); fitH(); render(); window.scrollTo(0, 0); }
 
@@ -1262,7 +1338,58 @@ function summaryData() {
     { l: "Energy", v: f(W.kj), u: "kJ" },        { l: "Avg speed", v: f(sim.mph, 1), u: "mph" }
   ];
 }
+/* ---------------- crash recovery ----------------
+   Every 5 s (and on pause, and when the page is hidden) the whole ride so far is written to localStorage. It is cleared
+   only when the ride is saved or discarded, so if the app is closed mid-ride, the next launch offers Resume / Save / Discard. */
+const REC_KEY = "kickrRecover";
+const REC_F = ["steps", "ftp", "name", "startMs", "t", "idx", "stepT", "adj", "adjPct", "erg", "kj", "pw", "hrHist", "cadHist", "cadRaw", "tgtHist", "sum4", "n4", "iSum", "iN", "simMode", "simMem"];
+function recSave() {
+  if (!W.running || !W.t) return;
+  const o = { v: 1, at: Date.now(), arcade: arcadeOn }; REC_F.forEach(k => o[k] = W[k]);
+  try { localStorage.setItem(REC_KEY, JSON.stringify(o)); } catch (e) { log("Couldn't keep a recovery copy: " + e.message); }
+}
+function recClear() { try { localStorage.removeItem(REC_KEY); } catch (e) {} }
+function recLoad() { try { const o = JSON.parse(localStorage.getItem(REC_KEY) || "null"); return o && o.v === 1 && o.t > 0 && Array.isArray(o.pw) && Array.isArray(o.steps) ? o : null; } catch (e) { return null; } }
+addEventListener("pagehide", recSave); document.addEventListener("visibilitychange", () => { if (document.hidden) recSave(); });
+function recRestore(o) {                                  // put the saved ride back into W, paused at the second it was last saved
+  resetWorkout(); REC_F.forEach(k => { if (o[k] !== undefined) W[k] = o[k]; });
+  W.simMem = W.simMem || {}; W.loaded = true; W.running = true; W.paused = true; W.recovered = true; W.lastTarget = null; W.simIdx = -1; cueIdx = W.idx;
+  if (W.idx >= W.steps.length) { W.idx = W.steps.length - 1; W.stepT = W.steps[W.idx].dur - 1; }
+}
+let recData = null, recPick = null;
+function recOffer() {
+  recData = recLoad(); if (!recData) return;
+  const o = recData, done = o.steps.reduce((a, s) => a + s.dur, 0), when = new Date(o.at);
+  $("recText").textContent = (o.name || "Workout") + " \u00b7 " + fmt(o.t) + " of " + fmt(done) + " ridden \u00b7 last saved " +
+    when.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" }) + ". Resume carries on from there (in normal mode), Save uploads what you rode, Discard throws it away.";
+  recStage("main"); $("recModal").style.display = "flex";
+}
+function recStage(m) {
+  $("recMain").style.display = m === "main" ? "flex" : "none"; $("recConfirm").style.display = m === "main" ? "none" : "flex";
+  $("recTitle").textContent = m === "main" ? "Unfinished workout" : m === "save" ? "Save this ride?" : "Discard this ride?";
+  if (m === "save") { $("recYes").textContent = "Yes, save"; $("recYes").style.background = "#1f6feb"; $("recText").dataset.keep = $("recText").textContent; $("recText").textContent = "It uploads to intervals.icu and Strava, just like finishing a ride."; }
+  if (m === "discard") { $("recYes").textContent = "Yes, discard"; $("recYes").style.background = "#7a2a30"; $("recText").dataset.keep = $("recText").textContent; $("recText").textContent = "The " + fmt(recData.t) + " you rode will be deleted and nothing is uploaded. This can't be undone."; }
+  if (m === "main" && $("recText").dataset.keep) { $("recText").textContent = $("recText").dataset.keep; delete $("recText").dataset.keep; }
+  recPick = m;
+}
+$("recResume").onclick = () => {
+  $("recModal").style.display = "none"; recRestore(recData);
+  W.timer = setInterval(tick, 1000);
+  W.fast = setInterval(() => { if (W.running && !W.paused) { govStep(0.25); pushTarget(false); bandBar(); } }, 250);
+  $("btnPause").textContent = "Resume"; showScreen("run"); refreshButtons(); render();
+  toast(cp ? "Tap Resume when you're pedalling." : "Reconnecting the trainer\u2026 tap Resume when it's connected.");
+};
+$("recSave").onclick = () => recStage("save");
+$("recDiscard").onclick = () => recStage("discard");
+$("recBack").onclick = () => recStage("main");
+$("recYes").onclick = () => {
+  $("recModal").style.display = "none";
+  if (recPick === "save") { recRestore(recData); W.running = false; W.paused = false; W.recovered = false; showSummary(true); }
+  else { recClear(); toast("Unfinished ride discarded."); }
+  recData = null;
+};
 function showSummary(save = true) {
+  recClear();                                            // saved or discarded: nothing left to recover
   const d = summaryData(); applyArcade();
   $("sumDate").textContent = new Date().toLocaleString([], { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "  \u00b7  FTP " + W.ftp + " w";
   $("sumGrid").innerHTML = d.map(m => '<div class="tile"><div class="l">' + m.l + '</div><div class="v">' + m.v + (m.u && m.v !== "--" ? "<small>" + m.u + "</small>" : "") + "</div></div>").join("");
@@ -1361,6 +1488,7 @@ function drawBarsLogo(c, x, y, k) {                          // the five bars fr
   });
 }
 function prepareSummaryImage(d) {                       // square (1080x1080) so Strava and other feeds don't crop it
+  d = d.filter(m => m.l !== "Distance" && m.l !== "Avg speed");   // modelled indoor speed and distance stay off the image: 8 tiles, 4 x 2
   const S = 1080, H = 814, cv = document.createElement("canvas"); cv.width = S; cv.height = H;
   const c = cv.getContext("2d"), F = "-apple-system,system-ui,sans-serif";
   c.fillStyle = "#0b0d10"; c.fillRect(0, 0, S, H);
@@ -1368,7 +1496,7 @@ function prepareSummaryImage(d) {                       // square (1080x1080) so
   c.fillStyle = "#8b94a3"; c.font = "400 26px " + F; c.fillText($("sumDate").textContent, 48, 122);
   c.fillStyle = "rgba(255,210,63,.55)"; c.fillRect(48, 136, 984, 2);      // thin accent rule
   drawBarsLogo(c, 1080 - 48 - 91, 33, 0.1);
-  const cols = 5, gap = 12, tw = (S - 96 - gap * (cols - 1)) / cols, th = 150;
+  const cols = 4, gap = 12, tw = (S - 96 - gap * (cols - 1)) / cols, th = 150;
   d.forEach((m, i) => {
     const x = 48 + (i % cols) * (tw + gap), y = 148 + Math.floor(i / cols) * (th + gap);
     c.fillStyle = "#161a20"; rrect(c, x, y, tw, th, 16); c.fill();
@@ -1430,7 +1558,7 @@ function buildFit() {
 function prepareFit() {
   fitBlob = new Blob([buildFit()], { type: "application/octet-stream" });
   const ld = new Date(W.startMs), p2 = n => String(n).padStart(2, "0");   // local time, not UTC
-  fitName = "kickr-erg-" + ld.getFullYear() + "-" + p2(ld.getMonth() + 1) + "-" + p2(ld.getDate()) + "-" + p2(ld.getHours()) + "-" + p2(ld.getMinutes()) + ".fit";
+  fitName = "intervals-player-" + ld.getFullYear() + "-" + p2(ld.getMonth() + 1) + "-" + p2(ld.getDate()) + "-" + p2(ld.getHours()) + "-" + p2(ld.getMinutes()) + ".fit";
   $("btnSaveFit").disabled = false;
 }
 function saveFit() {
@@ -1726,7 +1854,7 @@ function saveToLibrary() {
 }
 function adjust(d) {                                   // d in percentage points; on a simulation step it moves the grade instead
   if (W.running && W.erg && isSim(W.steps[W.idx])) {
-    W.simOff = Math.max(-0.05, Math.min(0.05, Math.round(((W.simOff || 0) + d * 0.005) * 1000) / 1000));   // 0.5% grade per tap, kept for later sim steps
+    W.simOff = Math.max(-0.05, Math.min(0.05, Math.round(((W.simOff || 0) + d * 0.005) * 1000) / 1000));   // 0.5% grade per tap, for this interval only
     if (!W.paused && W.simBase != null) simSend(W.simBase); render(); return;
   }
   W.adjPct = Math.min(200, Math.max(50, W.adjPct + d)); W.adj = W.adjPct / 100;
@@ -1743,11 +1871,11 @@ function toggleErg() {
 }
 
 /* ---------------- rendering ---------------- */
-function bandBar() {                                    // where 3 s power sits against the freeride band: grey margins, green band, pointer
+function bandBar() {                                    // where the interval average sits against the freeride band: grey margins, green band, pointer
   const s = W.steps[W.idx], on = W.running && isSim(s), bar = $("bandBar"); bar.hidden = !on; if (!on) return;
   const [lo, hi] = bandW(s), pad = Math.max(15, (hi - lo) * 0.6), min = lo - pad, max = hi + pad, x = v => Math.max(0, Math.min(100, (v - min) / (max - min) * 100));
   $("bandIn").style.left = x(lo) + "%"; $("bandIn").style.width = (x(hi) - x(lo)) + "%";
-  const p = power3s(), ptr = $("bandPtr"); ptr.style.visibility = p == null ? "hidden" : ""; if (p == null) return;
+  const p = W.iN ? Math.round(W.iSum / W.iN) : null, ptr = $("bandPtr"); ptr.style.visibility = p == null ? "hidden" : ""; if (p == null) return;
   ptr.style.left = x(p) + "%"; ptr.style.borderTopColor = p < lo ? "#8b94a3" : p > hi ? "var(--bad)" : "var(--ok)";
 }
 function render() {
@@ -1780,7 +1908,7 @@ function render() {
   $("target").classList.toggle("band", !!band); $("tgtPct").style.display = band && !W.simOff ? "none" : "";   // two stacked numbers take the label's line
   $("tgtPct").classList.toggle("adjg", !!band && !!W.simOff);   // with a band, the grade offset sits right under the numbers
   bandBar();
-  $("tgtPct").textContent = band ? (s.conv ? "\u00b110 W" : Math.round(s.lo * W.adj * 100) + "\u2013" + Math.round(s.hi * W.adj * 100) + "%") : !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP";
+  $("tgtPct").textContent = band ? (s.conv && !s.cr ? "\u00b110 W" : Math.round(s.lo * W.adj * 100) + "\u2013" + Math.round(s.hi * W.adj * 100) + "%") : !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP";
   if (band && W.simOff) { $("tgtPct").textContent = simOffTxt(); $("adjLbl").style.display = "none"; }
   $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
   $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "calc(var(--u)*3.3)" : "";
@@ -1789,9 +1917,12 @@ function render() {
   $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
   const ia = W.iN ? W.iSum / W.iN : null;
   $("iavg").textContent = ia == null ? "--" : Math.round(ia);
-  $("iavgPct").textContent = ia == null || !tgt ? "--" : Math.round(ia / tgt * 100);
+  { const zone = band || (tgt ? [tgt * 0.97, tgt * 1.03] : null), ref = band ? band[1] : tgt, iv = ia == null ? null : Math.round(ia);   // a band (shown as % of its top), or within 3% of an ERG target, counts as on target
+    $("iavgPct").textContent = ia == null || !ref ? "--" : Math.round(ia / ref * 100);
+    $("iavgS").style.color = iv == null || !zone ? "" : iv < zone[0] ? "#8b94a3" : iv > zone[1] ? "var(--bad)" : "var(--ok)"; }
   $("kj").textContent = Math.round(W.kj);
   $("npu").style.display = W.n4 ? "" : "none";
+  $("pavg").textContent = W.pw.length ? Math.round(W.pw.reduce((a, b) => a + b, 0) / W.pw.length) : "--";
   if (!W.n4) { $("np").textContent = "--"; $("tss").textContent = "--"; $("ifv").textContent = "--"; }
   if (W.n4) {
     const np = (W.sum4 / W.n4) ** 0.25, IF = np / W.ftp, tss = (W.t * np * IF) / (W.ftp * 3600) * 100;
@@ -1861,7 +1992,7 @@ function drawProfileGraph(cv, o) {
   if (W.pw.length > 1) {
     const pts = W.pw.map((_, i) => { const sl = W.pw.slice(Math.max(0, i - 2), i + 1); return [X(i + 1), Math.max(0, Y(sl.reduce((a, b) => a + b, 0) / sl.length / ftp))]; });
     const trace = (col, lw) => { c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = "round"; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); };
-    trace("rgba(0,0,0,.6)", 2.4); trace("#ff2d2d", 1.1);
+    trace("rgba(255,45,45,.75)", 0.5);   /* a hairline: there if you look for it */
   }
 
   // progress cursor
@@ -2046,7 +2177,7 @@ function arcHud(R) {
   const p3 = power3s(), tg = W.running ? stepTarget() : null;
   const sb = W.running && isSim(s) ? bandW(s) : null;
   setT("aPw", p3 == null ? "--" : Math.round(p3)); setT("aTgt", !W.running ? "--" : sb ? sb[0] + "\u2013" + sb[1] : tg ?? "FREE");
-  setT("aTgtPct", sb ? (s.conv ? "\u00b110 W" : Math.round(s.lo * W.adj * 100) + "\u2013" + Math.round(s.hi * W.adj * 100) + "%") : !W.running || !tg ? "-- % FTP" : Math.round(tg / W.ftp * 100) + "% FTP");
+  setT("aTgtPct", sb ? (s.conv && !s.cr ? "\u00b110 W" : Math.round(s.lo * W.adj * 100) + "\u2013" + Math.round(s.hi * W.adj * 100) + "%") : !W.running || !tg ? "-- % FTP" : Math.round(tg / W.ftp * 100) + "% FTP");
   const r3 = p3 == null ? 0 : p3 / W.ftp, nB = Math.round(Math.min(1.2, r3) / 1.2 * 12);
   [...$("aBoost").children].forEach((e, k) => { const col = k < nB ? ZCOL((k + 1) / 12 * 1.2) : ""; if (e.style.background !== col) e.style.background = col; });
   const c3 = cad3s(); setT("aCad", c3 == null ? "--" : Math.round(c3));
@@ -4065,7 +4196,7 @@ async function loadNext7() {
     const cat = x.category || "", text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
     let dur = x.moving_time || 0, tss = x.icu_training_load != null ? x.icu_training_load : null;
     if (cat === "WORKOUT" && text) { try { const st = parseText(text, +$("ftp").value || 270); dur = st.reduce((a, q) => a + q.dur, 0); tss = planStats(st).tss; } catch (e) {} }
-    items.push({ date, name: x.name || (cat === "WORKOUT" ? "Planned workout" : cat || "Event"), dur, tss, done: false });
+    items.push({ date, name: x.name || (cat === "WORKOUT" ? "Planned workout" : cat || "Event"), dur, tss, done: false, id: cat === "WORKOUT" ? x.id : null });
   });
   acts.forEach(a => {
     const date = String(a.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
@@ -4102,13 +4233,35 @@ async function loadNext7() {
       const n = document.createElement("span"); n.style.cssText = "flex:1;min-width:0;overflow-wrap:anywhere"; n.textContent = x.name + (x.done ? " \u2713" : "");
       const m = document.createElement("span"); m.className = "r"; m.style.cssText = "flex:none;font-size:13px";
       m.textContent = [x.dur ? fmtHM(x.dur) : "", x.tss != null ? "TSS " + Math.round(x.tss) : ""].filter(Boolean).join("  ");
-      row.append(n, m); list.appendChild(row);
+      row.append(n, m);
+      if (!x.done && x.id != null) {                       // planned workouts can be taken off the calendar from here
+        const del = document.createElement("button"); del.type = "button"; del.className = "caldel"; del.textContent = "\u2715";
+        del.title = "Delete from calendar"; del.setAttribute("aria-label", "Delete " + x.name + " from the intervals.icu calendar");
+        del.onclick = () => askCalDelete(x, head.textContent); row.appendChild(del);
+      }
+      list.appendChild(row);
     });
   });
   if (!any) list.textContent = "Nothing planned or completed in the next 7 days.";
   out.textContent = "";
 }
 $("btnToday").onclick = () => { loadToday(); loadNext7(); };
+/* ---------------- delete a planned workout from the intervals.icu calendar ---------------- */
+let calDel = null;
+function askCalDelete(x, dayLabel) {
+  calDel = x; $("calDelText").textContent = "\u201c" + x.name + "\u201d on " + dayLabel + " will be removed from your intervals.icu calendar. This can't be undone.";
+  $("btnCalDelYes").disabled = false; $("btnCalDelYes").textContent = "Delete"; $("calDelModal").style.display = "flex";
+}
+$("btnCalDelNo").onclick = () => { $("calDelModal").style.display = "none"; calDel = null; };
+$("btnCalDelYes").onclick = async () => {
+  if (!calDel) return; const x = calDel, auth = icuAuth();
+  $("btnCalDelYes").disabled = true; $("btnCalDelYes").textContent = "Deleting\u2026";
+  try {
+    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(icuId()) + "/events/" + encodeURIComponent(x.id), { method: "DELETE", headers: { Authorization: auth, Accept: "application/json" } });
+    if (!r.ok) throw new Error(r.status === 403 ? "intervals.icu refused (403): reconnect intervals.icu in Settings so the app can edit your calendar" : "intervals.icu replied " + r.status);
+    $("calDelModal").style.display = "none"; calDel = null; toast("Deleted \u201c" + x.name + "\u201d from your calendar."); loadToday(); loadNext7();
+  } catch (e) { $("btnCalDelYes").disabled = false; $("btnCalDelYes").textContent = "Try again"; $("calDelText").textContent = "Couldn't delete it: " + e.message + "."; }
+};
 $("btnRenameNo").onclick = () => { $("renameModal").style.display = "none"; renameFrom = null; };
 $("btnRenameYes").onclick = applyRename; $("renameInput").onkeydown = e => { if (e.key === "Enter") applyRename(); };
 function askSaveRide() { $("saveModal").style.display = "flex"; }
@@ -4316,11 +4469,6 @@ let arcFromNormal = false;                                         // the game s
 function toNormal() { arcadeOn = false; applyArcade(); render(); }
 $("gResume").onclick = () => { $("gameModal").classList.remove("show"); gameFromRun = false; if (arcFromNormal) { arcFromNormal = false; toNormal(); } if (W.running && W.paused) togglePause(); };
 $("gNormal").onclick = () => { $("gameModal").classList.remove("show"); gameFromRun = false; arcFromNormal = false; toNormal(); if (W.running && W.paused) togglePause(); };   // back to the normal ride screen
-$("btnArcRun").onclick = async () => {                                                     // normal ride screen -> arcade, mid-ride
-  if (!W.running) return; const wasPaused = W.paused; if (!wasPaused) togglePause();
-  if (!await arcAskBox("Continue in arcade mode?", "Pick a game and your ride carries on where it left off.", "Arcade", "Cancel")) { if (!wasPaused && W.paused) togglePause(); return; }
-  arcFromNormal = true; gameFromRun = true; openGameSelect();
-};   // same game, ride carries on (or waits for Start)
 $("aGames").onclick = () => { if (W.running) return; gameFromRun = true; openGameSelect(); };
 let arcLibOpen = {}, arcPending = null, arcLibMode = "switch";
 function openArcLib(mode) {
@@ -4392,6 +4540,7 @@ loadWorkout();
 loadToday();
 loadNext7();
 loadFtp(true);
+setTimeout(recOffer, 300);                             // an unfinished ride from last time? offer Resume / Save / Discard
 </script>
 <script>
 // Shrink the sticky header after scrolling down; expand again near the top (two thresholds avoid flicker)
