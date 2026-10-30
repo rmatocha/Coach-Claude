@@ -22,7 +22,7 @@
   .row { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; align-items:center; }
   .status { font-size:12px; color:var(--dim); }
   .status.ok { color:var(--ok); } .status.bad { color:var(--bad); }
-  textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:13px; }
+  textarea { width:100%; height:130px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:10px; padding:10px; font-family:ui-monospace,monospace; font-size:16px; line-height:1.35; }   /* 16px: smaller text makes iOS zoom the page on focus */
   select { background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:10px; font-size:16px; min-width:0; }
   input[type=text] { background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:10px; font-size:16px; box-sizing:border-box; }
   input[type=number] { width:80px; background:var(--card); color:var(--fg); border:1px solid #2b323c; border-radius:8px; padding:8px; font-size:16px; }
@@ -128,6 +128,28 @@
   body.compact .row .status { font-size:11px !important; }
   body.compact .seg { margin:2px 0; }
   body.compact .seg button { padding:4px; font-size:13px; }
+  .wkhead { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  #weekTot { font-variant-numeric:tabular-nums; letter-spacing:.02em; text-transform:none; color:#c9d2de; font-weight:600; }
+  .wkday { display:flex; flex-direction:column; align-items:stretch; min-width:0; text-align:center; background:none; border:0; padding:2px 0; margin:0; border-radius:8px; color:inherit; font:inherit; cursor:pointer; }
+  .wkday:disabled { cursor:default; opacity:1; }
+  .wkday:not(:disabled):active { background:rgba(255,255,255,.05); }
+  .wkday:focus-visible { outline:2px solid var(--acc); outline-offset:1px; }
+  .wkday .wd { font-size:11px; color:#7b8291; }
+  .wkday .dn { font-size:14px; font-weight:600; margin:2px auto; width:24px; height:24px; line-height:24px; border-radius:50%; }
+  .wkday.past .wd, .wkday.past .dn { color:#5d6574; }
+  .wkday.today .wd { color:var(--acc); font-weight:700; }
+  .wkday.today .dn { color:var(--acc); font-weight:800; }
+  .wkbox { position:relative; height:44px; background:#1f2227; border-radius:6px; overflow:hidden; }
+  .wkday.today .wkbox { box-shadow:inset 0 0 0 2px var(--acc); }
+  .wkday.past .wkbox { background:#191b20; }
+  .wkbox canvas { position:absolute; left:0; right:0; bottom:0; width:100%; height:50%; display:block; image-rendering:pixelated; }
+  .wkbox .wktxt { position:absolute; left:0; right:0; top:8px; bottom:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#c9d2de; }
+  .wkbox .wkplus { position:absolute; top:1px; right:3px; font-size:11px; line-height:1; font-weight:700; color:#8a93a3; }
+  .wkday.today .wkplus { color:var(--acc); }
+  .wkbox .wkdone { position:absolute; top:2px; left:3px; font-size:11px; line-height:1; font-weight:800; color:#3ddc84; }
+  .wkday .tl { font-size:11px; color:#7b8291; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .schedbtn { flex:none; width:44px; margin:4px 0; padding:0; font-size:24px; font-weight:700; line-height:1; background:var(--acc); color:#000; }
+  .havedel { flex:none; width:36px; height:32px; padding:0; margin:0; border-radius:8px; font-size:13px; background:#2a2f37; color:#a7b0bd; align-self:center; }
   .devrows { display:flex; flex-direction:column; gap:10px; }
   .devrow { display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; column-gap:10px; align-items:center; text-align:left; width:100%; margin:0; padding:12px 14px; border-radius:12px; background:#222833; border:2px solid #d93b3b; }
   .devrow .dn { font-size:16px; font-weight:700; color:#e8ebef; }
@@ -380,7 +402,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.7</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.8</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -407,9 +429,10 @@
   </div>
 
   <div class="card" id="weekCard">
-    <h2>Next 7 days</h2>
+    <h2 class="wkhead"><span>This Week</span><span id="weekTot"></span></h2>
     <div id="planWeekGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
-    <div id="planWeekList" style="margin-top:10px;font-size:14px"></div>
+    <h2 style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)">Next 7 Days</h2>
+    <div id="planWeekList" style="font-size:14px"></div>
     <div id="planWeekOut" class="hint" style="margin-top:6px;font-size:13px"></div>
   </div>
 
@@ -494,6 +517,22 @@ Cooldown
   </div>
 </div>
 
+<div id="dayScr" class="hscreen" role="dialog" aria-labelledby="dayTitle">
+  <div class="hbar"><button id="dayBack" type="button">‹ Back</button><span id="dayTitle">Schedule</span></div>
+  <div class="hin">
+    <div class="card" id="dayHave" hidden><h2>Already planned</h2><div id="dayHaveList" style="font-size:14px"></div></div>
+    <div class="card"><h2>Workout library</h2><div id="dayLib"></div></div>
+    <div class="card">
+      <h2>Workout builder</h2>
+      <input id="dName" type="text" placeholder="Workout name" maxlength="60" style="width:100%;margin-top:0">
+      <textarea id="dWo" spellcheck="false" placeholder="Warmup&#10;-10m ramp 50%-75%&#10;&#10;Main Set 3x&#10;-10m 90%&#10;-5m 55%&#10;&#10;Cooldown&#10;-10m 50%"></textarea>
+      <div id="dWoInfo" class="status" style="margin-top:6px;font-size:14px">Type the workout steps above.</div>
+      <canvas id="dWoGraph" style="width:100%;height:64px;display:block;margin-top:8px;border-radius:8px;background:#11151a"></canvas>
+      <button id="dSched" class="primary" type="button" style="width:100%;height:44px;font-size:16px;margin:12px 0 0" disabled>Schedule</button>
+    </div>
+  </div>
+</div>
+
 <div id="settingsScr" class="hscreen" role="dialog" aria-label="Settings">
   <div class="hbar"><button id="setBack" type="button">‹ Back</button><span>Settings</span></div>
   <div class="hin">
@@ -568,7 +607,7 @@ Cooldown
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnDevices" class="redbtn" type="button" style="display:none">Connect devices</button>
-  <span class="ver">v1.0.7</span>
+  <span class="ver">v1.0.8</span>
 </div>
 
 <div class="ctrl">
@@ -734,7 +773,7 @@ Cooldown
 
 <div id="calDelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:55;align-items:center;justify-content:center;padding:24px">
   <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
-    <div style="font-size:18px;font-weight:600;margin-bottom:8px">Delete Planned Workout?</div>
+    <div id="calDelTitle" style="font-size:18px;font-weight:600;margin-bottom:8px">Delete Planned Workout?</div>
     <div id="calDelText" class="hint" style="margin-bottom:16px;font-size:14px"></div>
     <div class="row" style="justify-content:center">
       <button id="btnCalDelNo">Cancel</button>
@@ -1697,7 +1736,7 @@ let woSteps = null, woPickT = null;                 // parsed steps of the build
 function drawMini(cv, steps, o) {
   o = o || {}; const w = 600, h = o.h || 52; cv.width = w; cv.height = h;
   const c = cv.getContext("2d"), total = steps.reduce((a, s) => a + s.dur, 0); if (!total) return;
-  const maxF = Math.max(1.15, steps.reduce((m, s) => Math.max(m, s.a, s.b), 0) * 1.05), Y = f => h - (f / maxF) * (h - 2);
+  const maxF = o.maxF || Math.max(1.15, steps.reduce((m, s) => Math.max(m, s.a, s.b), 0) * 1.05), Y = f => h - (Math.min(f, maxF) / maxF) * (h - 2);
   let t = 0;
   for (const st of steps) {
     const x0 = t / total * w, x1 = (t + st.dur) / total * w; t += st.dur;
@@ -4244,45 +4283,113 @@ async function icuRange(oldest, newest, path) {
   if (!r.ok) throw new Error("intervals.icu replied " + r.status);
   const j = await r.json(); return Array.isArray(j) ? j : [];
 }
+/* ---------------- Plan tab: This Week (Mon-Sun strip) and Next 7 Days (list from today) ---------------- */
+const STREAMS = new Map();                                       // activity id -> watts, one value per 10 s (for the done-ride graphs)
+async function actWatts(id) {
+  if (STREAMS.has(id)) return STREAMS.get(id);
+  let w = null;
+  try {
+    const r = await fetch("https://intervals.icu/api/v1/activity/" + encodeURIComponent(id) + "/streams.json?types=watts", { headers: { Authorization: icuAuth(), Accept: "application/json" } });
+    if (r.ok) { const j = await r.json(), st = (Array.isArray(j) ? j : []).find(x => x.type === "watts"), d = st && st.data;
+      if (d && d.length) { w = []; for (let i = 0; i < d.length; i += 10) { const sl = d.slice(i, i + 10).map(v => v || 0); w.push(sl.reduce((a, b) => a + b, 0) / sl.length); } } }
+  } catch (e) {}
+  STREAMS.set(id, w); return w;
+}
+// One day's picture: pieces laid end to end in time (a ride done, then what's still planned), drawn column by column
+// at the canvas's real pixel size so the edges stay sharp. Heights share one scale (130% FTP fills the graph).
+function drawDay(cv, pieces) {
+  const dpr = Math.max(1, Math.round(window.devicePixelRatio || 1)), W2 = Math.max(1, Math.round(cv.clientWidth * dpr)), H2 = Math.max(1, Math.round(cv.clientHeight * dpr));
+  cv.width = W2; cv.height = H2; const c = cv.getContext("2d"); c.clearRect(0, 0, W2, H2);
+  const total = pieces.reduce((a, p) => a + p.dur, 0); if (!total) return;
+  for (let x = 0; x < W2; x++) {
+    let f = 0;                                                   // average over the column's slice of time, so noisy power doesn't flicker between zones
+    for (let k = 0; k < 6; k++) {
+      let t = (x + (k + 0.5) / 6) / W2 * total, p = pieces[0];
+      for (const q of pieces) { p = q; if (t < q.dur) break; t -= q.dur; }
+      f += p.at(Math.min(t, p.dur - 0.001)) / 6;
+    }
+    if (!(f > 0)) continue;
+    const h = Math.max(1, Math.round(Math.min(f, 1.3) / 1.3 * H2));
+    c.fillStyle = zoneColor(f); c.fillRect(x, H2 - h, 1, h);
+  }
+}
+const stepsPiece = st => { const dur = st.reduce((a, q) => a + q.dur, 0); return { dur, at: t => { for (const q of st) { if (t < q.dur) return q.a + (q.b - q.a) * (t / q.dur); t -= q.dur; } return 0; } }; };
+const wattsPiece = (w, ftp) => ({ dur: w.length * 10, at: t => (w[Math.floor(t / 10)] || 0) / ftp });
 async function loadNext7() {
   const out = $("planWeekOut"), grid = $("planWeekGrid"), list = $("planWeekList");
   const auth = icuAuth();
-  if (!auth) { grid.innerHTML = ""; list.textContent = ""; out.textContent = "Connect intervals.icu in Settings to see the next 7 days."; return; }
-  const now = new Date(), days = Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + i));
-  const start = ymd(days[0]), end = ymd(days[6]);
-  out.textContent = "Checking intervals.icu\u2026";
+  if (!auth) { grid.innerHTML = ""; list.textContent = ""; $("weekTot").textContent = ""; out.textContent = "Connect intervals.icu in Settings to see this week and the next 7 days."; return; }
+  const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate()), todayS = ymd(today);
+  const mon = new Date(today); mon.setDate(today.getDate() - ((today.getDay() + 6) % 7));           // this week starts on Monday
+  const week = Array.from({ length: 7 }, (_, i) => new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i));
+  const days = Array.from({ length: 7 }, (_, i) => new Date(today.getFullYear(), today.getMonth(), today.getDate() + i));
+  const start = ymd(week[0]), end = ymd(days[6]);
+  out.textContent = "Checking intervals.icu…";
   let ev, acts;
   try { [ev, acts] = await Promise.all([icuRange(start, end, "events"), icuRange(start, end, "activities")]); }
   catch (e) { out.textContent = "Couldn't load the calendar (" + e.message + ")."; return; }
+  const ftp = +$("ftp").value || 270;
   let items = [];
   ev.forEach(x => {
     const date = String(x.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
     const cat = x.category || "", text = (x.description || (x.workout_doc && x.workout_doc.description) || "").trim();
     let dur = x.moving_time || 0, tss = x.icu_training_load != null ? x.icu_training_load : null;
-    if (cat === "WORKOUT" && text) { try { const st = parseText(text, +$("ftp").value || 270); dur = st.reduce((a, q) => a + q.dur, 0); tss = planStats(st).tss; } catch (e) {} }
-    items.push({ date, name: x.name || (cat === "WORKOUT" ? "Planned workout" : cat || "Event"), dur, tss, done: false, id: cat === "WORKOUT" ? x.id : null });
+    let steps = null;
+    if (cat === "WORKOUT" && text) { try { const st = parseText(text, ftp); dur = st.reduce((a, q) => a + q.dur, 0); tss = planStats(st).tss; steps = st; } catch (e) {} }
+    items.push({ date, name: x.name || (cat === "WORKOUT" ? "Planned workout" : cat || "Event"), dur, tss, done: false, id: cat === "WORKOUT" ? x.id : null, eid: x.id, cat, steps });
   });
   acts.forEach(a => {
     const date = String(a.start_date_local || "").slice(0, 10); if (date.length !== 10) return;
-    items.push({ date, name: a.name || a.type || "Activity", dur: a.moving_time || 0, tss: a.icu_training_load != null ? a.icu_training_load : null, done: true });
+    items.push({ date, name: a.name || a.type || "Activity", dur: a.moving_time || 0, tss: a.icu_training_load != null ? a.icu_training_load : null, done: true, aid: a.id });
   });
   const doneKeys = new Set(items.filter(x => x.done).map(x => x.date + "|" + normName(x.name)));
   items = items.filter(x => x.done || !doneKeys.has(x.date + "|" + normName(x.name)));   // completed ride replaces its planned entry
+  items = items.filter(x => x.done || x.date >= todayS);                                      // a plan from an earlier day that wasn't ridden has passed
   const endDay = ymd(days[6]), keep = {}; Object.keys(PLAN_TSS).forEach(k => { if (k > endDay) keep[k] = PLAN_TSS[k]; }); PLAN_TSS = keep;   // days past the 7-day window come from loadPlanAhead
-  items.forEach(x => { if (!x.done && x.tss != null) PLAN_TSS[x.date] = (PLAN_TSS[x.date] || 0) + x.tss; });
+  items.forEach(x => { if (!x.done && x.tss != null && x.date >= todayS) PLAN_TSS[x.date] = (PLAN_TSS[x.date] || 0) + x.tss; });
   if (FIT_DAYS) renderFit();                                   // refresh the Data tab look-ahead with the new schedule
-  const sums = days.map(d => items.filter(i => i.date === ymd(d)).reduce((t, i) => t + (i.tss || 0), 0));
-  const maxT = Math.max(100, ...sums);
-  grid.innerHTML = days.map((d, i) => {
-    const its = items.filter(x => x.date === ymd(d)), pct = Math.min(100, sums[i] / maxT * 100);
-    const col = its.some(x => !x.done) ? "#35b6e4" : "#3fc56b";
-    const label = sums[i] ? Math.round(sums[i]) + " TSS" : its.length ? its.length + (its.length > 1 ? " items" : " item") : "\u2013";
-    const wd = i === 0 ? "Today" : d.toLocaleDateString([], { weekday: "short" });
-    return '<div style="text-align:center;min-width:0"><div style="font-size:11px;color:#7b8291;' + (i === 0 ? "font-weight:700;color:inherit" : "") + '">' + wd + '</div>'
-      + '<div style="font-size:14px;font-weight:600;margin:2px 0">' + d.getDate() + '</div>'
-      + '<div style="position:relative;height:64px;background:#1f2227;border-radius:6px;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:' + pct + '%;background:' + col + '"></div></div>'
-      + '<div style="font-size:11px;color:#7b8291;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + label + '</div></div>';
-  }).join("");
+
+  // the week's time and TSS: what's been ridden plus what's still planned, Monday to Sunday
+  const wk = items.filter(x => x.date >= ymd(week[0]) && x.date <= ymd(week[6]));
+  const wTime = wk.reduce((a, x) => a + (x.dur || 0), 0), wTss = wk.reduce((a, x) => a + (x.tss || 0), 0);
+  $("weekTot").textContent = wk.length ? fmtHM(wTime) + "  ·  " + Math.round(wTss) + " TSS" : "";
+  $("weekTot").title = "Ridden so far plus what's still planned this week";
+
+  grid.innerHTML = ""; const draws = [];
+  week.forEach(d => {                                          // each day: a compact picture of what was ridden and what's planned
+    const ds = ymd(d), past = ds < todayS, isToday = ds === todayS;
+    const its = items.filter(x => x.date === ds), plan = its.filter(x => !x.done), done = its.filter(x => x.done);
+    const b = document.createElement("button"); b.type = "button"; b.className = "wkday" + (past ? " past" : "") + (isToday ? " today" : "");
+    const long = d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+    if (past) { b.disabled = true; b.setAttribute("aria-label", long + (done.length ? ", ridden" : "")); }
+    else b.setAttribute("aria-label", (isToday ? "Today, " : "") + long + ": add a workout");
+    const wd = document.createElement("div"); wd.className = "wd"; wd.textContent = isToday ? "Today" : d.toLocaleDateString([], { weekday: "short" });
+    const dn = document.createElement("div"); dn.className = "dn"; dn.textContent = d.getDate();
+    const box = document.createElement("div"); box.className = "wkbox";
+    const noSteps = plan.filter(x => !x.steps);
+    if (noSteps.length && !done.length && !plan.some(x => x.steps)) {        // a note or plan with no intervals: its duration
+      const t = document.createElement("div"); t.className = "wktxt"; const dsum = noSteps.reduce((a, x) => a + (x.dur || 0), 0); t.textContent = dsum ? fmtHM(dsum) : "Note"; box.appendChild(t);
+    }
+    if (done.length || plan.some(x => x.steps)) { const cv = document.createElement("canvas"); box.appendChild(cv); draws.push({ cv, done, plan }); }
+    if (done.length) { const ck = document.createElement("span"); ck.className = "wkdone"; ck.textContent = "✓"; box.appendChild(ck); }
+    if (!past) { const pl = document.createElement("span"); pl.className = "wkplus"; pl.textContent = "+"; pl.setAttribute("aria-hidden", "true"); box.appendChild(pl); }
+    const sum = its.reduce((t, i) => t + (i.tss || 0), 0);
+    const lb = document.createElement("div"); lb.className = "tl"; lb.textContent = sum ? Math.round(sum) + " TSS" : its.length ? its.length + (its.length > 1 ? " items" : " item") : "–";
+    b.append(wd, dn, box, lb); if (!past) b.onclick = () => openDay(ds, d, its); grid.appendChild(b);
+  });
+  const paint = async () => {                                    // planned shapes now; ridden ones once their power data arrives
+    for (const g of draws) {
+      const pieces = [];
+      for (const a of g.done) { const w = a.aid != null ? STREAMS.get(a.aid) : null; if (w && w.length) pieces.push(wattsPiece(w, ftp)); }
+      g.plan.forEach(x => { if (x.steps) pieces.push(stepsPiece(x.steps)); });
+      if (!pieces.length && g.done.length) pieces.push({ dur: 1, at: () => 0.55 });   // no power data: a plain endurance-height bar
+      drawDay(g.cv, pieces);
+    }
+  };
+  requestAnimationFrame(paint);
+  const need = draws.flatMap(g => g.done).filter(a => a.aid != null && !STREAMS.has(a.aid));
+  if (need.length) Promise.all(need.map(a => actWatts(a.aid))).then(() => requestAnimationFrame(paint));
+
   list.textContent = "";
   let any = false;
   days.forEach((d, i) => {
@@ -4294,12 +4401,12 @@ async function loadNext7() {
     list.appendChild(head);
     its.forEach(x => {
       const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px;align-items:baseline;margin:3px 0";
-      const n = document.createElement("span"); n.style.cssText = "flex:1;min-width:0;overflow-wrap:anywhere"; n.textContent = x.name + (x.done ? " \u2713" : "");
+      const n = document.createElement("span"); n.style.cssText = "flex:1;min-width:0;overflow-wrap:anywhere"; n.textContent = x.name + (x.done ? " ✓" : "");
       const m = document.createElement("span"); m.className = "r"; m.style.cssText = "flex:none;font-size:13px";
       m.textContent = [x.dur ? fmtHM(x.dur) : "", x.tss != null ? "TSS " + Math.round(x.tss) : ""].filter(Boolean).join("  ");
       row.append(n, m);
       if (!x.done && x.id != null) {                       // planned workouts can be taken off the calendar from here
-        const del = document.createElement("button"); del.type = "button"; del.className = "caldel"; del.textContent = "\u2715";
+        const del = document.createElement("button"); del.type = "button"; del.className = "caldel"; del.textContent = "✕";
         del.title = "Delete from calendar"; del.setAttribute("aria-label", "Delete " + x.name + " from the intervals.icu calendar");
         del.onclick = () => askCalDelete(x, head.textContent); row.appendChild(del);
       }
@@ -4313,7 +4420,8 @@ $("btnToday").onclick = () => { loadToday(); loadNext7(); };
 /* ---------------- delete a planned workout from the intervals.icu calendar ---------------- */
 let calDel = null;
 function askCalDelete(x, dayLabel) {
-  calDel = x; $("calDelText").textContent = "\u201c" + x.name + "\u201d on " + dayLabel + " will be removed from your intervals.icu calendar. This can't be undone.";
+  calDel = x; $("calDelTitle").textContent = !x.cat || x.cat === "WORKOUT" ? "Delete Planned Workout?" : "Delete from Calendar?";
+  $("calDelText").textContent = "\u201c" + x.name + "\u201d on " + dayLabel + " will be removed from your intervals.icu calendar. This can't be undone.";
   $("btnCalDelYes").disabled = false; $("btnCalDelYes").textContent = "Delete"; $("calDelModal").style.display = "flex";
 }
 $("btnCalDelNo").onclick = () => { $("calDelModal").style.display = "none"; calDel = null; };
@@ -4324,6 +4432,7 @@ $("btnCalDelYes").onclick = async () => {
     const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(icuId()) + "/events/" + encodeURIComponent(x.id), { method: "DELETE", headers: { Authorization: auth, Accept: "application/json" } });
     if (!r.ok) throw new Error(r.status === 403 ? "intervals.icu refused (403): reconnect intervals.icu in Settings so the app can edit your calendar" : "intervals.icu replied " + r.status);
     $("calDelModal").style.display = "none"; calDel = null; toast("Deleted \u201c" + x.name + "\u201d from your calendar."); loadToday(); loadNext7();
+    if (dayDate) { dayHave = dayHave.filter(h => h.eid !== x.id); renderDayHave(); }
   } catch (e) { $("btnCalDelYes").disabled = false; $("btnCalDelYes").textContent = "Try again"; $("calDelText").textContent = "Couldn't delete it: " + e.message + "."; }
 };
 $("btnRenameNo").onclick = () => { $("renameModal").style.display = "none"; renameFrom = null; };
@@ -4360,24 +4469,98 @@ $("btnSchedYes").onclick = async () => {
   const it = pendingSched, date = $("schedDate").value;
   $("schedModal").style.display = "none"; pendingSched = null;
   if (!it || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { toast("Pick a date.", true); return; }
-  // Ask before adding if something is already planned that day, to avoid duplicates.
+  await scheduleOn(date, it.name, it.text);
+};
+// Put one workout on the intervals.icu calendar for a day. Asks first if that day already has something planned. Resolves true when added.
+async function scheduleOn(date, name, text) {
+  if (!icuAuth()) { toast("Connect intervals.icu first (Settings).", true); return false; }
   let existing = [];
-  try { existing = await icuEvents(date); } catch (e) { toast("Couldn't check the calendar (" + e.message + ").", true); return; }
+  try { existing = await icuEvents(date); } catch (e) { toast("Couldn't check the calendar (" + e.message + ").", true); return false; }
   if (existing.length) {
     const names = existing.map(x => x.name || "Workout").join(", ");
-    if (!window.confirm("Already planned on " + date + ": " + names + ".\n\nAdd \u201c" + it.name + "\u201d too?")) return;
+    if (!window.confirm("Already planned on " + date + ": " + names + ".\n\nAdd \u201c" + name + "\u201d too?")) return false;
   }
-  const id = icuId();
   try {
-    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(id) + "/events/bulk?upsert=true", {
+    const r = await fetch("https://intervals.icu/api/v1/athlete/" + encodeURIComponent(icuId()) + "/events/bulk?upsert=true", {
       method: "POST",
       headers: { Authorization: icuAuth(), "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify([{ category: "WORKOUT", start_date_local: date + "T00:00:00", type: "Ride", name: it.name, description: it.text, external_id: "kickr-" + date + "-" + Date.now() }]),
+      body: JSON.stringify([{ category: "WORKOUT", start_date_local: date + "T00:00:00", type: "Ride", name, description: text, external_id: "kickr-" + date + "-" + Date.now() }]),
     });
     if (!r.ok) throw new Error("intervals.icu replied " + r.status);
-    toast("Added \u201c" + it.name + "\u201d to " + date + ".");
-  } catch (e) { toast("Couldn't schedule (" + e.message + ").", true); }
-};
+    toast("Added \u201c" + name + "\u201d to " + date + "."); return true;
+  } catch (e) { toast("Couldn't schedule (" + e.message + ").", true); return false; }
+}
+/* ---------------- Schedule a day: tap a day in Next 7 days ----------------
+   A page of its own with the workout library and a builder; the only action is Schedule, for the day that was tapped. */
+let dayDate = null, dayFold = {};
+function openDay(date, d, its) {
+  dayDate = date; $("dayTitle").textContent = "Schedule for " + d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  dayHave = (its || []).filter(x => !x.done); dayLabel = d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" }); renderDayHave();
+  renderDayLib(); dayInfo();
+  $("dayScr").classList.add("show"); $("dayScr").scrollTop = 0; document.body.style.overflow = "hidden";
+}
+let dayHave = [], dayLabel = "";
+function renderDayHave() {                                     // what's already on the calendar that day, each with a delete
+  $("dayHave").hidden = !dayHave.length; $("dayHaveList").textContent = "";
+  dayHave.forEach(x => { const r = document.createElement("div"); r.style.cssText = "display:flex;gap:8px;align-items:center;margin:4px 0";
+    const n = document.createElement("span"); n.style.cssText = "flex:1;min-width:0;overflow-wrap:anywhere"; n.textContent = x.name;
+    const m = document.createElement("span"); m.className = "r"; m.style.cssText = "flex:none;font-size:13px"; m.textContent = [x.dur ? fmtHM(x.dur) : "", x.tss != null ? "TSS " + Math.round(x.tss) : ""].filter(Boolean).join("  ");
+    r.append(n, m);
+    if (x.eid != null) { const del = document.createElement("button"); del.type = "button"; del.className = "havedel"; del.textContent = "\u2715";
+      del.title = "Delete from calendar"; del.setAttribute("aria-label", "Delete " + x.name + " from the intervals.icu calendar");
+      del.onclick = () => askCalDelete({ ...x, id: x.eid }, dayLabel); r.appendChild(del); }
+    $("dayHaveList").appendChild(r); });
+}
+function closeDay() { $("dayScr").classList.remove("show"); document.body.style.overflow = ""; dayDate = null; }
+$("dayBack").onclick = closeDay;
+async function daySchedule(name, text, btn) {
+  if (!dayDate) return; const was = btn.textContent; btn.disabled = true; btn.textContent = btn.classList.contains("schedbtn") ? "\u2026" : "Scheduling\u2026";
+  const ok = await scheduleOn(dayDate, name, text);
+  btn.disabled = false; btn.textContent = was;
+  if (ok) { closeDay(); loadToday(); loadNext7(); }
+}
+function renderDayLib() {                                      // same folders and rows as the home library; each row's only button is Schedule
+  const box = $("dayLib"); box.textContent = "";
+  const all = LIBRARY.map(x => ({ ...x })).concat(userLib.map(x => ({ ...x }))), groups = new Map(), ftp = +$("ftp").value || 270;
+  all.forEach(it => { const f = effFolder(it.folder); if (!groups.has(f)) groups.set(f, []); groups.get(f).push(it); });
+  const names = [...groups.keys()].sort((a, b) => a === "" ? 1 : b === "" ? -1 : a === "Test" ? -1 : b === "Test" ? 1 : cmpName(a, b));
+  const flat = names.length === 1 && names[0] === "";
+  names.forEach(f => {
+    const items = groups.get(f).sort((a, b) => { if (f !== "Endurance") return cmpName(a.name, b.name); const x = woStats(a), y = woStats(b); return (x.d - y.d) || (x.t - y.t) || cmpName(a.name, b.name); });
+    const open = flat || !!dayFold[f];
+    if (!flat) {
+      const h = document.createElement("button"); h.type = "button"; const fc = folderColor(f);
+      h.style.cssText = "display:flex;justify-content:space-between;width:100%;text-align:left;margin:6px 0 2px;padding:10px 12px 10px 18px;font-size:15px;background:#1c222b;border-radius:10px" + (fc ? ";box-shadow:inset 5px 0 0 " + fc : "");
+      const l = document.createElement("span"), c = document.createElement("span"); l.textContent = (open ? "\u25be " : "\u25b8 ") + (f || "User"); c.textContent = items.length; c.style.color = "var(--dim)";
+      h.append(l, c); h.onclick = () => { dayFold[f] = !open; renderDayLib(); }; box.appendChild(h);
+    }
+    if (!open) return;
+    items.forEach(it => {
+      const row = document.createElement("div"); row.style.cssText = "display:flex;gap:6px;align-items:stretch";
+      const info = document.createElement("div"); info.className = "libitem"; info.style.cssText = "flex:1;min-width:0;background:#1c222b;border-radius:10px;cursor:default";
+      let steps = null, dur = "", tss = ""; try { steps = parseText(it.text, ftp); dur = fmt(steps.reduce((a, q) => a + q.dur, 0)); tss = "TSS " + Math.round(planStats(steps).tss); } catch (e) {}
+      const n = document.createElement("span"); n.textContent = it.name; n.style.cssText = "overflow-wrap:anywhere;line-height:1.2;font-weight:600;align-self:center";
+      const d = document.createElement("span"); d.className = "r"; d.style.fontSize = "15px"; d.textContent = dur;
+      const g = document.createElement("canvas"); if (steps && steps.length) drawMini(g, steps);
+      const t = document.createElement("span"); t.className = "r"; t.textContent = tss;
+      info.append(n, d, g, t);
+      const sb = document.createElement("button"); sb.type = "button"; sb.className = "schedbtn"; sb.textContent = "+"; sb.disabled = !steps;
+      sb.title = "Add to calendar"; sb.setAttribute("aria-label", "Schedule " + it.name + " on this day");
+      sb.onclick = () => daySchedule(it.name, it.text, sb);
+      row.append(info, sb); box.appendChild(row);
+    });
+  });
+}
+function dayInfo() {                                            // live duration and TSS as the workout is typed, like the home builder
+  const txt = $("dWo").value, cv = $("dWoGraph"); let st = null;
+  if (txt.trim()) { try { st = parseText(txt, +$("ftp").value || 270); } catch (e) { $("dWoInfo").textContent = e.message; $("dWoInfo").className = "status bad"; } }
+  else { $("dWoInfo").textContent = "Type the workout steps above."; $("dWoInfo").className = "status"; }
+  if (st && st.length) { const total = st.reduce((a, q) => a + q.dur, 0); $("dWoInfo").textContent = "Total " + fmt(total) + "  \u00b7  " + st.length + " steps  \u00b7  TSS " + Math.round(planStats(st).tss); $("dWoInfo").className = "status ok"; drawMini(cv, st, { h: 128, ftpLine: true }); }
+  else cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
+  $("dSched").disabled = !(st && st.length);
+}
+$("dWo").addEventListener("input", dayInfo);
+$("dSched").onclick = () => daySchedule(($("dName").value || "").trim() || "Workout", $("dWo").value, $("dSched"));
 /* ---------------- Hard intervals: choose a power target before launching ---------------- */
 let hardMode = "pct", pendingHard = null;
 const hardFtp = () => +$("ftp").value || 270;
