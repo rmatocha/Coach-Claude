@@ -1375,14 +1375,14 @@ function summaryData() {
   const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
   const ap = avg(W.pw), hr = avg(W.hrHist.filter(v => v != null)), cad = avg(W.cadHist.filter(v => v != null && v > 0));
   const np = W.n4 > 0 ? (W.sum4 / W.n4) ** 0.25 : null, IF = np == null ? null : np / W.ftp, tss = np == null ? null : (W.t * np * IF) / (W.ftp * 3600) * 100;
-  const sm = simRide(W.pw, distMph()), dEnd = sm.d.length ? sm.d[sm.d.length - 1] : 0, sim = { mi: dEnd / 1609.344, mph: W.t ? dEnd / W.t / 0.44704 : 0 };
+  /* no distance or speed here: indoors they are only a model (the .fit file still carries them for intervals.icu and Strava) */
   const f = (v, d) => v == null ? "--" : d ? v.toFixed(d) : String(Math.round(v));
   return [
-    { l: "Time", v: fmt(W.t), u: "" },            { l: "Distance", v: f(sim.mi, 1), u: "mi" },
+    { l: "Time", v: fmt(W.t), u: "" },
     { l: "Avg power", v: f(ap), u: "w" },         { l: "Norm. power", v: f(np), u: "w" },
     { l: "IF", v: f(IF, 2), u: "" },              { l: "TSS", v: f(tss), u: "" },
     { l: "Avg HR", v: f(hr), u: "bpm" },          { l: "Avg cadence", v: f(cad), u: "rpm" },
-    { l: "Energy", v: f(W.kj), u: "kJ" },        { l: "Avg speed", v: f(sim.mph, 1), u: "mph" }
+    { l: "Energy", v: f(W.kj), u: "kJ" }
   ];
 }
 /* ---------------- crash recovery ----------------
