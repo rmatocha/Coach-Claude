@@ -60,11 +60,13 @@
   #iavg { font-size:.82em; }                          /* a touch smaller so a freeride band beside it never collides */
   .tile .v small { font-size:20px; font-weight:600; color:var(--dim); margin-left:3px; }
   #target { color:var(--acc); }
+  #target.band + small { display:none; }
   #target.band { display:inline-block; font-size:.78em; line-height:.92; vertical-align:bottom; }      /* a band: low number over high number */
   .bandbar { grid-column:1 / -1; position:relative; height:16px; margin:2px 0 1px; }
   .bandbar .trk { position:absolute; left:0; right:0; bottom:0; height:7px; border-radius:4px; background:#3a414c; overflow:hidden; }
   .bandbar .trk i { position:absolute; top:0; bottom:0; background:var(--ok); }
   .bandbar .ptr { position:absolute; top:0; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:9px solid #8b94a3; transform:translateX(-6px); transition:left .25s linear, border-top-color .25s; }
+  #tgtPct.adjg { font-size:14px; font-weight:600; color:var(--ok); }
   #adjLbl { position:absolute; right:0; bottom:0; font-size:14px; font-weight:600; color:var(--ok); display:none; font-variant-numeric:tabular-nums; }
   #btnErg.on { background:var(--ok); color:#000; }
   .slim { display:flex; align-items:baseline; gap:10px; }
@@ -361,7 +363,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.12</span></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.1.14</span></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -542,7 +544,7 @@ Cooldown
   <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.1.12</span>
+  <span class="ver">v1.1.14</span>
 </div>
 
 <div class="ctrl">
@@ -1767,10 +1769,12 @@ function render() {
   $("timerRow").className = "tile wide slim" + (W.t >= 3600 || tlr.left >= 3600 ? " h" : "");
   const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
   const band = W.running && isSim(s) ? bandW(s) : null;
-  if (band) $("target").innerHTML = band[0] + "-<br>" + band[1]; else $("target").textContent = !W.running ? "--" : (tgt ?? "FREE");
-  $("target").classList.toggle("band", !!band); $("tgtPct").style.display = band ? "none" : "";   // two stacked numbers take the label's line
+  if (band) $("target").innerHTML = band[0] + "-<br>" + band[1] + "<small>W</small>"; /* the unit sits right after the top number */ else $("target").textContent = !W.running ? "--" : (tgt ?? "FREE");
+  $("target").classList.toggle("band", !!band); $("tgtPct").style.display = band && !W.simOff ? "none" : "";   // two stacked numbers take the label's line
+  $("tgtPct").classList.toggle("adjg", !!band && !!W.simOff);   // with a band, the grade offset sits right under the numbers
   bandBar();
   $("tgtPct").textContent = band ? (s.conv ? "\u00b110 W" : Math.round(s.lo * W.adj * 100) + "\u2013" + Math.round(s.hi * W.adj * 100) + "%") : !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP";
+  if (band && W.simOff) { $("tgtPct").textContent = simOffTxt(); $("adjLbl").style.display = "none"; }
   $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
   $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "calc(var(--u)*3.3)" : "";
   const nx = W.steps[W.idx + 1], nxt = !W.running ? "--" : !nx ? "Finish" : fmt(nx.dur) + (wRange(nx).includes("-") ? " " : " \u00b7 ") + wRange(nx);
