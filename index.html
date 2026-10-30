@@ -128,6 +128,15 @@
   body.compact .row .status { font-size:11px !important; }
   body.compact .seg { margin:2px 0; }
   body.compact .seg button { padding:4px; font-size:13px; }
+  .devrows { display:flex; flex-direction:column; gap:10px; }
+  .devrow { display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; column-gap:10px; align-items:center; text-align:left; width:100%; margin:0; padding:12px 14px; border-radius:12px; background:#222833; border:2px solid #d93b3b; }
+  .devrow .dn { font-size:16px; font-weight:700; color:#e8ebef; }
+  .devrow .ds { grid-column:1; font-size:12px; color:#9aa3b2; overflow-wrap:anywhere; }
+  .devrow .da { grid-row:1 / span 2; grid-column:2; font-size:14px; font-weight:700; color:#fff; background:#d93b3b; padding:8px 12px; border-radius:9px; }
+  .devrow.on { border-color:#3ddc84; }
+  .devrow.on .ds { color:#3ddc84; }
+  .devrow.on .da { background:transparent; color:#3ddc84; padding:8px 0; }
+  .devrow.busy .da { background:#3a4150; }
   .redbtn { background:#d93b3b; color:#fff; font-size:12px; font-weight:700; padding:3px 8px; border-radius:8px; }
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
@@ -151,6 +160,10 @@
   body.arcade button { background:#000 !important; color:#00ff41 !important; border:3px solid #00ff41 !important; border-radius:0 !important; box-shadow:4px 4px 0 #00ff41 !important; font-family:"Press Start 2P",monospace !important; font-size:9px !important; font-weight:normal !important; text-transform:uppercase; }
   body.arcade button:active { transform:translate(4px,4px); box-shadow:0 0 0 #00ff41 !important; }
   body.arcade button.primary, body.arcade #btnLaunch, body.arcade #btnSaveLib, body.arcade #btnIcuConnect { background:#ffd700 !important; color:#000 !important; border-color:#ffd700 !important; box-shadow:4px 4px 0 #ff8c00 !important; }
+  body.arcade .devrow { background:#000 !important; border-color:#ff3b3b !important; box-shadow:4px 4px 0 #8b0000 !important; text-align:left !important; }
+  body.arcade .devrow.on { background:#000 !important; border-color:#00ff41 !important; box-shadow:4px 4px 0 #00ff41 !important; }
+  body.arcade .devrow .dn { color:#ffd700; font-size:10px; } body.arcade .devrow .ds { font-size:7px; } body.arcade .devrow .da { font-size:8px; border-radius:0; }
+  body.arcade .devrow.on .ds, body.arcade .devrow.on .da { color:#00ff41; }
   body.arcade button.on, body.arcade .seg button.on { background:#ff3b3b !important; color:#fff !important; border-color:#ff3b3b !important; box-shadow:4px 4px 0 #8b0000 !important; }
   body.arcade input, body.arcade textarea, body.arcade select { background:#000 !important; color:#00ff41 !important; border:3px solid #4ae0ff !important; border-radius:0 !important; font-family:"Courier New",monospace !important; font-weight:bold; }
   body.arcade .libitem { background:#000 !important; border:3px solid #ff3bff !important; border-radius:0 !important; color:#e8ffe8 !important; box-shadow:4px 4px 0 #ff3bff !important; }
@@ -367,7 +380,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.6</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.7</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -553,10 +566,9 @@ Cooldown
 <div class="top">
   <button id="btnEdit" class="mini">‹ Library</button><button id="btnGames" class="mini" type="button" style="display:none">&#9664; Games</button>
   <span id="stTrainer2" class="status">Trainer: not connected</span>
-  <button id="btnTrainer2" class="redbtn" style="display:none">Connect trainer</button>
   <span id="stHR2" class="status">HR: not connected</span>
-  <button id="btnHR2" class="redbtn" style="display:none">Connect HR</button>
-  <span class="ver">v1.0.6</span>
+  <button id="btnDevices" class="redbtn" type="button" style="display:none">Connect devices</button>
+  <span class="ver">v1.0.7</span>
 </div>
 
 <div class="ctrl">
@@ -708,6 +720,18 @@ Cooldown
     </div>
   </div>
 </div>
+<div id="devModal" role="dialog" aria-modal="true" aria-labelledby="devTitle" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:58;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
+    <div id="devTitle" style="font-size:18px;font-weight:600;margin-bottom:14px">Connect Devices</div>
+    <div class="devrows">
+      <button type="button" class="devrow" id="devRowT"><span class="dn">Trainer</span><span class="ds" id="devStT">Not connected</span><span class="da" id="devActT">Connect</span></button>
+      <button type="button" class="devrow" id="devRowH"><span class="dn">Heart rate</span><span class="ds" id="devStH">Not connected</span><span class="da" id="devActH">Connect</span></button>
+    </div>
+    <div class="hint" style="font-size:12px;margin:10px 0 14px">Tap each one; your phone asks you to pick the device.</div>
+    <button type="button" id="devDone" style="width:100%">Done</button>
+  </div>
+</div>
+
 <div id="calDelModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:55;align-items:center;justify-content:center;padding:24px">
   <div style="background:#161a20;border-radius:16px;padding:20px;max-width:340px;width:100%;text-align:center">
     <div style="font-size:18px;font-weight:600;margin-bottom:8px">Delete Planned Workout?</div>
@@ -880,11 +904,11 @@ const setTargetPower = w => cpWrite([0x05, w & 0xff, (w >> 8) & 0xff]);   // sin
 
 const errText = e => (e && (e.message || e.name)) || (typeof e === "string" ? e : (() => { try { return JSON.stringify(e); } catch (x) { return String(e); } })()) || "unknown error";
 
-let trainerBusy = false, hrBusy = false;
+let trainerBusy = false, hrBusy = false, hrDev = null;
 const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(what + " timed out")), ms))]);
 async function connectTrainer(known) {
   if (known && (trainerBusy || cp)) return;                    // an auto-reconnect never runs on top of another attempt
-  trainerBusy = true; try { return await connectTrainer2(known); } finally { trainerBusy = false; }
+  trainerBusy = true; try { return await connectTrainer2(known); } finally { trainerBusy = false; refreshDevBtns(); }
 }
 async function connectTrainer2(known) {
   let step = "choosing device";
@@ -944,13 +968,13 @@ async function autoReconnect() {
 }
 const autoWanted = () => (document.body.dataset.screen === "run" || W.running) && (!cp && hasRemembered("kickrTrainerId") || !hrOn && hasRemembered("kickrHrId"));
 function autoConnSoon() { clearTimeout(autoT); autoT = setTimeout(() => { if (autoWanted()) autoReconnect(); }, 1500); }
-setInterval(() => { if (autoWanted()) autoReconnect(); }, 5000);
+/* (the 5 s retry loop is off: Bluefy does not reconnect remembered devices this way; the Devices pop-up does it by hand) */
 async function connectHR(known) {
   if (known && (hrBusy || hrOn)) return;
   hrBusy = true;
   try {
     const dev = known || await navigator.bluetooth.requestDevice({ filters: [{ services: [HR_SVC] }] });
-    try { localStorage.setItem("kickrHrId", dev.id); } catch (e) {}
+    hrDev = dev; try { localStorage.setItem("kickrHrId", dev.id); } catch (e) {}
     if (!dev._ipDisc) { dev._ipDisc = true; dev.addEventListener("gattserverdisconnected", () => { live.hr = null; hrOn = false; setStatus("stHR", "HR: reconnecting\u2026", "bad"); refreshDevBtns(); autoConnSoon(); }); }
     if (known) setStatus("stHR", "HR: connecting\u2026");
     const server = await withTimeout(dev.gatt.connect(), 10000, "connecting");
@@ -963,7 +987,7 @@ async function connectHR(known) {
   } catch (e) {
     if (known) { try { known.gatt.disconnect(); } catch (x) {} setStatus("stHR", "HR: looking for " + (known.name || "your strap") + "\u2026", "bad"); }
     else setStatus("stHR", "HR: " + e.message, "bad");
-  } finally { hrBusy = false; }
+  } finally { hrBusy = false; refreshDevBtns(); }
 }
 
 /* ---------------- workout parsing ---------------- */
@@ -3608,10 +3632,13 @@ window.addEventListener("resize", () => { drawProfile(); drawHR(); });
 function refreshDevBtns() {                                  // red Connect buttons in the ride header while a device is missing
   try {
     const tOn = !!cp, hOn = hrOn;
-    $("btnTrainer2").style.display = tOn ? "none" : ""; $("stTrainer2").style.display = tOn ? "" : "none";
-    $("btnHR2").style.display = hOn ? "none" : ""; $("stHR2").style.display = hOn ? "" : "none";
-    $("btnTrainer2").textContent = hasRemembered("kickrTrainerId") ? "Finding trainer\u2026" : "Connect trainer";   // still a button: tap to pick by hand
-    $("btnHR2").textContent = hasRemembered("kickrHrId") ? "Finding HR\u2026" : "Connect HR";
+    $("stTrainer2").style.display = tOn ? "" : "none"; $("stHR2").style.display = hOn ? "" : "none";   // connected ones show their status
+    $("btnDevices").style.display = tOn && hOn ? "none" : "";                                       // one red button while anything is missing
+    $("btnDevices").textContent = !tOn && !hOn ? "Connect devices" : !tOn ? "Connect trainer" : "Connect HR";
+    const row = (k, on, busy, name) => { $("devRow" + k).classList.toggle("on", on); $("devRow" + k).classList.toggle("busy", !on && busy);
+      $("devSt" + k).textContent = on ? "\u2713 " + (name || "Connected") : busy ? "Connecting\u2026" : "Not connected"; $("devAct" + k).textContent = on ? "Connected" : busy ? "\u2026" : "Connect"; };
+    row("T", tOn, trainerBusy, trainer && trainer.name); row("H", hOn, hrBusy, hrDev && hrDev.name);
+    if (tOn && hOn && $("devModal").style.display === "flex" && !devAutoClosed) { devAutoClosed = true; setTimeout(() => { $("devModal").style.display = "none"; }, 700); }   // both in: close by itself
   } catch (e) {}
 }
 function syncPauseBtn() {                                    // Resume is green while paused
@@ -4305,9 +4332,13 @@ function askSaveRide() { $("saveModal").style.display = "flex"; }
 $("btnSaveRide").onclick = () => { $("saveModal").style.display = "none"; showSummary(true); };
 $("btnDiscardRide").onclick = () => { $("saveModal").style.display = "none"; showSummary(false); };
 $("btnSaveImg").onclick = saveSummaryImage; $("btnSaveFit").onclick = saveFit; $("btnSumClose").onclick = closeSummary; $("btnImgClose").onclick = () => { $("imgModal").style.display = "none"; };
-$("stTrainer2").onclick = () => { if (!cp) connectTrainer(); };      // tap a disconnected status in the ride header to reconnect
-$("stHR2").onclick = () => { if (!hrOn) connectHR(); };
-$("btnTrainer2").onclick = () => connectTrainer(); $("btnHR2").onclick = () => connectHR();
+/* One Devices pop-up for both: each row is its own tap, because the phone opens only one device picker per tap. */
+let devAutoClosed = false;
+function openDevices() { devAutoClosed = !!cp && hrOn; refreshDevBtns(); $("devModal").style.display = "flex"; }
+$("btnDevices").onclick = openDevices; $("stTrainer2").onclick = openDevices; $("stHR2").onclick = openDevices;
+$("devRowT").onclick = async () => { if (cp) return; const p = connectTrainer(); refreshDevBtns(); await p; refreshDevBtns(); };
+$("devRowH").onclick = async () => { if (hrOn) return; const p = connectHR(); refreshDevBtns(); await p; refreshDevBtns(); };
+$("devDone").onclick = () => { $("devModal").style.display = "none"; };
 $("btnStart").onclick = startWorkout;
 /* ---------------- Schedule a workout onto the intervals.icu calendar ---------------- */
 let pendingSched = null, toastTimer = null;
