@@ -150,12 +150,22 @@
   .wkday .tl { font-size:11px; color:#7b8291; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .schedbtn { flex:none; width:44px; margin:4px 0; padding:0; font-size:24px; font-weight:700; line-height:1; background:var(--acc); color:#000; }
   .havedel { flex:none; width:36px; height:32px; padding:0; margin:0; border-radius:8px; font-size:13px; background:#2a2f37; color:#a7b0bd; align-self:center; }
+  .freebtn { width:100%; height:48px; margin:10px 0 0; font-size:17px; font-weight:700; background:#3ddc84; color:#001018; border-radius:12px; }
+  #target.freelbl { font-size:.62em; line-height:1.05; }
+  .daygrp { display:block; width:100%; text-align:left; background:none; border:0; margin:0; padding:2px 8px 6px; border-radius:10px; color:inherit; font:inherit; cursor:pointer; }
+  .daygrp:active { background:rgba(255,255,255,.05); }
+  .daygrp:focus-visible { outline:2px solid var(--acc); }
+  .daygrp .dh { display:flex; justify-content:space-between; align-items:baseline; font-weight:600; margin:8px 0 2px; font-size:13px; color:#7b8291; }
+  .daygrp .dh b { font-weight:700; color:#5d6574; font-size:15px; }
   .devrows { display:flex; flex-direction:column; gap:10px; }
   .devrow { display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; column-gap:10px; align-items:center; text-align:left; width:100%; margin:0; padding:12px 14px; border-radius:12px; background:#222833; border:2px solid #d93b3b; }
   .devrow .dn { font-size:16px; font-weight:700; color:#e8ebef; }
   .devrow .ds { grid-column:1; font-size:12px; color:#9aa3b2; overflow-wrap:anywhere; }
   .devrow .da { grid-row:1 / span 2; grid-column:2; font-size:14px; font-weight:700; color:#fff; background:#d93b3b; padding:8px 12px; border-radius:9px; }
+  .devrow.opt { border-color:#3a4150; }
+  .devrow.opt .da { background:#3a4150; }
   .devrow.on { border-color:#3ddc84; }
+  button.zflash { box-shadow:0 0 0 3px var(--acc) !important; }
   .devrow.on .ds { color:#3ddc84; }
   .devrow.on .da { background:transparent; color:#3ddc84; padding:8px 0; }
   .devrow.busy .da { background:#3a4150; }
@@ -402,7 +412,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.9</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v.CLICK.TEST</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -426,6 +436,7 @@
     <h2>Today</h2>
     <div id="todayList" class="hint" style="font-size:14px">Connect intervals.icu in Settings to see today's planned workout.</div>
     <div class="row" style="margin:8px 0 0"><button id="btnToday" style="flex:1">Refresh</button></div>
+    <button id="btnFree" type="button" class="freebtn">&#9654;&ensp;Free Ride</button>
   </div>
 
   <div class="card" id="weekCard">
@@ -612,7 +623,7 @@ Cooldown
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnDevices" class="redbtn" type="button" style="display:none">Connect devices</button>
-  <span class="ver">v1.0.9</span>
+  <span class="ver">v.CLICK.TEST</span>
 </div>
 
 <div class="ctrl">
@@ -643,7 +654,7 @@ Cooldown
     <div>
       <div class="l">Interval avg</div>
       <div class="v"><span id="iavg">--</span><small>W</small></div>
-      <div class="s" id="iavgS"><span id="iavgPct">--</span>% of target</div>
+      <div class="s" id="iavgS"><span id="iavgP"><span id="iavgPct">--</span>% of target</span><span id="iavgW" hidden>whole ride</span></div>
     </div>
     <div class="stack">
       <div>
@@ -770,8 +781,9 @@ Cooldown
     <div class="devrows">
       <button type="button" class="devrow" id="devRowT"><span class="dn">Trainer</span><span class="ds" id="devStT">Not connected</span><span class="da" id="devActT">Connect</span></button>
       <button type="button" class="devrow" id="devRowH"><span class="dn">Heart rate</span><span class="ds" id="devStH">Not connected</span><span class="da" id="devActH">Connect</span></button>
+      <button type="button" class="devrow opt" id="devRowC"><span class="dn">Zwift Click</span><span class="ds" id="devStC">Optional: + and \u2212 buttons</span><span class="da" id="devActC">Connect</span></button>
     </div>
-    <div class="hint" style="font-size:12px;margin:10px 0 14px">Tap each one; your phone asks you to pick the device.</div>
+    <div class="hint" style="font-size:12px;margin:10px 0 14px">Tap each one; your phone asks you to pick the device. Tap a connected status in the ride header to come back here.</div>
     <button type="button" id="devDone" style="width:100%">Done</button>
   </div>
 </div>
@@ -892,6 +904,7 @@ const fmt = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600
 const wRange = s => { if (s.free) return "free"; if (isSim(s)) { const [lo, hi] = bandW(s); return lo + "-" + hi + "w"; } const a = Math.round(s.a * W.ftp * W.adj), b = Math.round(s.b * W.ftp * W.adj); return a === b ? a + "w" : a + "-" + b + "w"; };
 // What is left of the workout: the rest of the current step plus every later step. Skipped time drops out of it.
 function timeline() {
+  if (W.freeRide) return { rem: [], left: 0, total: Math.max(1800, W.t) };   // free ride: a 30-minute window that stretches as the ride goes on
   const rem = [];
   for (let i = W.idx; i < W.steps.length; i++) {
     const st = W.steps[i], off = i === W.idx ? W.stepT : 0;
@@ -1001,6 +1014,54 @@ async function connectTrainer2(known) {
     if (known) { try { known.gatt.disconnect(); } catch (x) {} setStatus("stTrainer", "Trainer: looking for " + (known.name || "your trainer") + "\u2026", "bad"); if (!known._ipFail) { known._ipFail = true; log("Trainer not found yet (" + msg + "). Still trying\u2026"); } return; }   // automatic: quiet, it tries again shortly
     setStatus("stTrainer", "Trainer " + msg, "bad"); log("Trainer " + msg);
   }
+}
+
+/* ---------------- Zwift Click (v1) ----------------
+   A small Bluetooth remote with + and - buttons. After the plain "RideOn" greeting it sends unencrypted button
+   messages: type 0x37, then a tiny protobuf with field 1 (+) and field 2 (-), where 0 = pressed and 1 = released.
+   It repeats its state, so only a change from released to pressed counts. Each press works exactly like tapping the
+   on-screen + or - (intensity in ERG, grade in Simulation, the same in arcade mode). Battery arrives as type 0x19. */
+const ZC_SVC = "00000001-19ca-4651-86e5-fa29dcdd09d1", ZC_ASYNC = "00000002-19ca-4651-86e5-fa29dcdd09d1",
+      ZC_RX = "00000003-19ca-4651-86e5-fa29dcdd09d1", ZC_TX = "00000004-19ca-4651-86e5-fa29dcdd09d1";
+let clickOn = false, clickBusy = false, clickDev = null, clickBatt = null, clickPrev = { p: false, m: false };
+function clickVarints(b) {                                       // the protobuf fields we need: { fieldNumber: value }
+  const out = {}; let i = 0;
+  const vi = () => { let v = 0, sh = 0, x; do { x = b[i++]; v |= (x & 0x7f) << sh; sh += 7; } while (x & 0x80 && i < b.length); return v; };
+  while (i < b.length) { const key = vi(), fn = key >> 3, wt = key & 7;
+    if (wt === 0) out[fn] = vi(); else if (wt === 2) { const n = vi(); i += n; } else if (wt === 5) i += 4; else if (wt === 1) i += 8; else break; }
+  return out;
+}
+function clickMsg(e) {
+  const dv = e.target.value, b = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength); if (!b.length) return;
+  if (b[0] === 0x19 && b.length > 2) { const lv = b[2]; if (lv !== clickBatt) { clickBatt = lv; refreshDevBtns(); } return; }
+  if (b[0] !== 0x37) return;
+  const f = clickVarints(b.subarray(1)), p = (f[1] ?? 0) === 0, m = (f[2] ?? 0) === 0;
+  if (p && !clickPrev.p) clickPress(1);
+  if (m && !clickPrev.m) clickPress(-1);
+  clickPrev = { p, m };
+}
+function clickPress(d) {
+  const id = d > 0 ? "btnUp" : "btnDn", b = $(id); if (!b || b.disabled) return;   // same as a tap: only while a ride is running
+  b.click();
+  [b, $(d > 0 ? "aUp" : "aDn")].forEach(x => { if (!x) return; x.classList.add("zflash"); setTimeout(() => x.classList.remove("zflash"), 180); });
+}
+async function connectClick() {
+  if (clickBusy) return; clickBusy = true;
+  try {
+    const dev = await navigator.bluetooth.requestDevice({ filters: [{ services: [ZC_SVC] }, { namePrefix: "Zwift Click" }], optionalServices: [ZC_SVC] });
+    clickDev = dev; try { localStorage.setItem("kickrClickId", dev.id); } catch (e) {}
+    if (!dev._ipDisc) { dev._ipDisc = true; dev.addEventListener("gattserverdisconnected", () => { clickOn = false; clickPrev = { p: false, m: false }; log("Zwift Click disconnected."); refreshDevBtns(); }); }
+    const server = await withTimeout(dev.gatt.connect(), 10000, "connecting");
+    const svc = await server.getPrimaryService(ZC_SVC);
+    const a = await svc.getCharacteristic(ZC_ASYNC), rx = await svc.getCharacteristic(ZC_RX);
+    if (!a._ipL) { a._ipL = true; a.addEventListener("characteristicvaluechanged", clickMsg); }
+    await a.startNotifications();
+    try { const tx = await svc.getCharacteristic(ZC_TX); await tx.startNotifications(); } catch (e) {}   // its handshake reply comes here; nothing to read from it
+    const hello = new Uint8Array([0x52, 0x69, 0x64, 0x65, 0x4f, 0x6e]);                                   // "RideOn": plain mode, no encryption
+    if (rx.writeValueWithoutResponse) await rx.writeValueWithoutResponse(hello); else await rx.writeValue(hello);
+    clickOn = true; log("Zwift Click connected: " + (dev.name || "Zwift Click") + ".");
+  } catch (e) { if (!(e && e.name === "NotFoundError")) log("Zwift Click: " + errText(e)); }   // NotFoundError = the picker was cancelled
+  finally { clickBusy = false; refreshDevBtns(); }
 }
 
 /* ---------------- heart rate ---------------- */
@@ -1142,7 +1203,7 @@ function updateWoInfo() {                                // live duration under 
 function loadWorkout() {
   const p = updateWoInfo();
   if (!p) { W.loaded = false; refreshButtons(); return false; }
-  W.ftp = p.ftp; W.steps = p.steps; W.loaded = true; resetWorkout();
+  W.ftp = p.ftp; W.steps = p.steps; W.loaded = true; W.freeRide = false; resetWorkout();
   W.simMode = launchMode === "sim"; W.simOff = 0; if (W.simMode) simConvert(W.steps);
   refreshButtons(); render();
   return true;
@@ -1216,7 +1277,7 @@ function sentTarget() { const t = commandedTarget(); return t == null ? null : M
 async function startWorkout() {
   ensureAudio();
   if (!cp) return;
-  resetWorkout(); cueIdx = -1; W.running = true; W.startMs = Date.now(); W.name = $("woName").value.trim();
+  resetWorkout(); cueIdx = -1; W.running = true; W.startMs = Date.now(); W.name = W.freeRide ? "Free Ride" : $("woName").value.trim();
   await cpWrite([0x07]);                           // start / resume
   await pushTarget(true);
   W.timer = setInterval(tick, 1000);
@@ -1274,8 +1335,10 @@ function pushTarget(force) {
     if (ck && W.stepT >= ck[0]) { W.simCal++; simCalibrate(st, ck[1], W.simRep); }
     return;
   }
-  if (st.free) {                                      // freeride: leave ERG, flat-road simulation (grade 0)
-    if (force || W.lastTarget !== "free") { W.lastTarget = "free"; return cpWrite([0x11, 0, 0, 0, 0, 40, 51]); }
+  if (st.free) {                                      // freeride: leave ERG, flat-road simulation; + and - tilt the road 0.5% a tap
+    if (W.freeIdx !== W.idx) { W.freeIdx = W.idx; if (!W.freeRide) W.simOff = 0; }
+    const G = Math.round((W.simOff || 0) * 10000), key = "free:" + G;
+    if (force || W.lastTarget !== key) { W.lastTarget = key; return cpWrite([0x11, 0, 0, G & 0xff, (G >> 8) & 0xff, 40, 51]); }
     return;
   }
   const t = sentTarget(); if (t == null) return;
@@ -1441,7 +1504,7 @@ function summaryData() {
    Every 5 s (and on pause, and when the page is hidden) the whole ride so far is written to localStorage. It is cleared
    only when the ride is saved or discarded, so if the app is closed mid-ride, the next launch offers Resume / Save / Discard. */
 const REC_KEY = "kickrRecover";
-const REC_F = ["steps", "ftp", "name", "startMs", "t", "idx", "stepT", "adj", "adjPct", "erg", "kj", "pw", "hrHist", "cadHist", "cadRaw", "tgtHist", "sum4", "n4", "iSum", "iN", "simMode", "simMem"];
+const REC_F = ["freeRide", "steps", "ftp", "name", "startMs", "t", "idx", "stepT", "adj", "adjPct", "erg", "kj", "pw", "hrHist", "cadHist", "cadRaw", "tgtHist", "sum4", "n4", "iSum", "iN", "simMode", "simMem"];
 function recSave() {
   if (!W.running || !W.t) return;
   const o = { v: 1, at: Date.now(), arcade: arcadeOn }; REC_F.forEach(k => o[k] = W[k]);
@@ -1462,7 +1525,7 @@ function recOffer() {
   const o = recData, done = o.steps.reduce((a, s) => a + s.dur, 0), when = new Date(o.at);
   $("recText").innerHTML = ""; const nm = document.createElement("div"), pr = document.createElement("div");
   nm.textContent = o.name || "Workout"; nm.style.cssText = "font-size:16px;font-weight:600;color:var(--fg,#e8ebef);margin-bottom:4px;overflow-wrap:anywhere";
-  pr.textContent = fmt(o.t) + " of " + fmt(done) + " \u00b7 saved " + when.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+  pr.textContent = (o.freeRide ? fmt(o.t) + " ridden" : fmt(o.t) + " of " + fmt(done)) + " \u00b7 saved " + when.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
   $("recText").append(nm, pr);
   recStage("main"); $("recModal").style.display = "flex";
 }
@@ -1955,6 +2018,10 @@ function saveToLibrary() {
   libMsg((i >= 0 ? (moved ? "Moved & updated “" : "Updated “") : "Saved “") + name + "”" + (folder ? " in " + folder : ""));
 }
 function adjust(d) {                                   // d in percentage points; on a simulation step it moves the grade instead
+  if (W.running && W.erg && W.steps[W.idx] && W.steps[W.idx].free) {   // free riding: tilt the road, -5% to +15%
+    W.simOff = Math.max(-0.05, Math.min(0.15, Math.round(((W.simOff || 0) + d * 0.005) * 1000) / 1000));
+    if (!W.paused) pushTarget(false); render(); return;
+  }
   if (W.running && W.erg && isSim(W.steps[W.idx])) {
     W.simOff = Math.max(-0.05, Math.min(0.05, Math.round(((W.simOff || 0) + d * 0.005) * 1000) / 1000));   // 0.5% grade per tap, for this interval only
     if (!W.paused && W.simBase != null) simSend(W.simBase); render(); return;
@@ -1964,7 +2031,7 @@ function adjust(d) {                                   // d in percentage points
 }
 const simOffTxt = () => ((W.simOff || 0) >= 0 ? "+" : "") + ((W.simOff || 0) * 100).toFixed(1) + "%";
 function toggleErg() {
-  if (!W.running) return;
+  if (!W.running || W.freeRide) return;                 // a free ride has no targets: the ERG button stays, but does nothing
   if (W.steps.some(s => s.conv)) { W.simMode = !W.simMode; W.lastTarget = null; W.simIdx = -1; W.ramp = null; if (!W.paused) pushTarget(true); refreshButtons(); render(); return; }
   W.erg = !W.erg;
   if (W.erg) { W.lastTarget = null; if (W.paused) setTargetPower(50); else pushTarget(true); }   // back to ERG at the current target
@@ -1998,11 +2065,11 @@ function render() {
   const gAct = $("govOn").checked && W.running && W.erg && W.gov < 0.98;
   $("govState").textContent = gAct ? "GOV: " + Math.round(W.gov * 100) + "% of target" : "rpm";
   $("govState").style.color = gAct ? "var(--acc)" : "";
-  { const sv = W.running && W.erg && isSim(W.steps[W.idx]); $("adjLbl").style.display = sv ? (W.simOff ? "block" : "none") : W.adjPct === 100 ? "none" : "block"; $("adjLbl").textContent = sv ? simOffTxt() : W.adjPct + "%"; }
+  { const cs = W.steps[W.idx], sv = W.running && W.erg && (isSim(cs) || (cs && cs.free) ); $("adjLbl").style.display = sv ? (W.simOff ? "block" : "none") : W.adjPct === 100 ? "none" : "block"; $("adjLbl").textContent = sv ? simOffTxt() : W.adjPct + "%"; }
   drawProfile(); drawHR();
   if (!W.loaded) return;
   $("elapsed").textContent = fmt(W.t);
-  const tlr = timeline(); $("remain").innerHTML = fmt(tlr.left) + "<small>remaining</small>";
+  const tlr = timeline(); $("remain").innerHTML = W.freeRide ? "" : fmt(tlr.left) + "<small>remaining</small>";
   $("timerRow").className = "tile wide slim" + (W.t >= 3600 || tlr.left >= 3600 ? " h" : "");
   const s = W.steps[Math.min(W.idx, W.steps.length - 1)], tgt = W.running ? stepTarget() : null;
   const band = W.running && isSim(s) ? bandW(s) : null;
@@ -2012,16 +2079,21 @@ function render() {
   bandBar();
   $("tgtPct").textContent = band ? (s.conv && !s.cr ? "\u00b110 W" : Math.round(s.lo * W.adj * 100) + "\u2013" + Math.round(s.hi * W.adj * 100) + "%") : !W.running || !tgt ? "-- % FTP" : Math.round(tgt / W.ftp * 100) + "% FTP";
   if (band && W.simOff) { $("tgtPct").textContent = simOffTxt(); $("adjLbl").style.display = "none"; }
-  $("ileft").textContent = W.running ? fmt(s.dur - W.stepT) : "--:--";
+  $("target").classList.toggle("freelbl", !!W.freeRide); $("target").nextElementSibling.style.display = W.freeRide ? "none" : "";   /* no "W" after Free Ride */
+  if (W.freeRide) {                                       // free ride: no target, no intervals; the road's grade sits under the label
+    $("target").innerHTML = "Free<br>Ride"; $("tgtPct").style.display = ""; $("tgtPct").textContent = W.running ? "Grade " + simOffTxt() : "+ / \u2212 to adjust"; $("adjLbl").style.display = "none";
+  }
+  $("ileft").textContent = W.running && !W.freeRide ? fmt(s.dur - W.stepT) : "--:--";
   $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "calc(var(--u)*3.3)" : "";
-  const nx = W.steps[W.idx + 1], nxt = !W.running ? "--" : !nx ? "Finish" : fmt(nx.dur) + (wRange(nx).includes("-") ? " " : " \u00b7 ") + wRange(nx);
+  const nx = W.steps[W.idx + 1], nxt = !W.running || W.freeRide ? "--" : !nx ? "Finish" : fmt(nx.dur) + (wRange(nx).includes("-") ? " " : " \u00b7 ") + wRange(nx);
   $("nextStep").textContent = nxt; $("nextStep").className = "nxt" + (nxt.length > 12 ? " long" : "");
-  $("ibar").style.width = W.running ? (W.stepT / s.dur * 100) + "%" : "0";
+  $("ibar").style.width = W.running && !W.freeRide ? (W.stepT / s.dur * 100) + "%" : "0";
   const ia = W.iN ? W.iSum / W.iN : null;
   $("iavg").textContent = ia == null ? "--" : Math.round(ia);
   { const zone = band || (tgt ? [tgt * 0.97, tgt * 1.03] : null), ref = band ? band[1] : tgt, iv = ia == null ? null : Math.round(ia);   // a band (shown as % of its top), or within 3% of an ERG target, counts as on target
     $("iavgPct").textContent = ia == null || !ref ? "--" : Math.round(ia / ref * 100);
-    $("iavgS").style.color = iv == null || !zone ? "" : iv < zone[0] ? "#8b94a3" : iv > zone[1] ? "var(--bad)" : "var(--ok)"; }
+    $("iavgS").style.color = W.freeRide || iv == null || !zone ? "" : iv < zone[0] ? "#8b94a3" : iv > zone[1] ? "var(--bad)" : "var(--ok)";
+    $("iavgP").hidden = !!W.freeRide; $("iavgW").hidden = !W.freeRide; }
   $("kj").textContent = Math.round(W.kj);
   $("npu").style.display = W.n4 ? "" : "none";
   $("pavg").textContent = W.pw.length ? Math.round(W.pw.reduce((a, b) => a + b, 0) / W.pw.length) : "--";
@@ -3690,7 +3762,9 @@ function refreshDevBtns() {                                  // red Connect butt
     const row = (k, on, busy, name) => { $("devRow" + k).classList.toggle("on", on); $("devRow" + k).classList.toggle("busy", !on && busy);
       $("devSt" + k).textContent = on ? "\u2713 " + (name || "Connected") : busy ? "Connecting\u2026" : "Not connected"; $("devAct" + k).textContent = on ? "Connected" : busy ? "\u2026" : "Connect"; };
     row("T", tOn, trainerBusy, trainer && trainer.name); row("H", hOn, hrBusy, hrDev && hrDev.name);
-    if (tOn && hOn && $("devModal").style.display === "flex" && !devAutoClosed) { devAutoClosed = true; setTimeout(() => { $("devModal").style.display = "none"; }, 700); }   // both in: close by itself
+    row("C", clickOn, clickBusy, (clickDev && clickDev.name || "Zwift Click") + (clickBatt != null ? " \u00b7 " + clickBatt + "%" : ""));
+    if (!clickOn && !clickBusy) $("devStC").textContent = "Optional: + and \u2212 buttons";
+    if (tOn && hOn && (clickOn || !hasRemembered("kickrClickId")) && $("devModal").style.display === "flex" && !devAutoClosed) {   /* stays open for a Click you have used before */ devAutoClosed = true; setTimeout(() => { $("devModal").style.display = "none"; }, 700); }   // both in: close by itself
   } catch (e) {}
 }
 function syncPauseBtn() {                                    // Resume is green while paused
@@ -3703,7 +3777,8 @@ function refreshButtons() {
   const ready = !!cp && W.loaded;
   $("btnStart").disabled = !ready || W.running;
   ["btnPause", "btnSkip", "btnUp", "btnDn", "btnErg", "btnPlus1"].forEach(id => $(id).disabled = !W.running);
-  $("btnErg").classList.toggle("on", W.running && W.erg && !(W.simMode && W.steps.some(s => s.conv)));
+  if (W.freeRide) { $("btnErg").disabled = true; $("btnSkip").disabled = true; $("btnPlus1").disabled = true; }   // nothing to skip, extend or hold
+  $("btnErg").classList.toggle("on", W.running && W.erg && !W.freeRide && !(W.simMode && W.steps.some(s => s.conv)));
   $("btnStart").textContent = W.running ? "Running" : "Start";
   $("btnEnd").style.display = (W.running && W.paused) ? "" : "none";     // End only appears while paused
   $("btnChange").style.display = (W.running && W.paused) ? "" : "none";  // Change workout also only while paused
@@ -4405,31 +4480,34 @@ async function loadNext7() {
 
   list.textContent = "";
   let any = false;
-  days.forEach((d, i) => {
+  days.forEach((d, i) => {                                         // each day is one tap target: it opens the same scheduler as the strip above
     const its = items.filter(x => x.date === ymd(d)).sort((a, b) => a.done - b.done);
     if (!its.length) return;
     any = true;
-    const head = document.createElement("div"); head.style.cssText = "font-weight:600;margin:10px 0 2px;font-size:13px;color:#7b8291";
-    head.textContent = i === 0 ? "Today" : d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
-    list.appendChild(head);
+    const g = document.createElement("button"); g.type = "button"; g.className = "daygrp";
+    const label = i === 0 ? "Today" : d.toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" });
+    g.setAttribute("aria-label", label + ": open the scheduler for this day");
+    const head = document.createElement("div"); head.className = "dh"; const ht = document.createElement("span"); ht.textContent = label;
+    const chev = document.createElement("b"); chev.textContent = "\u203a"; chev.setAttribute("aria-hidden", "true"); head.append(ht, chev); g.appendChild(head);
     its.forEach(x => {
       const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px;align-items:baseline;margin:3px 0";
-      const n = document.createElement("span"); n.style.cssText = "flex:1;min-width:0;overflow-wrap:anywhere"; n.textContent = x.name + (x.done ? " ✓" : "");
+      const n = document.createElement("span"); n.style.cssText = "flex:1;min-width:0;overflow-wrap:anywhere"; n.textContent = x.name + (x.done ? " \u2713" : "");
       const m = document.createElement("span"); m.className = "r"; m.style.cssText = "flex:none;font-size:13px";
       m.textContent = [x.dur ? fmtHM(x.dur) : "", x.tss != null ? "TSS " + Math.round(x.tss) : ""].filter(Boolean).join("  ");
-      row.append(n, m);
-      if (!x.done && x.id != null) {                       // planned workouts can be taken off the calendar from here
-        const del = document.createElement("button"); del.type = "button"; del.className = "caldel"; del.textContent = "✕";
-        del.title = "Delete from calendar"; del.setAttribute("aria-label", "Delete " + x.name + " from the intervals.icu calendar");
-        del.onclick = () => askCalDelete(x, head.textContent); row.appendChild(del);
-      }
-      list.appendChild(row);
+      row.append(n, m); g.appendChild(row);
     });
+    g.onclick = () => openDay(ymd(d), d, its); list.appendChild(g);
   });
   if (!any) list.textContent = "Nothing planned or completed in the next 7 days.";
   out.textContent = "";
 }
 $("btnToday").onclick = () => { loadToday(); loadNext7(); };
+/* Free Ride: the ride screen with no plan. The trainer rides a flat road; + and - (or a Zwift Click) tilt it. */
+function startFreeRide() {
+  W.ftp = +$("ftp").value || 270; W.steps = [{ dur: 24 * 3600, a: 0, b: 0, free: true }]; W.loaded = true; W.freeRide = true; resetWorkout();
+  W.simMode = false; W.simOff = 0; W.freeIdx = -1; arcadeOn = false; refreshButtons(); showScreen("run"); render();
+}
+$("btnFree").onclick = startFreeRide;
 /* ---------------- delete a planned workout from the intervals.icu calendar ---------------- */
 let calDel = null;
 function askCalDelete(x, dayLabel) {
@@ -4456,11 +4534,12 @@ $("btnDiscardRide").onclick = () => { $("saveModal").style.display = "none"; sho
 $("btnSaveImg").onclick = saveSummaryImage; $("btnSaveFit").onclick = saveFit; $("btnSumClose").onclick = closeSummary; $("btnImgClose").onclick = () => { $("imgModal").style.display = "none"; };
 /* One Devices pop-up for both: each row is its own tap, because the phone opens only one device picker per tap. */
 let devAutoClosed = false;
-function openDevices() { devAutoClosed = !!cp && hrOn; refreshDevBtns(); $("devModal").style.display = "flex"; }
+function openDevices() { devAutoClosed = !!cp && hrOn && (clickOn || !hasRemembered("kickrClickId")); refreshDevBtns(); $("devModal").style.display = "flex"; }
 $("btnDevices").onclick = openDevices; $("stTrainer2").onclick = openDevices; $("stHR2").onclick = openDevices;
 $("devRowT").onclick = async () => { if (cp) return; const p = connectTrainer(); refreshDevBtns(); await p; refreshDevBtns(); };
 $("devRowH").onclick = async () => { if (hrOn) return; const p = connectHR(); refreshDevBtns(); await p; refreshDevBtns(); };
 $("devDone").onclick = () => { $("devModal").style.display = "none"; };
+$("devRowC").onclick = async () => { if (clickOn || clickBusy) return; const p = connectClick(); refreshDevBtns(); await p; refreshDevBtns(); };
 $("btnStart").onclick = startWorkout;
 /* ---------------- Schedule a workout onto the intervals.icu calendar ---------------- */
 let pendingSched = null, toastTimer = null;
