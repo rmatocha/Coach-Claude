@@ -150,13 +150,21 @@
   .wkday .tl { font-size:11px; color:#7b8291; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .schedbtn { flex:none; width:44px; margin:4px 0; padding:0; font-size:24px; font-weight:700; line-height:1; background:var(--acc); color:#000; }
   .havedel { flex:none; width:36px; height:32px; padding:0; margin:0; border-radius:8px; font-size:13px; background:#2a2f37; color:#a7b0bd; align-self:center; }
+  .wobtns { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px; }   /* Save to Library, Launch Workout, Schedule on one row */
+  .wobtns #btnSchedule { white-space:nowrap; padding:0 3px; }
+  .wobtns button { width:auto; min-width:0; height:52px; margin:0; padding:0 6px; font-size:15px; line-height:1.15; border-radius:12px; white-space:normal; }
   .freebtn { width:100%; height:48px; margin:10px 0 0; font-size:17px; font-weight:700; background:#3ddc84; color:#001018; border-radius:12px; }
-  #target.freelbl { font-size:.62em; line-height:1.05; }
+  #target.freelbl { display:inline-block; font-size:.62em; line-height:.92; }
   .daygrp { display:block; width:100%; text-align:left; background:none; border:0; margin:0; padding:2px 8px 6px; border-radius:10px; color:inherit; font:inherit; cursor:pointer; }
   .daygrp:active { background:rgba(255,255,255,.05); }
   .daygrp:focus-visible { outline:2px solid var(--acc); }
   .daygrp .dh { display:flex; justify-content:space-between; align-items:baseline; font-weight:600; margin:8px 0 2px; font-size:13px; color:#7b8291; }
   .daygrp .dh b { font-weight:700; color:#5d6574; font-size:15px; }
+  body:not(.arcade) #btnChange, body:not(.arcade) #btnEnd { display:none !important; }   /* the pause pop-up has these; arcade keeps its own */
+  #pauseOv { position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:24px; }
+  #pauseOv[hidden] { display:none; }
+  #pauseOv .pbox { background:#161a20; border-radius:18px; padding:20px; width:100%; max-width:320px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,.6); }
+  #pauseOv .pbig { width:100%; height:64px; margin:0 0 10px; font-size:19px; font-weight:700; border-radius:14px; }
   .devrows { display:flex; flex-direction:column; gap:10px; }
   .devrow { display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; column-gap:10px; align-items:center; text-align:left; width:100%; margin:0; padding:12px 14px; border-radius:12px; background:#222833; border:2px solid #d93b3b; }
   .devrow .dn { font-size:16px; font-weight:700; color:#e8ebef; }
@@ -165,7 +173,7 @@
   .devrow.opt { border-color:#3a4150; }
   .devrow.opt .da { background:#3a4150; }
   .devrow.on { border-color:#3ddc84; }
-  button.zflash { box-shadow:0 0 0 3px var(--acc) !important; }
+  button.zflash { background:#3ddc84 !important; color:#001018 !important; border-color:#3ddc84 !important; transition:none; }
   .devrow.on .ds { color:#3ddc84; }
   .devrow.on .da { background:transparent; color:#3ddc84; padding:8px 0; }
   .devrow.busy .da { background:#3a4150; }
@@ -412,7 +420,7 @@
 
 <div id="landing">
   <div id="stickyTop">
-  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v.CLICK.TEST</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+  <div class="top"><span style="font-weight:700;font-size:16px">Intervals Player</span><span class="ver">v1.0.10</span><button id="btnSettings" type="button" aria-label="Settings" title="Settings" style="background:none;padding:4px;line-height:0;color:var(--dim)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
   <div id="devBar" style="display:none">
   <div class="ctrl">
     <button id="btnTrainer" class="primary">Connect trainer</button>
@@ -474,7 +482,7 @@ Cooldown
     <div id="woInfo" class="status" style="margin-top:6px;font-size:14px"></div>
     <canvas id="woGraph" style="width:100%;height:64px;display:block;margin-top:8px;border-radius:8px;background:#11151a;cursor:pointer"></canvas>
     <div id="woPick" class="status" style="font-size:14px;min-height:20px;margin-top:4px;color:var(--fg)"></div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><button id="btnSaveLib" class="primary" style="width:100%;height:44px;font-size:16px;margin:0">Save to Library</button><div style="display:flex;gap:8px;align-items:stretch"><button id="btnSchedule" title="Add to intervals.icu calendar" disabled style="height:44px;flex:none;border-radius:12px;margin:0;padding:0 12px;font-size:16px;display:flex;align-items:center;gap:6px;white-space:nowrap"><span style="font-size:18px">📅</span>Schedule</button><button id="btnLaunch" class="primary big" style="width:auto;flex:1;height:44px;margin:0;font-size:16px;min-width:0;border-radius:12px">Launch Workout</button></div></div>
+    <div class="wobtns"><button id="btnSaveLib" class="primary">Save to Library</button><button id="btnLaunch" class="primary big">Launch Workout</button><button id="btnSchedule" class="primary" title="Add to intervals.icu calendar" disabled><span aria-hidden="true" style="font-size:15px;line-height:1;margin-right:4px;vertical-align:-1px">📅</span>Schedule</button></div>
   </div>
 
   <button id="btnSettings2" type="button" style="width:100%;height:44px;font-size:16px;margin:12px 0 4px">Settings</button>
@@ -623,13 +631,13 @@ Cooldown
   <span id="stTrainer2" class="status">Trainer: not connected</span>
   <span id="stHR2" class="status">HR: not connected</span>
   <button id="btnDevices" class="redbtn" type="button" style="display:none">Connect devices</button>
-  <span class="ver">v.CLICK.TEST</span>
+  <span class="ver">v1.0.10</span>
 </div>
 
 <div class="ctrl">
   <button id="btnStart" class="primary" disabled>Start</button>
   <button id="btnPause" disabled>Pause</button>
-  <button id="btnChange" style="display:none;background:#35b6e4;color:#001018;font-weight:700">Change workout</button>
+  <button id="btnChange" style="display:none;background:#35b6e4;color:#001018;font-weight:700">Change Workout</button>
   <button id="btnEnd" style="display:none;background:#7a2a30">End</button>
 </div>
 <div class="ctrl">
@@ -770,8 +778,8 @@ Cooldown
     <div style="font-size:18px;font-weight:600;margin-bottom:8px">Save This Ride?</div>
     <div class="hint" style="margin-bottom:16px;font-size:14px">Saving uploads it to intervals.icu and Strava. Discarding uploads nothing.</div>
     <div class="row" style="justify-content:center">
+      <button id="btnSaveRide" style="background:#1f6feb;color:#fff;font-weight:700">Save</button>
       <button id="btnDiscardRide" style="background:#7a2a30">Discard</button>
-      <button id="btnSaveRide" class="primary">Save</button>
     </div>
   </div>
 </div>
@@ -784,7 +792,18 @@ Cooldown
       <button type="button" class="devrow opt" id="devRowC"><span class="dn">Zwift Click</span><span class="ds" id="devStC">Optional: + and \u2212 buttons</span><span class="da" id="devActC">Connect</span></button>
     </div>
     <div class="hint" style="font-size:12px;margin:10px 0 14px">Tap each one; your phone asks you to pick the device. Tap a connected status in the ride header to come back here.</div>
-    <button type="button" id="devDone" style="width:100%">Done</button>
+    <button type="button" id="devDone" style="width:100%;background:#1f6feb;color:#fff;font-weight:600">Done</button>
+  </div>
+</div>
+
+<div id="pauseOv" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
+  <div class="pbox">
+    <div id="pauseTitle" style="font-size:20px;font-weight:700">Paused</div>
+    <div id="pauseSub" class="hint" style="font-size:14px;margin:2px 0 14px"></div>
+    <button type="button" id="pvResume" class="pbig" style="background:#3ddc84;color:#001018">Resume</button>
+    <button type="button" id="pvChange" class="pbig" style="background:#1f6feb;color:#fff">Change Workout</button>
+    <button type="button" id="pvDevices" class="redbtn" style="width:100%;height:40px;font-size:15px;margin:0 0 10px" hidden>Connect devices</button>
+    <button type="button" id="pvEnd" style="width:100%;height:44px;margin:0;font-size:16px;font-weight:600;background:#7a2a30;color:#fff">End</button>
   </div>
 </div>
 
@@ -828,7 +847,7 @@ Cooldown
     <div style="font-size:18px;font-weight:600;margin-bottom:16px">Are you sure?</div>
     <div class="row" style="justify-content:center">
       <button id="btnEndNo">Cancel</button>
-      <button id="btnEndYes" style="background:#7a2a30">Yes, end workout</button>
+      <button id="btnEndYes" style="background:#7a2a30">End Workout</button>
     </div>
   </div>
 </div>
@@ -885,7 +904,7 @@ Cooldown
 <div id="imgModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:70;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px">
   <div class="hint" style="font-size:14px;text-align:center">Press and hold the image, then tap Save to Photos.</div>
   <img id="imgView" alt="Workout Summary" style="max-width:100%;max-height:72vh;object-fit:contain;border-radius:10px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto">
-  <button id="btnImgClose" style="width:60%;height:48px;font-size:17px">Done</button>
+  <button id="btnImgClose" style="width:60%;height:48px;font-size:17px;background:#1f6feb;color:#fff;font-weight:600">Done</button>
 </div>
 
 <script>
@@ -1542,7 +1561,8 @@ $("recResume").onclick = () => {
   W.timer = setInterval(tick, 1000);
   W.fast = setInterval(() => { if (W.running && !W.paused) { govStep(0.25); pushTarget(false); bandBar(); } }, 250);
   $("btnPause").textContent = "Resume"; showScreen("run"); refreshButtons(); render();
-  toast(cp ? "Tap Resume when you're pedalling." : "Reconnecting the trainer\u2026 tap Resume when it's connected.");
+  if (!cp || !hrOn) openDevices();                       // devices first: the pause pop-up waits until they're connected (or Done)
+  else toast("Tap Resume when you're pedalling.");
 };
 $("recSave").onclick = () => recStage("save");
 $("recDiscard").onclick = () => recStage("discard");
@@ -2066,7 +2086,7 @@ function render() {
   $("govState").textContent = gAct ? "GOV: " + Math.round(W.gov * 100) + "% of target" : "rpm";
   $("govState").style.color = gAct ? "var(--acc)" : "";
   { const cs = W.steps[W.idx], sv = W.running && W.erg && (isSim(cs) || (cs && cs.free) ); $("adjLbl").style.display = sv ? (W.simOff ? "block" : "none") : W.adjPct === 100 ? "none" : "block"; $("adjLbl").textContent = sv ? simOffTxt() : W.adjPct + "%"; }
-  drawProfile(); drawHR();
+  drawProfile(); drawHR(); syncPauseOv();
   if (!W.loaded) return;
   $("elapsed").textContent = fmt(W.t);
   const tlr = timeline(); $("remain").innerHTML = W.freeRide ? "" : fmt(tlr.left) + "<small>remaining</small>";
@@ -2081,7 +2101,7 @@ function render() {
   if (band && W.simOff) { $("tgtPct").textContent = simOffTxt(); $("adjLbl").style.display = "none"; }
   $("target").classList.toggle("freelbl", !!W.freeRide); $("target").nextElementSibling.style.display = W.freeRide ? "none" : "";   /* no "W" after Free Ride */
   if (W.freeRide) {                                       // free ride: no target, no intervals; the road's grade sits under the label
-    $("target").innerHTML = "Free<br>Ride"; $("tgtPct").style.display = ""; $("tgtPct").textContent = W.running ? "Grade " + simOffTxt() : "+ / \u2212 to adjust"; $("adjLbl").style.display = "none";
+    $("target").innerHTML = "Free<br>Ride"; $("tgtPct").style.display = ""; $("tgtPct").classList.add("adjg"); $("tgtPct").textContent = W.running ? "Grade " + simOffTxt() : "+ / \u2212 to adjust"; $("adjLbl").style.display = "none";
   }
   $("ileft").textContent = W.running && !W.freeRide ? fmt(s.dur - W.stepT) : "--:--";
   $("ileft").style.fontSize = (s.dur - W.stepT) >= 3600 ? "calc(var(--u)*3.3)" : "";
@@ -3764,8 +3784,14 @@ function refreshDevBtns() {                                  // red Connect butt
     row("T", tOn, trainerBusy, trainer && trainer.name); row("H", hOn, hrBusy, hrDev && hrDev.name);
     row("C", clickOn, clickBusy, (clickDev && clickDev.name || "Zwift Click") + (clickBatt != null ? " \u00b7 " + clickBatt + "%" : ""));
     if (!clickOn && !clickBusy) $("devStC").textContent = "Optional: + and \u2212 buttons";
-    if (tOn && hOn && (clickOn || !hasRemembered("kickrClickId")) && $("devModal").style.display === "flex" && !devAutoClosed) {   /* stays open for a Click you have used before */ devAutoClosed = true; setTimeout(() => { $("devModal").style.display = "none"; }, 700); }   // both in: close by itself
+    if (tOn && hOn && (clickOn || !hasRemembered("kickrClickId")) && $("devModal").style.display === "flex" && !devAutoClosed) {   /* stays open for a Click you have used before */ devAutoClosed = true; setTimeout(() => { $("devModal").style.display = "none"; syncPauseOv(); }, 700); }   // both in: close by itself
   } catch (e) {}
+}
+function syncPauseOv() {                                     // the pause pop-up: Resume and Change Workout big, End smaller at the bottom
+  const show = W.running && W.paused && !arcadeOn && document.body.dataset.screen === "run" && $("devModal").style.display !== "flex";
+  if ($("pauseOv").hidden === !show) { if (show) { $("pvDevices").hidden = !!cp && hrOn; $("pauseSub").textContent = fmt(W.t) + " ridden"; } return; }
+  $("pauseOv").hidden = !show;
+  if (show) { $("pvDevices").hidden = !!cp && hrOn; $("pauseSub").textContent = fmt(W.t) + " ridden"; }
 }
 function syncPauseBtn() {                                    // Resume is green while paused
   const b = $("btnPause");
@@ -3773,7 +3799,7 @@ function syncPauseBtn() {                                    // Resume is green 
   else { b.style.background = ""; b.style.color = ""; b.style.fontWeight = ""; }
 }
 function refreshButtons() {
-  refreshDevBtns(); syncPauseBtn();
+  refreshDevBtns(); syncPauseBtn(); syncPauseOv();
   const ready = !!cp && W.loaded;
   $("btnStart").disabled = !ready || W.running;
   ["btnPause", "btnSkip", "btnUp", "btnDn", "btnErg", "btnPlus1"].forEach(id => $(id).disabled = !W.running);
@@ -4538,7 +4564,7 @@ function openDevices() { devAutoClosed = !!cp && hrOn && (clickOn || !hasRemembe
 $("btnDevices").onclick = openDevices; $("stTrainer2").onclick = openDevices; $("stHR2").onclick = openDevices;
 $("devRowT").onclick = async () => { if (cp) return; const p = connectTrainer(); refreshDevBtns(); await p; refreshDevBtns(); };
 $("devRowH").onclick = async () => { if (hrOn) return; const p = connectHR(); refreshDevBtns(); await p; refreshDevBtns(); };
-$("devDone").onclick = () => { $("devModal").style.display = "none"; };
+$("devDone").onclick = () => { $("devModal").style.display = "none"; syncPauseOv(); };
 $("devRowC").onclick = async () => { if (clickOn || clickBusy) return; const p = connectClick(); refreshDevBtns(); await p; refreshDevBtns(); };
 $("btnStart").onclick = startWorkout;
 /* ---------------- Schedule a workout onto the intervals.icu calendar ---------------- */
@@ -4817,7 +4843,7 @@ $("gBack").onclick = async () => {                                // Home
   if (!await arcAskBox(started ? "End This Ride and Go Home?" : "Go Back Home?", started ? "Your ride stops here." : "The workout stays in your library.", started ? "End ride" : "Go home", "Cancel", started)) return;
   if (!started) { arcGoHome(); return; }
   finishWorkout("Workout ended by user.", true);                   // stop the trainer and the clock, no summary screen
-  const save = await arcAskBox("Save This Ride?", "Saving uploads it to intervals.icu and Strava. Discarding uploads nothing.", "Save", "Discard");
+  const save = !await arcAskBox("Save This Ride?", "Saving uploads it to intervals.icu and Strava. Discarding uploads nothing.", "Discard", "Save", true);   // the red choice sits on the right
   if (save) { try { prepareFit(); } catch (e) { log("FIT failed: " + e.message); }
     Promise.all([uploadRide(), stravaUpload()]).then(() => { const m = [$("sumUp").textContent, $("sumStrava").textContent].filter(Boolean).join(" "); if (m) toast(m, /fail|Not uploaded/.test(m)); });
     arcGoHome(); toast("Ride saved. Uploading\u2026"); }
@@ -4879,7 +4905,11 @@ $("btnLaunchYes").onclick = () => {
 document.querySelectorAll("#arc [data-for]").forEach(b => b.onclick = () => { const t = $(b.dataset.for); if (t && !t.disabled) t.click(); });
 $("aGo").onclick = () => { const t = W.running ? $("btnPause") : $("btnStart"); if (!t.disabled) t.click(); };
 window.addEventListener("resize", fitArc);
-$("btnPause").onclick = togglePause; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
+$("btnPause").onclick = togglePause;
+$("pvResume").onclick = () => { togglePause(); syncPauseOv(); };
+$("pvChange").onclick = () => { $("pauseOv").hidden = true; changeWorkout(); };
+$("pvEnd").onclick = () => { $("endModal").style.display = "flex"; };          // still asks once more
+$("pvDevices").onclick = () => { openDevices(); syncPauseOv(); }; $("btnEnd").onclick = () => { $("endModal").style.display = "flex"; };
 $("btnEndNo").onclick = () => { $("endModal").style.display = "none"; };
 $("btnEndYes").onclick = () => { $("endModal").style.display = "none"; finishWorkout("Workout ended by user."); }; $("btnSkip").onclick = skipStep;
 $("btnPlus1").onclick = () => {                             // add a minute to the current interval
